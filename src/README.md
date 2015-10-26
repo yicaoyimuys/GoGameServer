@@ -13,7 +13,9 @@
 	github.com/go-sql-driver -- mysql-driver
 </pre>
 
-#GoGameServer使用配置
+<pre>
+GoGameServer使用配置
 export GOGAMESERVER_PATH=/Users/GoGameServer/
 export GOPATH=$GOPATH:$GOGAMESERVER_PATH
 export PATH=$PATH:$GOGAMESERVER_PATH/bin
+</pre>
