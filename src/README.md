@@ -14,8 +14,8 @@
 </pre>
 
 <pre>
-GoGameServer使用配置
-export GOGAMESERVER_PATH=/Users/GoGameServer/
-export GOPATH=$GOPATH:$GOGAMESERVER_PATH
-export PATH=$PATH:$GOGAMESERVER_PATH/bin
+	GoGameServer使用配置
+	export GOGAMESERVER_PATH=/Users/GoGameServer/
+	export GOPATH=$GOPATH:$GOGAMESERVER_PATH
+	export PATH=$PATH:$GOGAMESERVER_PATH/bin
 </pre>
