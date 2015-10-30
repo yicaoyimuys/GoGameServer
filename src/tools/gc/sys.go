@@ -1,4 +1,4 @@
-package tools
+package gc
 
 import (
 	"runtime"
@@ -6,6 +6,7 @@ import (
 )
 
 import (
+	. "tools"
 	"tools/timer"
 )
 

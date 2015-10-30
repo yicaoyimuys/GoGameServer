@@ -16,6 +16,7 @@ import (
 	"protos"
 	. "tools"
 	"tools/cfg"
+	. "tools/gc"
 	"tools/hashs"
 )
 

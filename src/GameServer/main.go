@@ -16,6 +16,7 @@ import (
 	. "tools"
 	"tools/cfg"
 	_ "tools/db"
+	. "tools/gc"
 )
 
 //各个模块
