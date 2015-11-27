@@ -1,16 +1,18 @@
 # GoGameServer
 
-===
-
 ###介绍
 
  东拼西凑练习项目
 
+===
 
 ###完整架构
 
 
 ![image](https://github.com/yicaoyimuys/GoGameServer/blob/master/server.png)
+
+
+===
 
 
 ###开发架构
