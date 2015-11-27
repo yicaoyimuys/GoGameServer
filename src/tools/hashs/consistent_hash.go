@@ -5,7 +5,8 @@ package hashs
 //date: 2015-2-20
 
 import (
-	"hash/crc32"
+	"github.com/spaolacci/murmur3"
+	//	"hash/crc32"
 	"sort"
 	"strconv"
 	"sync"
@@ -96,7 +97,9 @@ func (c *Consistent) joinStr(i int, node *Node) string {
 
 // MurMurHash算法 :https://github.com/spaolacci/murmur3
 func (c *Consistent) hashStr(key string) uint32 {
-	return crc32.ChecksumIEEE([]byte(key))
+	//	return crc32.ChecksumIEEE([]byte(key))
+
+	return murmur3.Sum32([]byte(key))
 }
 
 func (c *Consistent) Get(key string) (Node, bool) {

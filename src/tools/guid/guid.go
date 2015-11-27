@@ -1,36 +1,57 @@
 package guid
 
 import (
-	"encoding/binary"
 	"sync"
 	"time"
+	. "tools"
 )
 
 type Guid struct {
-	id uint16
-	mx sync.RWMutex
+	sequence      int32
+	mx            sync.RWMutex
+	lastTimestamp int64
 }
 
-func (this *Guid) NewID(platform_id uint16, server_id uint16) uint64 {
+func (this *Guid) NewID(server_id uint16) uint64 {
 	this.mx.Lock()
 	defer this.mx.Unlock()
 
-	this.id += 1
-
-	var b []byte = make([]byte, 8)
-	binary.BigEndian.PutUint32(b[0:4], uint32(time.Now().Unix()))
-	binary.BigEndian.PutUint16(b[4:6], uint16(platform_id*100+server_id))
-	binary.BigEndian.PutUint16(b[6:8], this.id)
-
-	if this.id == 65535 {
-		this.id = 0
+	if server_id > 4095 {
+		ERR("server_id超出最大值")
+		return 0
 	}
 
-	return binary.BigEndian.Uint64(b)
+	timestamp := time.Now().Unix()
+	if timestamp < this.lastTimestamp {
+		ERR("请调整服务器时间!")
+		return 0
+	}
+
+	if timestamp == this.lastTimestamp {
+		// 当前毫秒内，则+1
+		this.sequence += 1
+		if this.sequence > 4095 {
+			// 当前毫秒内计数满了，则等待下一秒
+			this.sequence = 0
+			for {
+				timestamp = time.Now().Unix()
+				if timestamp > this.lastTimestamp {
+					break
+				}
+			}
+		}
+	} else {
+		this.sequence = 0
+	}
+	this.lastTimestamp = timestamp
+
+	//40(毫秒) + 12(serverID) + 12(重复累加)
+	return ((uint64(timestamp) << 40) | (uint64(server_id) << 12) | uint64(this.sequence))
 }
 
 func NewGuid() *Guid {
 	return &Guid{
-		id: 0,
+		sequence:      0,
+		lastTimestamp: -1,
 	}
 }

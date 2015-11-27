@@ -30,13 +30,13 @@ type Model struct {
 var DBOrm *Model
 
 //数据库初始化
-func init() {
-	hostname := cfg.GetValue("db_hostname")
-	port := cfg.GetValue("db_port")
-	username := cfg.GetValue("db_username")
-	password := cfg.GetValue("db_password")
-	database := cfg.GetValue("db_database")
-	charset := cfg.GetValue("db_charset")
+func Init() {
+	hostname := cfg.GetValue("mysql_hostname")
+	port := cfg.GetValue("mysql_port")
+	username := cfg.GetValue("mysql_username")
+	password := cfg.GetValue("mysql_password")
+	database := cfg.GetValue("mysql_database")
+	charset := cfg.GetValue("mysql_charset")
 
 	sqlDb, err := sql.Open("mysql", username+":"+password+"@tcp("+hostname+":"+port+")/"+database+"?charset="+charset)
 	if err != nil {
@@ -52,6 +52,8 @@ func init() {
 
 	DBOrm = new(Model)
 	DBOrm.db = sqlDb
+
+	INFO("DB Open Success")
 }
 
 func (m *Model) FindAll() map[int]map[string]string {
@@ -101,12 +103,16 @@ func (m *Model) Insert(param map[string]interface{}) (num int, err error) {
 	for key, value := range param {
 		keys = append(keys, key)
 		switch value.(type) {
-		case int, int64, int32:
+		case int, int32:
 			values = append(values, strconv.Itoa(value.(int)))
 		case string:
 			values = append(values, value.(string))
 		case float32, float64:
 			values = append(values, strconv.FormatFloat(value.(float64), 'f', -1, 64))
+		case int64:
+			values = append(values, strconv.FormatInt(value.(int64), 10))
+		case uint64:
+			values = append(values, strconv.FormatUint(value.(uint64), 10))
 		}
 	}
 	fileValue := "'" + strings.Join(values, "','") + "'"
@@ -139,7 +145,7 @@ func (m *Model) Update(param map[string]interface{}) (num int, err error) {
 	var setValue []string
 	for key, value := range param {
 		switch value.(type) {
-		case int, int64, int32:
+		case int, int32:
 			set := fmt.Sprintf("%v = %v", key, value.(int))
 			setValue = append(setValue, set)
 		case string:
@@ -147,6 +153,9 @@ func (m *Model) Update(param map[string]interface{}) (num int, err error) {
 			setValue = append(setValue, set)
 		case float32, float64:
 			set := fmt.Sprintf("%v = '%v'", key, strconv.FormatFloat(value.(float64), 'f', -1, 64))
+			setValue = append(setValue, set)
+		case int64:
+			set := fmt.Sprintf("%v = '%v'", key, strconv.FormatInt(value.(int64), 10))
 			setValue = append(setValue, set)
 		}
 

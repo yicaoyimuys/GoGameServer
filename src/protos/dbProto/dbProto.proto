@@ -1,0 +1,13 @@
+message DB_User_LoginC2S{
+	required string Name = 1;
+}
+
+message DB_User_LoginS2C{
+	optional uint64 ID = 1;
+	optional string Name = 2;
+}
+
+message DB_User_UpdateLastLoginTimeC2S{
+	required uint64 UserID = 1;
+	required int64 Time = 2;
+}

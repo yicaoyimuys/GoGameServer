@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -25,17 +26,17 @@ func Get() map[string]string {
 }
 
 func Reload() {
-	var path string = os.Getenv("GOGAMESERVER_PATH") + "/config.ini"
+	var baseConfigPath string = os.Getenv("GOGAMESERVER_PATH") + "/config_base.ini"
+	var serverConfigPath string = os.Getenv("GOGAMESERVER_PATH") + "/config_server.ini"
 
 	_lock.Lock()
-	//	log.Println("Loading Config from:", path)
-	//	defer log.Println("Config Loaded.")
-	_map = _load_config(path)
+	_map = make(map[string]string)
+	_load_config(baseConfigPath)
+	_load_config(serverConfigPath)
 	_lock.Unlock()
 }
 
-func _load_config(path string) (ret map[string]string) {
-	ret = make(map[string]string)
+func _load_config(path string) {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Println(path, err)
@@ -54,7 +55,7 @@ func _load_config(path string) (ret map[string]string) {
 		slice := re.FindStringSubmatch(line)
 
 		if slice != nil {
-			ret[slice[1]] = slice[2]
+			_map[slice[1]] = slice[2]
 			//			log.Println(slice[1], "=", slice[2])
 		}
 	}
@@ -65,4 +66,14 @@ func _load_config(path string) (ret map[string]string) {
 func GetValue(key string) string {
 	config := Get()
 	return config[key]
+}
+
+func GetUint16(key string) uint16 {
+	result, _ := strconv.Atoi(GetValue(key))
+	return uint16(result)
+}
+
+func GetInt(key string) int {
+	result, _ := strconv.Atoi(GetValue(key))
+	return result
 }

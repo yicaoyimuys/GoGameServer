@@ -62,8 +62,10 @@ func StartLogger(path string) {
 	switch config["log_output"] {
 	case "both":
 		r.out1 = os.Stdout
-		r.out2 = file
 	case "file":
+		r.out2 = file
+	case "both&file":
+		r.out1 = os.Stdout
 		r.out2 = file
 	}
 	log.SetOutput(&r)

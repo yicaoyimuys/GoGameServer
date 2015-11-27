@@ -1,11 +1,7 @@
-//游戏服务器Ping网关服务器
-message GamePingGateway{
-	required string IP = 1;
-	required string Port = 2;
-}
+
 
 //错误消息
-message ErrorMsg{
+message ErrorMsgS2C{
 	required int32 ErrorID = 1;
 }
 
@@ -31,7 +27,7 @@ message ConnectSuccessS2C{
 
 //用户数据
 message Person {
-	required int32 ID = 1;
+	required uint64 ID = 1;
 	required string Name = 2;
 	required int32 Money = 3;
 	required uint64 SessionID = 4;
@@ -44,12 +40,12 @@ message UserLoginC2S {
 
 //用户登录S2C
 message UserLoginS2C {
-	required int32 UserID = 1;
+	required uint64 UserID = 1;
 }
 
 //获取用户信息C2S
 message GetUserInfoC2S {
-	required int32 UserID = 1;
+	required uint64 UserID = 1;
 }
 
 //获取用户信息S2C

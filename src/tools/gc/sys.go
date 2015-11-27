@@ -2,7 +2,6 @@ package gc
 
 import (
 	"runtime"
-	"time"
 )
 
 import (
@@ -11,24 +10,17 @@ import (
 )
 
 const (
-	GC_INTERVAL = 300
+	GC_INTERVAL = 60 * 8
 )
 
 //系统routine
 func SysRoutine() {
-	// timer
-	gc_timer := make(chan int32, 10)
-	gc_timer <- 1
+	timer.DoTimer(int64(GC_INTERVAL), onTimer)
+}
 
-	for {
-		select {
-		case <-gc_timer:
-			// gc work
-			runtime.GC()
-			INFO("GC executed")
-			INFO("NumGoroutine", runtime.NumGoroutine())
-			INFO("GC Summary:", GCSummary())
-			timer.Add(0, time.Now().Unix()+int64(GC_INTERVAL), gc_timer)
-		}
-	}
+func onTimer() {
+	runtime.GC()
+	INFO("GC executed")
+	INFO("NumGoroutine", runtime.NumGoroutine())
+	INFO("GC Summary:", GCSummary())
 }

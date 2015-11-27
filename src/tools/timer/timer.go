@@ -1,122 +1,119 @@
 package timer
 
 import (
-	"log"
+	"container/list"
+	"sync/atomic"
 	"time"
+	. "tools"
 )
 
-const (
-	TIMER_LEVEL = 20 // 时间段最大分级，最大时间段为 2^TIMERLEVEL
-	QUEUE_MAX   = 65536
-)
-
-type _timer_event struct {
-	Id      int32      // 用户定义的ID
-	Timeout int64      // 到期时间 Unix Time
-	CH      chan int32 // 发送通道
+type timerEvent struct {
+	ID          uint64 // TimerID
+	Func        func() // 回调函数
+	Delay       int64  // 执行间隔
+	RepeatCount int    // 执行次数
 }
 
 var (
-	_eventlist  [TIMER_LEVEL]map[uint32]_timer_event // 事件列表
-	_eventqueue chan _timer_event                    // 事件添加队列
+	eventQueues  map[int64]*list.List
+	events       map[uint64]*timerEvent
+	maxSessionId uint64
 )
 
 func init() {
-	for k := range _eventlist {
-		_eventlist[k] = make(map[uint32]_timer_event)
-	}
-
-	_eventqueue = make(chan _timer_event, QUEUE_MAX)
-
-	go _timer()
+	eventQueues = make(map[int64]*list.List)
+	events = make(map[uint64]*timerEvent)
+	maxSessionId = 0
+	go timer()
 }
 
-//------------------------------------------------
-// 定时器 goroutine
-// 根据程序启动后经过的秒数计数
-func _timer() {
+func timer() {
 	defer func() {
 		if x := recover(); x != nil {
-			log.Println("TIMER CRASHED", x)
+			ERR("TIMER CRASHED", x)
 		}
 	}()
 
-	last := time.Now().Unix()
-	timer_id := uint32(0) // 内部事件编号
-
+	nowTime := time.Now().Unix()
 	sleep_timer := time.NewTimer(time.Second)
 	for {
 		select {
-		case new_event := <-_eventqueue:
-			timer_id++
-			// 最小的时间间隔，处理为1s
-			diff := new_event.Timeout - time.Now().Unix()
-			if diff <= 0 {
-				diff = 1
-			}
-
-			// 发到合适的框
-			for i := TIMER_LEVEL - 1; i >= 0; i-- {
-				if diff >= 1<<uint(i) {
-					_eventlist[i][timer_id] = new_event
-					break
-				}
-			}
 		case <-sleep_timer.C:
-			// 重置定时器
 			sleep_timer.Reset(time.Second)
-
-			// 检查事件触发
-			// 累计距离上一次触发的秒数,并逐秒触发
-			// 如果校正了系统时间，时间前移，nsec为负数的时候，last的值不应该变动，否则会出现秒数的重复计数
-			now := time.Now().Unix()
-			if now-last < 1 {
-				continue
-			}
-
-			// 开始逐秒触发
-			for {
-				last++
-				for i := TIMER_LEVEL - 1; i >= 0; i-- {
-					mask := (1 << uint(i)) - 1
-					if last&int64(mask) == 0 {
-						_trigger(i)
+			nowTime += 1
+			queues, exists := eventQueues[nowTime]
+			if exists {
+				for evt := queues.Front(); evt != nil; evt = evt.Next() {
+					eventID := evt.Value.(uint64)
+					if event, existsEvent := events[eventID]; existsEvent {
+						event.Func()
+						if event.RepeatCount > 0 {
+							event.RepeatCount -= 1
+							if event.RepeatCount == 0 {
+								delete(events, eventID)
+							} else {
+								addToQueue(nowTime, event)
+							}
+						} else {
+							addToQueue(nowTime, event)
+						}
 					}
 				}
-
-				// 如果到达当前时间，停止循环
-				if last == now {
-					break
-				}
+				delete(eventQueues, nowTime)
 			}
 		}
 	}
 }
 
-//------------------------------------------------ 单级触发
-func _trigger(level int) {
-	now := time.Now().Unix()
-	list := _eventlist[level]
+//无限次数执行
+func DoTimer(delay int64, callback func()) uint64 {
+	return Do(delay, 0, callback)
+}
 
-	for k, v := range list {
-		if v.Timeout-now < 1<<uint(level) {
-			if level == 0 { // 触发事件
-				select { // 发送必须为非阻塞, 传入的chan不能关闭
-				case v.CH <- v.Id:
-				default:
-				}
-			} else { // 移动到前一个更短间距的时间队列
-				_eventlist[level-1][k] = v
-			}
+//延时处理
+func SetTimeOut(delay int64, callback func()) uint64 {
+	return Do(delay, 1, callback)
+}
 
-			delete(list, k)
-		}
+//移除一个定时器
+func Remove(timerID uint64) {
+	if _, exists := events[timerID]; exists {
+		delete(events, timerID)
 	}
 }
 
-//------------------------------------------------
-// 添加一个定时，timeout为到期的Unix时间
-// id 是调用者定义的编号, 事件发生时，会把id发送到ch
-func Add(id int32, timeout int64, ch chan int32) {
-	_eventqueue <- _timer_event{Id: id, CH: ch, Timeout: timeout}
+//时间间隔，执行次数，回调函数
+func Do(delay int64, repeatCount int, callback func()) uint64 {
+	//最小单位1秒
+	if delay < 1 {
+		callback()
+		return 0
+	}
+
+	if repeatCount < 0 {
+		repeatCount = 0
+	}
+
+	event := &timerEvent{
+		ID:          atomic.AddUint64(&maxSessionId, 1),
+		Func:        callback,
+		Delay:       delay,
+		RepeatCount: repeatCount,
+	}
+	events[event.ID] = event
+
+	addToQueue(time.Now().Unix(), event)
+
+	return event.ID
+}
+
+//添加到执行队列
+func addToQueue(nowTime int64, event *timerEvent) {
+	dotime := nowTime + event.Delay
+	events, exists := eventQueues[dotime]
+	if !exists {
+		events = list.New()
+	}
+	events.PushBack(event.ID)
+	eventQueues[dotime] = events
 }

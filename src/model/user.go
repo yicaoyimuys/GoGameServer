@@ -6,19 +6,16 @@ import (
 
 type OnlineUserModel struct {
 	Session  *link.Session
-	UserID   int32
+	UserID   uint64
 	UserName string
 }
 
 type UserModel struct {
-	DBUser   *DBUserModel
-	Session  *link.Session
-	IsOnline int32
+	DBUser *DBUserModel
 }
 
-func NewUserModel() *UserModel {
+func NewUserModel(dbUser *DBUserModel) *UserModel {
 	return &UserModel{
-		DBUser:   NewDBUser(),
-		IsOnline: 0,
+		DBUser: dbUser,
 	}
 }

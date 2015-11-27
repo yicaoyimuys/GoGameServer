@@ -38,9 +38,15 @@ func (set *SignalSet) Handle(sig os.Signal, arg interface{}) (err error) {
 	}
 }
 
+var (
+	stopServerFunc func()
+)
+
 //处理信号
-func SignalProc() {
+func SignalProc(stopServerCallback func()) {
 	//http://blog.csdn.net/trojanpizza/article/details/6656321
+
+	stopServerFunc = stopServerCallback
 
 	sigHandler := SignalSetNew()
 	sigHandler.Register(syscall.SIGWINCH, sigHandlerFunc)
@@ -69,14 +75,20 @@ func sigHandlerFunc(s os.Signal, arg interface{}) {
 	switch s {
 	case syscall.SIGHUP:
 		cfg.Reload()
-		INFO("reload")
+		INFO("ReloadConfig")
 	case syscall.SIGINT:
-		INFO("stop")
-		os.Exit(1)
+		stopServer()
 	case syscall.SIGTERM:
-		INFO("stop")
-		os.Exit(1)
+		stopServer()
 	case syscall.SIGWINCH:
 	case syscall.SIGPIPE:
 	}
+}
+
+func stopServer() {
+	if stopServerFunc != nil {
+		stopServerFunc()
+	}
+	INFO("StopServer")
+	os.Exit(1)
 }

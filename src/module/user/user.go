@@ -4,7 +4,11 @@ import (
 	"github.com/funny/link"
 	. "model"
 	"module"
-	"protos"
+	"protos/gameProto"
+	"proxys/dbProxy"
+	"proxys/redisProxy"
+	"proxys/transferProxy"
+	"time"
 	. "tools"
 )
 
@@ -16,94 +20,104 @@ func init() {
 	module.User = UserModule{}
 }
 
-//登录
-func (this UserModule) Login(userName string, session *link.Session) int32 {
-	var result int32 = -1
-	onlineUser, isOnline := module.Cache.UserIsOnline(userName)
-	if isOnline {
-		if onlineUser.Session.Id() != session.Id() {
-			//当前在线，但是连接不同，其他客户端连接，需通知当前客户端下线
-			simple.SendOtherLogin(onlineUser.Session)
-			//替换Session
-			module.Cache.RemoveOnlineUser(onlineUser.Session.Id())
-			module.Cache.AddOnlineUser(onlineUser.UserName, onlineUser.UserID, session)
-		}
-		result = onlineUser.UserID
+//用户DB登录返回
+func (this UserModule) UserLoginHandle(session *link.Session, userName string, userID uint64) {
+	if userID == 0 {
+		module.SendLoginResult(0, session)
 	} else {
-		newUser := NewUserModel()
-		if err := newUser.DBUser.GetUserByUserName(userName); err == nil {
-			cacheSuccess := module.Cache.AddOnlineUser(newUser.DBUser.Name, newUser.DBUser.ID, session)
-			if cacheSuccess {
-				result = newUser.DBUser.ID
-			}
+		//登录成功处理
+		success := loginSuccess(session, userName, userID)
+		if success {
+			module.SendLoginResult(userID, session)
 		} else {
-			DEBUG(err)
+			module.SendLoginResult(0, session)
 		}
 	}
+}
 
-	if result != -1 {
-		//Session断线处理
+//登录
+func (this UserModule) Login(userName string, session *link.Session) {
+	onlineUser := module.Cache.GetOnlineUserByUserName(userName)
+	if onlineUser != nil {
+		if onlineUser.Session.Id() != session.Id() {
+			//当前在线，但是连接不同，其他客户端连接，需通知当前客户端下线
+			module.SendOtherLogin(onlineUser.Session)
+			//替换Session
+			module.Cache.RemoveOnlineUser(onlineUser.Session.Id())
+			//登录成功处理
+			success := loginSuccess(session, onlineUser.UserName, onlineUser.UserID)
+			if success {
+				module.SendLoginResult(onlineUser.UserID, session)
+			} else {
+				module.SendLoginResult(0, session)
+			}
+		}
+	} else {
+		cacheDbUser := redisProxy.GetDBUserByUserName(userName)
+		if cacheDbUser != nil {
+			this.UserLoginHandle(session, cacheDbUser.Name, cacheDbUser.ID)
+		} else {
+			dbProxy.UserLogin(session.Id(), userName)
+		}
+	}
+}
+
+func loginSuccess(session *link.Session, userName string, userID uint64) bool {
+	cacheSuccess := module.Cache.AddOnlineUser(userName, userID, session)
+	if cacheSuccess {
 		session.AddCloseCallback(session, func() {
 			module.Cache.RemoveOnlineUser(session.Id())
 			DEBUG("下线：在线人数", module.Cache.GetOnlineUsersNum())
 		})
+		DEBUG("上线：在线人数", module.Cache.GetOnlineUsersNum())
+
+		//通知游戏服务器登录成功
+		transferProxy.SendClientLoginSuccess(userName, userID, session.Id())
+
+		return true
 	}
 
-	DEBUG("上线：在线人数", module.Cache.GetOnlineUsersNum())
-	return result
+	return false
 }
 
 //重新连接
 func (this UserModule) AgainConnect(oldSessionID uint64, session *link.Session) uint64 {
-	if oldSessionID == session.Id() {
-		return 0
-	}
+	//	if oldSessionID == session.Id() {
+	//		return 0
+	//	}
 
-	user := module.Cache.GetUserBySession(oldSessionID)
-	if user == nil {
-		return 0
-	}
+	//	user := module.Cache.GetOnlineUserBySession(oldSessionID)
+	//	if user == nil {
+	//		return 0
+	//	}
 
-	this.setOnline(user, session)
-	return session.Id()
+	//	module.Cache.RemoveOnlineUser(oldSessionID)
+
+	//	cacheSuccess := module.Cache.AddOnlineUser(user.UserName, user.UserID, session)
+	//	if cacheSuccess {
+	//		return session.Id()
+	//	}
+	return 0
 }
 
 //获取用户详细信息
-func (this UserModule) GetUserInfo(userID int32, session *link.Session) *UserModel {
-	result := module.Cache.GetUser(userID)
-	if result == nil {
-		//不存在缓存用户
-		newUser := NewUserModel()
-		if err := newUser.DBUser.GetUser(userID); err == nil {
-			result = newUser
-			this.setOnline(result, session)
+func (this UserModule) GetUserInfo(userID uint64, session *link.Session) {
+	onlineUser := module.Cache.GetOnlineUserByUserID(userID)
+	if onlineUser != nil {
+		dbUser := redisProxy.GetDBUser(userID)
+		if dbUser != nil {
+			userModel := NewUserModel(dbUser)
+			module.SendGetUserInfoResult(0, userModel, session)
+
+			//更新用户最后上线时间，更新内存和数据库
+			nowTime := time.Now().Unix()
+			redisProxy.UpdateUserLastLoginTime(userID, nowTime)
+			dbProxy.UpdateUserLastLoginTime(session.Id(), userID, nowTime)
+
 		} else {
-			DEBUG(err)
+			module.SendGetUserInfoResult(gameProto.User_Not_Exists, nil, session)
 		}
 	} else {
-		//		INFO("是否在线：", result.IsOnline)
-		this.setOnline(result, session)
-	}
-	return result
-}
-
-//设置用户在线
-func (this UserModule) setOnline(user *UserModel, session *link.Session) {
-	module.Cache.RemoveUser(user)
-
-	user.Session = session
-	user.IsOnline = 1
-	module.Cache.AddUser(user)
-
-	session.AddCloseCallback(this, func() {
-		this.setOffline(session)
-	})
-}
-
-//设置用户下线
-func (this UserModule) setOffline(session *link.Session) {
-	u := module.Cache.GetUserBySession(session.Id())
-	if u != nil {
-		u.IsOnline = 0
+		module.SendGetUserInfoResult(gameProto.User_Login_Fail, nil, session)
 	}
 }

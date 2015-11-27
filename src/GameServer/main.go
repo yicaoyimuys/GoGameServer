@@ -7,16 +7,12 @@ import (
 )
 
 import (
-	"github.com/funny/binary"
-	"github.com/funny/link"
-	"github.com/funny/link/gateway"
-	"github.com/funny/link/packet"
-	//	"module"
-	"protos"
+	"global"
+	"proxys/dbProxy"
+	"proxys/redisProxy"
+	"proxys/transferProxy"
 	. "tools"
 	"tools/cfg"
-	_ "tools/db"
-	. "tools/gc"
 )
 
 //各个模块
@@ -41,19 +37,23 @@ func main() {
 	// 获取监听端口
 	getPort()
 
-	// 开启Log记录
-	SetLogFile("game_log")
-	SetLogPrefix("GameServer[" + game_port + "]")
+	//启动
+	global.Startup(global.ServerName, "game_log", nil)
 
-	// 信号量监听
-	go SignalProc()
+	//连接TransferServer
+	err := transferProxy.InitClient(cfg.GetValue("transfer_ip"), cfg.GetValue("transfer_port"))
+	checkError(err)
 
-	// 开启系统环境信息监测
-	go SysRoutine()
+	//连接DB
+	dbProxyErr := dbProxy.InitClient(cfg.GetValue("db_ip"), cfg.GetValue("db_port"))
+	checkError(dbProxyErr)
 
-	// 开启游戏服务器
-	INFO("Starting GameServer : " + game_port)
-	startGameServer()
+	//连接Redis
+	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))
+	checkError(redisProxyErr)
+
+	//保持进程
+	global.Run()
 }
 
 func getPort() {
@@ -66,49 +66,7 @@ func getPort() {
 	}
 	game_ip = cfg.GetValue("game_ip_" + strconv.Itoa(s))
 	game_port = cfg.GetValue("game_port_" + strconv.Itoa(s))
-}
-
-func pingGateway() {
-	//尝试链接网关服务器，通知网关服务器，该游戏服务器已上线，动态增加游戏服务器时使用
-	gateway_ip := cfg.GetValue("gateway_ip")
-	gateway_port_by_game := cfg.GetValue("gateway_port_by_game")
-	gateway_addr := gateway_ip + ":" + gateway_port_by_game
-	if client, err := link.Connect("tcp", gateway_addr, packet.New(binary.SplitByUint32BE, 1024, 1024, 1024)); err == nil {
-		simple.SendGamePingGateway(game_ip, game_port, client)
-	}
-}
-
-func startGameServer() {
-	backend, err := link.Serve("tcp", "0.0.0.0:"+game_port, gateway.NewBackend(1024, 1024, 1024))
-	checkError(err)
-
-	pingGateway()
-
-	backend.Serve(func(session *link.Session) {
-		simple.SendConnectSuccess(session)
-
-		var msg packet.RAW
-		for {
-			if err := session.Receive(&msg); err != nil {
-				break
-			}
-			dealMsg(session, msg)
-		}
-	})
-}
-
-func dealMsg(session *link.Session, msg packet.RAW) {
-	msgID := binary.GetUint16LE(msg[:2])
-	msgBody := msg[2:]
-
-	//	DEBUG("收到消息ID: " + strconv.Itoa(int(msgID)))
-
-	switch msgID {
-	case simple.ID_GetUserInfoC2S:
-		simple.GetUserInfo(msgBody, session)
-	case simple.ID_AgainConnectC2S:
-		simple.AgainConnect(msgBody, session)
-	}
+	global.ServerName = "GameServer[" + game_port + "]"
 }
 
 func checkError(err error) {

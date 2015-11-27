@@ -9,9 +9,16 @@ PROTO_INSTALL_FILE_DIR = ./src/code.google.com/p/goprotobuf/
 all:
 	$(GO) install GateServer
 	$(GO) install GameServer
+	$(GO) install DbServer
+	$(GO) install LoginServer
+	$(GO) install TransferServer
+	
+local:
+	$(GO) install LocalServer
 
 clean:
-	rm -rf bin pkg $(NEXBIN)
+	rm -rf bin pkg
+	rm -rf dump.rdb db.log game.log gateway.log local.log login.log transfer.log
  
 fmt:
 	$(GO) fmt $(SRC_DIR)/...
@@ -23,7 +30,9 @@ install_proto:
 	
 #需要先install_proto，然后将bin目录加入到环境变量，protoc才可使用
 create_proto:
-	cd $(SRC_DIR)/protos && protoc --go_out=. simple.proto
+	cd $(SRC_DIR)/protos/systemProto && protoc --go_out=. systemProto.proto
+	cd $(SRC_DIR)/protos/dbProto && protoc --go_out=. dbProto.proto
+	cd $(SRC_DIR)/protos/gameProto && protoc --go_out=. gameProto.proto
 	
 #交叉编译：
 #首先进入go源码目录

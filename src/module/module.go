@@ -6,16 +6,12 @@ import (
 )
 
 type CacheModule interface {
-	AddOnlineUser(userName string, userID int32, session *link.Session) bool
-	UserIsOnline(userName string) (OnlineUserModel, bool)
+	AddOnlineUser(userName string, userID uint64, session *link.Session) bool
+	GetOnlineUserByUserName(userName string) *OnlineUserModel
+	GetOnlineUserByUserID(userID uint64) *OnlineUserModel
+	GetOnlineUserBySession(sessionID uint64) *OnlineUserModel
 	RemoveOnlineUser(sessionID uint64)
 	GetOnlineUsersNum() int32
-
-	AddUser(user *UserModel)
-	RemoveUser(user *UserModel)
-	GetUser(userId int32) *UserModel
-	GetUserByName(userName string) *UserModel
-	GetUserBySession(sessionID uint64) *UserModel
 }
 
 type ConfigModule interface {
@@ -23,9 +19,11 @@ type ConfigModule interface {
 }
 
 type UserModule interface {
-	Login(userName string, session *link.Session) int32
+	UserLoginHandle(session *link.Session, userName string, userID uint64)
+
+	Login(userName string, session *link.Session)
 	AgainConnect(oldSessionID uint64, session *link.Session) uint64
-	GetUserInfo(userID int32, session *link.Session) *UserModel
+	GetUserInfo(userID uint64, session *link.Session)
 }
 
 // 这些是接口的具体实现，等待外部主动注册进来，
