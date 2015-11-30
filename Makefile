@@ -9,16 +9,15 @@ PROTO_INSTALL_FILE_DIR = ./src/code.google.com/p/goprotobuf/
 all:
 	$(GO) install GateServer
 	$(GO) install GameServer
-	$(GO) install DbServer
+	$(GO) install DBServer
 	$(GO) install LoginServer
-	$(GO) install TransferServer
 	
 local:
 	$(GO) install LocalServer
 
 clean:
 	rm -rf bin pkg
-	rm -rf dump.rdb db.log game.log gateway.log local.log login.log transfer.log
+	rm -rf dump.rdb db.log game.log gateway.log local.log login.log
  
 fmt:
 	$(GO) fmt $(SRC_DIR)/...

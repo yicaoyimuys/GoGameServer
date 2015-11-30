@@ -29,7 +29,7 @@ const (
 var (
 	servers                  map[string]*link.Session
 	asyncMsgs                *list.List
-	sysDbTimerID             uint64
+	syncDbTimerID            uint64
 	revSyncMsgGoroutines     []goroutineObj
 	revSyncMsgGoroutineIndex int
 	revSyncMsgGoroutineNum   int
@@ -110,17 +110,17 @@ func connectDBServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 
 //开启定时同步DB数据
 func startSysDB() {
-	sysDbTimerID = timer.DoTimer(int64(SYSDB_INTERVAL), onSysDBTimer)
+	syncDbTimerID = timer.DoTimer(int64(SYSDB_INTERVAL), onSyncDBTimer)
 }
 
 //停止定时同步DB数据
-func StopSysDB() {
-	timer.Remove(sysDbTimerID)
-	onSysDBTimer()
+func StopSyncDB() {
+	timer.Remove(syncDbTimerID)
+	onSyncDBTimer()
 }
 
 //同步数据到DB服务器
-func onSysDBTimer() {
+func onSyncDBTimer() {
 	INFO("SyncDB Num: ", asyncMsgs.Len())
 	for msg := asyncMsgs.Front(); msg != nil; msg = msg.Next() {
 		protoMsg := msg.Value.(packet.RAW)

@@ -8,7 +8,7 @@ import (
 
 //服务器启动
 func Startup(serverName string, logFile string, stopServerFunc func()) {
-	//	runtime.GOMAXPROCS(2)
+	//	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// 开启Log记录
 	SetLogFile(logFile)

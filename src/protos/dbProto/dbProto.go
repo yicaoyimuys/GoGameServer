@@ -23,6 +23,7 @@ var NullProtoMsg ProtoMsg = ProtoMsg{0, nil, 0}
 func init() {
 	protos.SetMsg(ID_DB_User_LoginC2S, DB_User_LoginC2S{})
 	protos.SetMsg(ID_DB_User_LoginS2C, DB_User_LoginS2C{})
+
 	protos.SetMsg(ID_DB_User_UpdateLastLoginTimeC2S, DB_User_UpdateLastLoginTimeC2S{})
 }
 

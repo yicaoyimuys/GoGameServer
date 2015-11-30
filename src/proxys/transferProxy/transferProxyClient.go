@@ -8,9 +8,7 @@ import (
 	"module"
 	"protos"
 	"protos/gameProto"
-	_ "protos/gameProto"
 	"protos/systemProto"
-	_ "protos/systemProto"
 	. "tools"
 )
 
@@ -77,9 +75,6 @@ func dealReceiveMsgS2C(msg packet.RAW) {
 		if msgID%2 == 1 {
 			//C2S消息，由GameServer处理消息
 			dealGameMsg(msg)
-		} else {
-			//S2C消息，发送到用户客户端
-			sendToClient(msg)
 		}
 	} else {
 		ERR(global.ServerName, "收到未处理消息")
@@ -106,36 +101,6 @@ func ConnectTransferServer() {
 func connectTransferServerCallBack(protoMsg systemProto.ProtoMsg) {
 	//	rev_msg := protoMsg.Body.(*systemProto.System_ConnectTransferServerS2C)
 	INFO(global.ServerName + " Connect TransferServer Success")
-}
-
-//通知游戏服务器用户上线, 网关客户端调用
-func SendClientSessionOnline(userSession *link.Session) {
-	global.AddSession(userSession)
-
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ClientSessionOnlineC2S{
-		SessionID: protos.Uint64(userSession.Id()),
-		Network:   protos.String(userSession.Conn().RemoteAddr().Network()),
-		Addr:      protos.String(userSession.Conn().RemoteAddr().String()),
-	})
-	sendSystemMsgToServer(send_msg)
-}
-
-//通知游戏服务器用户下线, 网关客户端调用
-func SendClientSessionOffline(sessionID uint64) {
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ClientSessionOfflineC2S{
-		SessionID: protos.Uint64(sessionID),
-	})
-	sendSystemMsgToServer(send_msg)
-}
-
-//发送消息到TransferServer, 网关客户端调用
-func SendToTransferServer(msg packet.RAW, userSession *link.Session) {
-	result := make([]byte, 8+len(msg))
-	copy(result[:2], msg[:2])
-	binary.PutUint64LE(result[2:10], userSession.Id())
-	copy(result[10:], msg[2:])
-
-	session.Send(packet.RAW(result))
 }
 
 //通知游戏服务器用户登录成功
@@ -201,25 +166,4 @@ func dealGameMsg(msg packet.RAW) {
 
 	conn := userSession.Conn().(*TransferProxyConn)
 	conn.recvChan <- msg
-}
-
-//发送消息到用户
-func sendToClient(msg packet.RAW) {
-	if len(msg) < 10 {
-		return
-	}
-
-	msgID := binary.GetUint16LE(msg[:2])
-	msgIdentification := binary.GetUint64LE(msg[2:10])
-	msgBody := msg[10:]
-
-	userSession := global.GetSession(msgIdentification)
-	if userSession == nil {
-		return
-	}
-
-	result := make([]byte, len(msg)-8)
-	binary.PutUint16LE(result[:2], msgID)
-	copy(result[2:], msgBody)
-	userSession.Send(packet.RAW(result))
 }

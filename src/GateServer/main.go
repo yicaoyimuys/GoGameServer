@@ -16,8 +16,10 @@ import (
 )
 
 var (
-	gateway_ip   string
-	gateway_port string
+	gateway_ip    string
+	gateway_port  string
+	transfer_ip   string
+	transfer_port string
 )
 
 func main() {
@@ -33,9 +35,10 @@ func main() {
 	//启动
 	global.Startup(global.ServerName, "gateway_log", nil)
 
-	//连接TransferServer
-	err := transferProxy.InitClient(cfg.GetValue("transfer_ip"), cfg.GetValue("transfer_port"))
+	//开启TransferProxy，由GateServer充当中转服务器
+	err := transferProxy.InitServer(transfer_port)
 	checkError(err)
+	INFO("Starting TransferServer")
 
 	//开启GateServer监听
 	startGateway()
@@ -49,6 +52,9 @@ func getPort() {
 	gateway_ip = cfg.GetValue("gateway_ip")
 	gateway_port = cfg.GetValue("gateway_port")
 	global.ServerName = "GateServer[" + gateway_port + "]"
+
+	transfer_ip = cfg.GetValue("transfer_ip")
+	transfer_port = cfg.GetValue("transfer_port")
 }
 
 func startGateway() {
@@ -59,16 +65,16 @@ func startGateway() {
 
 	listener.Serve(func(session *link.Session) {
 		session.AddCloseCallback(session, func() {
-			transferProxy.SendClientSessionOffline(session.Id())
+			transferProxy.SetClientSessionOffline(session.Id())
 		})
-		transferProxy.SendClientSessionOnline(session)
+		transferProxy.SetClientSessionOnline(session)
 
 		var msg packet.RAW
 		for {
 			if err := session.Receive(&msg); err != nil {
 				break
 			}
-			transferProxy.SendToTransferServer(msg, session)
+			transferProxy.SendToGameServer(msg, session)
 		}
 	})
 }

@@ -5,7 +5,6 @@ import (
 	"github.com/funny/link/packet"
 	"protos"
 	. "protos/gameProto"
-	_ "protos/gameProto"
 	//	. "tools"
 	. "model"
 )

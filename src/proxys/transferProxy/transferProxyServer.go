@@ -4,10 +4,10 @@ import (
 	"github.com/funny/binary"
 	"github.com/funny/link"
 	"github.com/funny/link/packet"
+	"global"
+	"protos"
 	"protos/gameProto"
-	_ "protos/gameProto"
 	"protos/systemProto"
-	_ "protos/systemProto"
 	"strconv"
 	"strings"
 	. "tools"
@@ -33,15 +33,17 @@ func InitServer(port string) error {
 		return err
 	}
 
-	listener.Serve(func(session *link.Session) {
-		var msg packet.RAW
-		for {
-			if err := session.Receive(&msg); err != nil {
-				break
+	go func() {
+		listener.Serve(func(session *link.Session) {
+			var msg packet.RAW
+			for {
+				if err := session.Receive(&msg); err != nil {
+					break
+				}
+				dealReceiveMsgC2S(session, msg)
 			}
-			dealReceiveMsgC2S(session, msg)
-		}
-	})
+		})
+	}()
 
 	return nil
 }
@@ -78,16 +80,8 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 	switch protoMsg.ID {
 	case systemProto.ID_System_ConnectTransferServerC2S:
 		connectTransferServer(session, protoMsg)
-	case systemProto.ID_System_ClientSessionOnlineC2S:
-		sendSystemMsg("GameServer", msg)
-		sendSystemMsg("LoginServer", msg)
-	case systemProto.ID_System_ClientSessionOfflineC2S:
-		sendSystemMsg("GameServer", msg)
-		sendSystemMsg("LoginServer", msg)
-		noAllotGameServer(protoMsg)
 	case systemProto.ID_System_ClientLoginSuccessC2S:
 		sendSystemMsg("GameServer", msg)
-		allotGameServer(protoMsg)
 	}
 }
 
@@ -101,34 +95,22 @@ func dealReceiveMsgC2S(session *link.Session, msg packet.RAW) {
 	if systemProto.IsValidID(msgID) {
 		dealReceiveSystemMsgC2S(session, msg)
 	} else if gameProto.IsValidID(msgID) {
-		if msgID%2 == 1 {
-			//C2S消息，发送到GameServer或者LoginServer
-			if gameProto.IsValidLoginID(msgID) {
-				sendGameMsg("LoginServer", msg)
-			} else {
-				sendGameMsg("GameServer", msg)
-			}
-		} else {
+		if msgID%2 == 0 {
 			//S2C消息，发送到GateServer
-			sendGameMsg("GateServer", msg)
+			SendToGateServer(msg)
 		}
 	}
 }
 
 //不再分配游戏服务器
-func noAllotGameServer(protoMsg systemProto.ProtoMsg) {
-	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOfflineC2S)
-	clientSessionID := rev_msg.GetSessionID()
+func noAllotGameServer(clientSessionID uint64) {
 	if _, exists := gameUserSessions[clientSessionID]; exists {
 		delete(gameUserSessions, clientSessionID)
 	}
 }
 
 //分配游戏服务器
-func allotGameServer(protoMsg systemProto.ProtoMsg) {
-	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
-
-	clientSessionID := rev_msg.GetSessionID()
+func allotGameServer(clientSessionID uint64) {
 	if gameNode, existsNode := gameConsistent.Get(strconv.FormatUint(clientSessionID, 10)); existsNode {
 		nodeIndex := gameNode.Id - 1
 		gameUserSessions[clientSessionID] = nodeIndex
@@ -190,4 +172,73 @@ func connectTransferServer(session *link.Session, protoMsg systemProto.ProtoMsg)
 	systemProto.Send(send_msg, session)
 
 	startDealReceiveMsgC2S(session)
+}
+
+//通知游戏服务器用户上线, 网关调用
+func SetClientSessionOnline(userSession *link.Session) {
+	global.AddSession(userSession)
+
+	protoMsg := &systemProto.System_ClientSessionOnlineC2S{
+		SessionID: protos.Uint64(userSession.Id()),
+		Network:   protos.String(userSession.Conn().RemoteAddr().Network()),
+		Addr:      protos.String(userSession.Conn().RemoteAddr().String()),
+	}
+	send_msg := systemProto.MarshalProtoMsg(protoMsg)
+
+	sendSystemMsg("GameServer", packet.RAW(send_msg))
+	sendSystemMsg("LoginServer", packet.RAW(send_msg))
+
+	//给该用户分配游戏服务器
+	allotGameServer(userSession.Id())
+}
+
+//通知游戏服务器用户下线, 网关调用
+func SetClientSessionOffline(sessionID uint64) {
+	protoMsg := &systemProto.System_ClientSessionOfflineC2S{
+		SessionID: protos.Uint64(sessionID),
+	}
+	send_msg := systemProto.MarshalProtoMsg(protoMsg)
+
+	sendSystemMsg("GameServer", packet.RAW(send_msg))
+	sendSystemMsg("LoginServer", packet.RAW(send_msg))
+
+	//给该用户不再分配游戏服务器
+	noAllotGameServer(sessionID)
+}
+
+//发送消息到TransferServer, 网关调用
+func SendToGameServer(msg packet.RAW, userSession *link.Session) {
+	send_msg := make([]byte, 8+len(msg))
+	copy(send_msg[:2], msg[:2])
+	binary.PutUint64LE(send_msg[2:10], userSession.Id())
+	copy(send_msg[10:], msg[2:])
+
+	//C2S消息，发送到GameServer或者LoginServer
+	msgID := binary.GetUint16LE(send_msg[:2])
+	if gameProto.IsValidLoginID(msgID) {
+		sendGameMsg("LoginServer", send_msg)
+	} else {
+		sendGameMsg("GameServer", send_msg)
+	}
+}
+
+//发送消息到用户客户端
+func SendToGateServer(msg packet.RAW) {
+	if len(msg) < 10 {
+		return
+	}
+
+	msgID := binary.GetUint16LE(msg[:2])
+	msgIdentification := binary.GetUint64LE(msg[2:10])
+	msgBody := msg[10:]
+
+	userSession := global.GetSession(msgIdentification)
+	if userSession == nil {
+		return
+	}
+
+	result := make([]byte, len(msg)-8)
+	binary.PutUint16LE(result[:2], msgID)
+	copy(result[2:], msgBody)
+	userSession.Send(packet.RAW(result))
 }

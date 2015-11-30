@@ -27,8 +27,11 @@ func userLogin(session *link.Session, protoMsg dbProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*dbProto.DB_User_LoginC2S)
 
 	sendProtoMsg := &dbProto.DB_User_LoginS2C{}
+
+	//从数据库中获取
 	dbUser, _ := module_db.GetUserByUserName(rev_msg.GetName())
 	if dbUser != nil {
+		//将数据缓存到Redis
 		redisProxy.SetDBUser(dbUser)
 
 		sendProtoMsg.ID = protos.Uint64(dbUser.ID)

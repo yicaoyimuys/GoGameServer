@@ -10,7 +10,6 @@ function func(){
 }
 
 func GateServer
-func TransferServer
 func GameServer
 func LoginServer
 func DBServer
