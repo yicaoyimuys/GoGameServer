@@ -17,7 +17,8 @@ local:
 
 clean:
 	rm -rf bin pkg
-	rm -rf dump.rdb db.log game.log gateway.log local.log login.log
+	rm -rf dump.rdb
+	rm -rf logs/db.log logs/game.log logs/gateway.log logs/local.log logs/login.log
  
 fmt:
 	$(GO) fmt $(SRC_DIR)/...
