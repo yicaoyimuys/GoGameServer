@@ -5,8 +5,6 @@ import (
 )
 import (
 	"github.com/funny/binary"
-	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"protos"
 	//	. "tools"
 )
@@ -35,11 +33,6 @@ func IsValidID(msgID uint16) bool {
 //是否是有效的异步DB消息
 func IsValidAsyncID(msgID uint16) bool {
 	return msgID >= 12000 && msgID <= 14999
-}
-
-//发送消息
-func Send(msgBody []byte, session *link.Session) {
-	session.Send(packet.RAW(msgBody))
 }
 
 //序列化

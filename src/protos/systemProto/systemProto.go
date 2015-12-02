@@ -6,8 +6,6 @@ import (
 )
 import (
 	"github.com/funny/binary"
-	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"protos"
 )
 
@@ -29,6 +27,7 @@ func init() {
 	protos.SetMsg(ID_System_ClientSessionOnlineC2S, System_ClientSessionOnlineC2S{})
 	protos.SetMsg(ID_System_ClientSessionOfflineC2S, System_ClientSessionOfflineC2S{})
 	protos.SetMsg(ID_System_ClientLoginSuccessC2S, System_ClientLoginSuccessC2S{})
+	protos.SetMsg(ID_System_ClientLoginSuccessS2C, System_ClientLoginSuccessS2C{})
 }
 
 //是否是有效的消息ID
@@ -73,9 +72,4 @@ func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 		ID:   msgID,
 		Body: msgBody,
 	}
-}
-
-//发送消息
-func Send(msg []byte, session *link.Session) {
-	session.Send(packet.RAW(msg))
 }

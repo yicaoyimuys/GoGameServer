@@ -8,6 +8,7 @@ PROTO_INSTALL_FILE_DIR = ./src/code.google.com/p/goprotobuf/
 
 all:
 	$(GO) install GateServer
+	$(GO) install WorldServer
 	$(GO) install GameServer
 	$(GO) install DBServer
 	$(GO) install LoginServer

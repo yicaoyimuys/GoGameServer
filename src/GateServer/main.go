@@ -8,7 +8,6 @@ import (
 	"github.com/funny/binary"
 	"github.com/funny/link"
 	"github.com/funny/link/packet"
-	//	"module"
 	"global"
 	"proxys/transferProxy"
 	. "tools"
@@ -35,7 +34,7 @@ func main() {
 	//启动
 	global.Startup(global.ServerName, "gateway_log", nil)
 
-	//开启TransferProxy，由GateServer充当中转服务器
+	//开启TransferServer，由GateServer充当中转服务器
 	err := transferProxy.InitServer(transfer_port)
 	checkError(err)
 	INFO("Starting TransferServer")

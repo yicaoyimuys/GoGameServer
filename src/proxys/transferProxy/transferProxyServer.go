@@ -15,14 +15,20 @@ import (
 )
 
 var (
-	servers          map[string][]*link.Session
+	servers          map[string][]Server
 	gameConsistent   *hashs.Consistent
 	gameUserSessions map[uint64]int
 )
 
+type Server struct {
+	session     *link.Session
+	serverID    uint32
+	serverIndex int
+}
+
 //初始化
 func InitServer(port string) error {
-	servers = make(map[string][]*link.Session)
+	servers = make(map[string][]Server)
 	gameConsistent = hashs.NewConsistent()
 	gameUserSessions = make(map[uint64]int)
 
@@ -48,28 +54,6 @@ func InitServer(port string) error {
 	return nil
 }
 
-//开始处理游戏逻辑消息
-func startDealReceiveMsgC2S(session *link.Session) {
-	revMsgChan := make(chan *packet.RAW, 2048)
-	go func() {
-		for {
-			data, ok := <-revMsgChan
-			if !ok {
-				return
-			}
-			dealReceiveMsgC2S(session, *data)
-		}
-	}()
-
-	for {
-		var msg packet.RAW
-		if err := session.Receive(&msg); err != nil {
-			break
-		}
-		revMsgChan <- &msg
-	}
-}
-
 //处理接收到的系统消息
 func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
@@ -81,7 +65,7 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 	case systemProto.ID_System_ConnectTransferServerC2S:
 		connectTransferServer(session, protoMsg)
 	case systemProto.ID_System_ClientLoginSuccessC2S:
-		sendSystemMsg("GameServer", msg)
+		clientLoginSuccess(protoMsg)
 	}
 }
 
@@ -93,6 +77,7 @@ func dealReceiveMsgC2S(session *link.Session, msg packet.RAW) {
 
 	msgID := binary.GetUint16LE(msg[:2])
 	if systemProto.IsValidID(msgID) {
+		//系统消息
 		dealReceiveSystemMsgC2S(session, msg)
 	} else if gameProto.IsValidID(msgID) {
 		if msgID%2 == 0 {
@@ -112,34 +97,54 @@ func noAllotGameServer(clientSessionID uint64) {
 //分配游戏服务器
 func allotGameServer(clientSessionID uint64) {
 	if gameNode, existsNode := gameConsistent.Get(strconv.FormatUint(clientSessionID, 10)); existsNode {
-		nodeIndex := gameNode.Id - 1
-		gameUserSessions[clientSessionID] = nodeIndex
+		gameUserSessions[clientSessionID] = gameNode.Id
 	}
+}
+
+//获取给用户分配的GameServerID
+func getUserGameServerID(sessionID uint64) uint32 {
+	nodeIndex, existsNodeID := gameUserSessions[sessionID]
+	if !existsNodeID {
+		return 0
+	}
+	gameServerID := servers["GameServer"][nodeIndex].serverID
+	return gameServerID
 }
 
 //发送系统消息到不同服务器
 func sendSystemMsg(serverName string, msg packet.RAW) {
 	//系统消息发送到所有服务器
 	if sessions, exists := servers[serverName]; exists {
-		for _, session := range sessions {
-			session.Send(msg)
+		for _, s := range sessions {
+			s.session.Send(msg)
+		}
+	}
+}
+
+//发送系统消息到指定服务器
+func sendSystemMsg2(serverName string, gameServerID uint32, msg packet.RAW) {
+	if serverList, exists := servers[serverName]; exists {
+		for _, s := range serverList {
+			if s.serverID == 0 || s.serverID == gameServerID {
+				s.session.Send(msg)
+			}
 		}
 	}
 }
 
 //发送游戏消息到不同服务器
 func sendGameMsg(serverName string, msg packet.RAW) {
-	if sessions, exists := servers[serverName]; exists {
+	if serverList, exists := servers[serverName]; exists {
 		if serverName == "GameServer" {
 			//游戏消息发送到用户对应的GameServer
 			clientSessionID := binary.GetUint64LE(msg[2:10])
 			if nodeIndex, existsNodeID := gameUserSessions[clientSessionID]; existsNodeID {
-				session := sessions[nodeIndex]
-				session.Send(msg)
+				s := serverList[nodeIndex]
+				s.session.Send(msg)
 			}
 		} else {
-			for _, session := range sessions {
-				session.Send(msg)
+			for _, s := range serverList {
+				s.session.Send(msg)
 			}
 		}
 	}
@@ -150,57 +155,98 @@ func connectTransferServer(session *link.Session, protoMsg systemProto.ProtoMsg)
 	rev_msg := protoMsg.Body.(*systemProto.System_ConnectTransferServerC2S)
 
 	serverName := rev_msg.GetServerName()
+	serverID := rev_msg.GetServerID()
 	INFO(serverName + " Connect TransferServer")
 
 	useServerName := strings.Split(serverName, "[")[0]
-	sessions, exists := servers[useServerName]
+	serverList, exists := servers[useServerName]
 	if !exists {
-		sessions = make([]*link.Session, 0, 10)
+		serverList = make([]Server, 0, 10)
 	}
-	sessions = append(sessions, session)
-	servers[useServerName] = sessions
+	server := Server{
+		session:     session,
+		serverID:    serverID,
+		serverIndex: len(serverList),
+	}
+	serverList = append(serverList, server)
+	servers[useServerName] = serverList
 
 	//GameServer可以有多个
 	if useServerName == "GameServer" {
 		addr := strings.Split(session.Conn().RemoteAddr().String(), ":")
 		addrIp := addr[0]
 		addrPort, _ := strconv.Atoi(addr[1])
-		gameConsistent.Add(hashs.NewNode(len(sessions), addrIp, addrPort, serverName, 1))
+		gameConsistent.Add(hashs.NewNode(server.serverIndex, addrIp, addrPort, serverName, 1))
 	}
 
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectTransferServerS2C{})
-	systemProto.Send(send_msg, session)
+	protos.Send(send_msg, session)
+}
 
-	startDealReceiveMsgC2S(session)
+//处理玩家登录成功
+func clientLoginSuccess(protoMsg systemProto.ProtoMsg) {
+	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
+
+	//给该用户所分配的GameServerID
+	gameServerID := getUserGameServerID(rev_msg.GetSessionID())
+	if gameServerID == 0 {
+		return
+	}
+
+	//发送消息到GameServer
+	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ClientLoginSuccessS2C{
+		UserID:       rev_msg.UserID,
+		UserName:     rev_msg.UserName,
+		SessionID:    rev_msg.SessionID,
+		GameServerID: protos.Uint32(gameServerID),
+	})
+
+	sendSystemMsg2("GameServer", gameServerID, packet.RAW(send_msg))
 }
 
 //通知游戏服务器用户上线, 网关调用
 func SetClientSessionOnline(userSession *link.Session) {
+	//给该用户分配游戏服务器
+	allotGameServer(userSession.Id())
+
+	//给该用户所分配的GameServerID
+	gameServerID := getUserGameServerID(userSession.Id())
+	if gameServerID == 0 {
+		return
+	}
+
+	//将此Session记录在缓存内，消息回传时使用
 	global.AddSession(userSession)
 
+	//发送消息到GameServer和LoginServer
 	protoMsg := &systemProto.System_ClientSessionOnlineC2S{
-		SessionID: protos.Uint64(userSession.Id()),
-		Network:   protos.String(userSession.Conn().RemoteAddr().Network()),
-		Addr:      protos.String(userSession.Conn().RemoteAddr().String()),
+		SessionID:    protos.Uint64(userSession.Id()),
+		Network:      protos.String(userSession.Conn().RemoteAddr().Network()),
+		Addr:         protos.String(userSession.Conn().RemoteAddr().String()),
+		GameServerID: protos.Uint32(gameServerID),
 	}
 	send_msg := systemProto.MarshalProtoMsg(protoMsg)
 
-	sendSystemMsg("GameServer", packet.RAW(send_msg))
-	sendSystemMsg("LoginServer", packet.RAW(send_msg))
-
-	//给该用户分配游戏服务器
-	allotGameServer(userSession.Id())
+	sendSystemMsg2("GameServer", gameServerID, packet.RAW(send_msg))
+	sendSystemMsg2("LoginServer", 0, packet.RAW(send_msg))
 }
 
 //通知游戏服务器用户下线, 网关调用
 func SetClientSessionOffline(sessionID uint64) {
+	//给该用户所分配的GameServerID
+	gameServerID := getUserGameServerID(sessionID)
+	if gameServerID == 0 {
+		return
+	}
+
+	//发送消息到GameServer和LoginServer
 	protoMsg := &systemProto.System_ClientSessionOfflineC2S{
 		SessionID: protos.Uint64(sessionID),
 	}
 	send_msg := systemProto.MarshalProtoMsg(protoMsg)
 
-	sendSystemMsg("GameServer", packet.RAW(send_msg))
-	sendSystemMsg("LoginServer", packet.RAW(send_msg))
+	sendSystemMsg2("GameServer", gameServerID, packet.RAW(send_msg))
+	sendSystemMsg2("LoginServer", 0, packet.RAW(send_msg))
 
 	//给该用户不再分配游戏服务器
 	noAllotGameServer(sessionID)

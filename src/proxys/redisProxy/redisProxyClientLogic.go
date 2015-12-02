@@ -6,8 +6,10 @@ import (
 	"strconv"
 )
 
-const DB_User_Key string = "DB_User"
-const DB_UserName_Key string = "DB_UserName"
+const (
+	DB_User_Key     = "DB_User"
+	DB_UserName_Key = "DB_UserName"
+)
 
 //设置DBUser缓存
 func SetDBUser(dbUser *DBUserModel) {

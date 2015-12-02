@@ -3,8 +3,6 @@ package gameProto
 import "code.google.com/p/goprotobuf/proto"
 import (
 	"github.com/funny/binary"
-	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"protos"
 	//	. "tools"
 )
@@ -40,6 +38,11 @@ func IsValidID(msgID uint16) bool {
 //是否是有效的登录消息
 func IsValidLoginID(msgID uint16) bool {
 	return msgID >= 1000 && msgID <= 1999
+}
+
+//是否是有效的WorldServer消息
+func IsValidWorldID(msgID uint16) bool {
+	return msgID >= 2000 && msgID <= 5999
 }
 
 //序列化
@@ -79,9 +82,4 @@ func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 		ID:   msgID,
 		Body: msgBody,
 	}
-}
-
-//发送消息
-func Send(msg []byte, session *link.Session) {
-	session.Send(packet.RAW(msg))
 }

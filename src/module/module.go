@@ -22,6 +22,9 @@ type UserModule interface {
 	UserLoginHandle(session *link.Session, userName string, userID uint64)
 
 	Login(userName string, session *link.Session)
+	LoginSuccess(session *link.Session, userName string, userID uint64) bool
+	Online(session *link.Session)
+	Offline(session *link.Session)
 	AgainConnect(oldSessionID uint64, session *link.Session) uint64
 	GetUserInfo(userID uint64, session *link.Session)
 }

@@ -2,12 +2,14 @@ package user
 
 import (
 	"github.com/funny/link"
+	"global"
 	. "model"
 	"module"
 	"protos/gameProto"
 	"proxys/dbProxy"
 	"proxys/redisProxy"
 	"proxys/transferProxy"
+	"proxys/worldProxy"
 	"time"
 	. "tools"
 )
@@ -26,9 +28,12 @@ func (this UserModule) UserLoginHandle(session *link.Session, userName string, u
 		module.SendLoginResult(0, session)
 	} else {
 		//登录成功处理
-		success := loginSuccess(session, userName, userID)
+		success := this.LoginSuccess(session, userName, userID)
 		if success {
+			//发送登录成功消息
 			module.SendLoginResult(userID, session)
+			//更新最后一次登录时间
+			this.updateLastLoginTime(session, userID)
 		} else {
 			module.SendLoginResult(0, session)
 		}
@@ -45,9 +50,12 @@ func (this UserModule) Login(userName string, session *link.Session) {
 			//替换Session
 			module.Cache.RemoveOnlineUser(onlineUser.Session.Id())
 			//登录成功处理
-			success := loginSuccess(session, onlineUser.UserName, onlineUser.UserID)
+			success := this.LoginSuccess(session, onlineUser.UserName, onlineUser.UserID)
 			if success {
+				//发送登录成功消息
 				module.SendLoginResult(onlineUser.UserID, session)
+				//更新最后一次登录时间
+				this.updateLastLoginTime(session, onlineUser.UserID)
 			} else {
 				module.SendLoginResult(0, session)
 			}
@@ -62,7 +70,15 @@ func (this UserModule) Login(userName string, session *link.Session) {
 	}
 }
 
-func loginSuccess(session *link.Session, userName string, userID uint64) bool {
+//更新用户最后上线时间，更新内存和数据库
+func (this UserModule) updateLastLoginTime(session *link.Session, userID uint64) {
+	nowTime := time.Now().Unix()
+	redisProxy.UpdateUserLastLoginTime(userID, nowTime)
+	dbProxy.UpdateUserLastLoginTime(session.Id(), userID, nowTime)
+}
+
+//用户登录成功处理
+func (this UserModule) LoginSuccess(session *link.Session, userName string, userID uint64) bool {
 	cacheSuccess := module.Cache.AddOnlineUser(userName, userID, session)
 	if cacheSuccess {
 		session.AddCloseCallback(session, func() {
@@ -71,13 +87,43 @@ func loginSuccess(session *link.Session, userName string, userID uint64) bool {
 		})
 		DEBUG("上线：在线人数", module.Cache.GetOnlineUsersNum())
 
-		//通知游戏服务器登录成功
-		transferProxy.SendClientLoginSuccess(userName, userID, session.Id())
+		//如果当前是LoginServer
+		if global.IsLoginServer() {
+			//通知GameServer登录成功
+			transferProxy.SetClientLoginSuccess(userName, userID, session.Id())
+		}
+
+		//如果当前是GameServer
+		if global.IsGameServer() {
+			//通知WroldServer登录成功
+			worldProxy.SetClientLoginSuccess(userName, userID, session.Id())
+		}
 
 		return true
+	} else {
+		ERR("what????")
+		return false
 	}
+}
 
-	return false
+//用户上线
+func (this UserModule) Online(session *link.Session) {
+	global.AddSession(session)
+	//如果当前是GameServer
+	if global.IsGameServer() {
+		//通知WroldServer用户上线
+		worldProxy.SetClientSessionOnline(session)
+	}
+}
+
+//用户下线
+func (this UserModule) Offline(session *link.Session) {
+	session.Close()
+	//如果当前是GameServer
+	if global.IsGameServer() {
+		//通知WroldServer用户下线
+		worldProxy.SetClientSessionOffline(session.Id())
+	}
 }
 
 //重新连接
@@ -108,12 +154,6 @@ func (this UserModule) GetUserInfo(userID uint64, session *link.Session) {
 		if dbUser != nil {
 			userModel := NewUserModel(dbUser)
 			module.SendGetUserInfoResult(0, userModel, session)
-
-			//更新用户最后上线时间，更新内存和数据库
-			nowTime := time.Now().Unix()
-			redisProxy.UpdateUserLastLoginTime(userID, nowTime)
-			dbProxy.UpdateUserLastLoginTime(session.Id(), userID, nowTime)
-
 		} else {
 			module.SendGetUserInfoResult(gameProto.User_Not_Exists, nil, session)
 		}

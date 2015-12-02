@@ -6,7 +6,6 @@ import (
 	"github.com/funny/link/packet"
 	"global"
 	"protos"
-	"protos/dbProto"
 	"protos/systemProto"
 	. "tools"
 )
@@ -37,7 +36,7 @@ func sendDBMsgToServer(msg []byte) {
 		dealReceiveDBMsgC2S(session, msg)
 		dealReceiveAsyncDBMsgC2S(msg)
 	} else {
-		dbProto.Send(msg, session)
+		protos.Send(msg, session)
 	}
 }
 
@@ -71,7 +70,7 @@ func ConnectDBServer() {
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectDBServerC2S{
 		ServerName: protos.String(global.ServerName),
 	})
-	systemProto.Send(send_msg, session)
+	protos.Send(send_msg, session)
 }
 
 //连接DB服务器返回

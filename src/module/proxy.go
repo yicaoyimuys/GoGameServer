@@ -34,17 +34,17 @@ func SendErrorMsg(errID int32, session *link.Session) {
 	send_msg := MarshalProtoMsg(&ErrorMsgS2C{
 		ErrorID: protos.Int32(errID),
 	})
-	Send(send_msg, session)
+	protos.Send(send_msg, session)
 }
 
 //其他客户端登录
 func SendOtherLogin(session *link.Session) {
-	Send(MarshalProtoMsg(&OtherLoginS2C{}), session)
+	protos.Send(MarshalProtoMsg(&OtherLoginS2C{}), session)
 }
 
 //服务器连接成功
 func SendConnectSuccess(session *link.Session) {
-	Send(MarshalProtoMsg(&ConnectSuccessS2C{}), session)
+	protos.Send(MarshalProtoMsg(&ConnectSuccessS2C{}), session)
 }
 
 //登录
@@ -58,7 +58,7 @@ func SendLoginResult(userID uint64, session *link.Session) {
 	send_msg := MarshalProtoMsg(&UserLoginS2C{
 		UserID: protos.Uint64(userID),
 	})
-	Send(send_msg, session)
+	protos.Send(send_msg, session)
 }
 
 //重新连接
@@ -70,7 +70,7 @@ func againConnect(msg ProtoMsg, session *link.Session) {
 		send_msg := MarshalProtoMsg(&AgainConnectS2C{
 			SessionID: protos.Uint64(newSessionID),
 		})
-		Send(send_msg, session)
+		protos.Send(send_msg, session)
 	}
 }
 
@@ -92,6 +92,6 @@ func SendGetUserInfoResult(errorCode int32, u *UserModel, session *link.Session)
 				SessionID: protos.Uint64(session.Id()),
 			},
 		})
-		Send(send_msg, session)
+		protos.Send(send_msg, session)
 	}
 }

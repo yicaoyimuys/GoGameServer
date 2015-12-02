@@ -11,5 +11,6 @@ function func(){
 
 func GateServer
 func GameServer
+func WorldServer
 func LoginServer
 func DBServer

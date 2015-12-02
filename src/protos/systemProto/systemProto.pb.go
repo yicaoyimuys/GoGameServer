@@ -16,6 +16,7 @@ It has these top-level messages:
 	System_ClientSessionOnlineC2S
 	System_ClientSessionOfflineC2S
 	System_ClientLoginSuccessC2S
+	System_ClientLoginSuccessS2C
 */
 package systemProto
 
@@ -55,6 +56,7 @@ func (*System_ConnectDBServerS2C) ProtoMessage()    {}
 // 连接Transfer服务器
 type System_ConnectTransferServerC2S struct {
 	ServerName       *string `protobuf:"bytes,1,req" json:"ServerName,omitempty"`
+	ServerID         *uint32 `protobuf:"varint,2,req" json:"ServerID,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -67,6 +69,13 @@ func (m *System_ConnectTransferServerC2S) GetServerName() string {
 		return *m.ServerName
 	}
 	return ""
+}
+
+func (m *System_ConnectTransferServerC2S) GetServerID() uint32 {
+	if m != nil && m.ServerID != nil {
+		return *m.ServerID
+	}
+	return 0
 }
 
 // 连接Transfer服务器返回
@@ -83,6 +92,7 @@ type System_ClientSessionOnlineC2S struct {
 	SessionID        *uint64 `protobuf:"varint,1,req" json:"SessionID,omitempty"`
 	Network          *string `protobuf:"bytes,2,req" json:"Network,omitempty"`
 	Addr             *string `protobuf:"bytes,3,req" json:"Addr,omitempty"`
+	GameServerID     *uint32 `protobuf:"varint,4,req" json:"GameServerID,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -109,6 +119,13 @@ func (m *System_ClientSessionOnlineC2S) GetAddr() string {
 		return *m.Addr
 	}
 	return ""
+}
+
+func (m *System_ClientSessionOnlineC2S) GetGameServerID() uint32 {
+	if m != nil && m.GameServerID != nil {
+		return *m.GameServerID
+	}
+	return 0
 }
 
 // 通知游戏服务器用户下线
@@ -157,6 +174,47 @@ func (m *System_ClientLoginSuccessC2S) GetUserName() string {
 func (m *System_ClientLoginSuccessC2S) GetSessionID() uint64 {
 	if m != nil && m.SessionID != nil {
 		return *m.SessionID
+	}
+	return 0
+}
+
+// 通知游戏服务器用户登录成功返回
+type System_ClientLoginSuccessS2C struct {
+	UserID           *uint64 `protobuf:"varint,1,req" json:"UserID,omitempty"`
+	UserName         *string `protobuf:"bytes,2,req" json:"UserName,omitempty"`
+	SessionID        *uint64 `protobuf:"varint,3,req" json:"SessionID,omitempty"`
+	GameServerID     *uint32 `protobuf:"varint,4,req" json:"GameServerID,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *System_ClientLoginSuccessS2C) Reset()         { *m = System_ClientLoginSuccessS2C{} }
+func (m *System_ClientLoginSuccessS2C) String() string { return proto.CompactTextString(m) }
+func (*System_ClientLoginSuccessS2C) ProtoMessage()    {}
+
+func (m *System_ClientLoginSuccessS2C) GetUserID() uint64 {
+	if m != nil && m.UserID != nil {
+		return *m.UserID
+	}
+	return 0
+}
+
+func (m *System_ClientLoginSuccessS2C) GetUserName() string {
+	if m != nil && m.UserName != nil {
+		return *m.UserName
+	}
+	return ""
+}
+
+func (m *System_ClientLoginSuccessS2C) GetSessionID() uint64 {
+	if m != nil && m.SessionID != nil {
+		return *m.SessionID
+	}
+	return 0
+}
+
+func (m *System_ClientLoginSuccessS2C) GetGameServerID() uint32 {
+	if m != nil && m.GameServerID != nil {
+		return *m.GameServerID
 	}
 	return 0
 }

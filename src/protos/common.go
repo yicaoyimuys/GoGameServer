@@ -2,6 +2,8 @@ package protos
 
 import (
 	"code.google.com/p/goprotobuf/proto"
+	"github.com/funny/link"
+	"github.com/funny/link/packet"
 	"reflect"
 	. "tools"
 )
@@ -40,6 +42,11 @@ func GetMsgID(msg interface{}) uint16 {
 	return 0
 }
 
+//发送消息
+func Send(msgBody []byte, session *link.Session) {
+	session.Send(packet.RAW(msgBody))
+}
+
 //封装消息String类型字段
 func String(param string) *string {
 	return proto.String(param)
@@ -58,4 +65,9 @@ func Int64(param int64) *int64 {
 //封装消息Int32类型字段
 func Int32(param int32) *int32 {
 	return proto.Int32(param)
+}
+
+//封装消息Uint32类型字段
+func Uint32(param uint32) *uint32 {
+	return proto.Uint32(param)
 }

@@ -12,6 +12,7 @@ message System_ConnectDBServerS2C{
 //连接Transfer服务器
 message System_ConnectTransferServerC2S{
 	required string ServerName = 1;
+	required uint32 ServerID = 2;
 }
 
 //连接Transfer服务器返回
@@ -24,6 +25,7 @@ message System_ClientSessionOnlineC2S{
 	required uint64 SessionID = 1;
 	required string Network = 2;
 	required string Addr = 3;
+	required uint32 GameServerID = 4;
 }
 
 //通知游戏服务器用户下线
@@ -36,4 +38,12 @@ message System_ClientLoginSuccessC2S{
 	required uint64 UserID = 1;
 	required string UserName = 2;
 	required uint64 SessionID = 3;
+}
+
+//通知游戏服务器用户登录成功返回
+message System_ClientLoginSuccessS2C{
+	required uint64 UserID = 1;
+	required string UserName = 2;
+	required uint64 SessionID = 3;
+	required uint32 GameServerID = 4;
 }

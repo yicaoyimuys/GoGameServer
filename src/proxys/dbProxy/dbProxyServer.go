@@ -5,6 +5,7 @@ import (
 	"github.com/funny/binary"
 	"github.com/funny/link"
 	"github.com/funny/link/packet"
+	"protos"
 	"protos/dbProto"
 	"protos/systemProto"
 	"strings"
@@ -105,7 +106,7 @@ func connectDBServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	servers[serverName] = session
 
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectDBServerS2C{})
-	systemProto.Send(send_msg, session)
+	protos.Send(send_msg, session)
 }
 
 //开启定时同步DB数据
@@ -158,6 +159,6 @@ func sendDBMsgToClient(session *link.Session, msg []byte) {
 	if session == nil {
 		dealReceiveDBMsgS2C(msg)
 	} else {
-		dbProto.Send(msg, session)
+		protos.Send(msg, session)
 	}
 }
