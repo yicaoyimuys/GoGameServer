@@ -67,6 +67,7 @@ func dealReceiveSystemMsgS2C(msg packet.RAW) {
 
 //发送连接DB服务器
 func ConnectDBServer() {
+	INFO(global.ServerName + " Connect DBServer ...")
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectDBServerC2S{
 		ServerName: protos.String(global.ServerName),
 	})

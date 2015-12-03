@@ -25,6 +25,7 @@ func InitClient(ip string, port string) error {
 
 	session = client
 	go dealReceiveMsg()
+	ConnectWorldServer()
 
 	return nil
 }
@@ -48,6 +49,8 @@ func dealReceiveSystemMsgS2C(msg packet.RAW) {
 	}
 
 	switch protoMsg.ID {
+	case systemProto.ID_System_ConnectWorldServerS2C:
+		connectWorldServerCallBack(protoMsg)
 	}
 }
 
@@ -123,4 +126,20 @@ func SetClientLoginSuccess(userName string, userID uint64, sessionID uint64) {
 		SessionID: protos.Uint64(sessionID),
 	})
 	sendSystemMsgToServer(send_msg)
+}
+
+//发送连接WorldServer
+func ConnectWorldServer() {
+	INFO(global.ServerName + " Connect WorldServer ...")
+	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectWorldServerC2S{
+		ServerName: protos.String(global.ServerName),
+		ServerID:   protos.Uint32(global.ServerID),
+	})
+	sendSystemMsgToServer(send_msg)
+}
+
+//连接Transfer服务器返回
+func connectWorldServerCallBack(protoMsg systemProto.ProtoMsg) {
+	//	rev_msg := protoMsg.Body.(*systemProto.System_ConnectWorldServerS2C)
+	INFO(global.ServerName + " Connect WorldServer Success")
 }

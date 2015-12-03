@@ -11,6 +11,7 @@ var client redis.Client
 
 //初始化
 func InitClient(ip string, port string) error {
+	INFO(global.ServerName + " Connect RedisServer ...")
 	addr := ip + ":" + port
 	client.Addr = addr
 	client.Db = cfg.GetInt("server_id")

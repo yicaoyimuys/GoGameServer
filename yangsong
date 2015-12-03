@@ -34,6 +34,9 @@ MAC下修改mysql最大连接数：（解决Too many connections）
 并且重命名为my.cnf ，然后修改 my.cnf 即可进行定制了。 
 max_connections         = 4096
 
+MAC显示隐藏文件
+ls -la
+
 
 交叉编译：
 http://tonybai.com/2014/10/20/cross-compilation-with-golang/

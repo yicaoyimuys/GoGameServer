@@ -10,7 +10,7 @@ import (
 	"protos/systemProto"
 	"strconv"
 	"strings"
-	. "tools"
+	//	. "tools"
 	"tools/hashs"
 )
 
@@ -156,7 +156,6 @@ func connectTransferServer(session *link.Session, protoMsg systemProto.ProtoMsg)
 
 	serverName := rev_msg.GetServerName()
 	serverID := rev_msg.GetServerID()
-	INFO(serverName + " Connect TransferServer")
 
 	useServerName := strings.Split(serverName, "[")[0]
 	serverList, exists := servers[useServerName]

@@ -20,6 +20,16 @@ message System_ConnectTransferServerS2C{
 	
 }
 
+//连接World服务器
+message System_ConnectWorldServerC2S{
+	required string ServerName = 1;
+	required uint32 ServerID = 2;
+}
+
+//连接World服务器返回
+message System_ConnectWorldServerS2C{
+}
+
 //通知游戏服务器用户上线
 message System_ClientSessionOnlineC2S{
 	required uint64 SessionID = 1;

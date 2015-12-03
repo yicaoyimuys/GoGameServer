@@ -24,6 +24,8 @@ func init() {
 	protos.SetMsg(ID_System_ConnectDBServerS2C, System_ConnectDBServerS2C{})
 	protos.SetMsg(ID_System_ConnectTransferServerC2S, System_ConnectTransferServerC2S{})
 	protos.SetMsg(ID_System_ConnectTransferServerS2C, System_ConnectTransferServerS2C{})
+	protos.SetMsg(ID_System_ConnectWorldServerC2S, System_ConnectWorldServerC2S{})
+	protos.SetMsg(ID_System_ConnectWorldServerS2C, System_ConnectWorldServerS2C{})
 	protos.SetMsg(ID_System_ClientSessionOnlineC2S, System_ClientSessionOnlineC2S{})
 	protos.SetMsg(ID_System_ClientSessionOfflineC2S, System_ClientSessionOfflineC2S{})
 	protos.SetMsg(ID_System_ClientLoginSuccessC2S, System_ClientLoginSuccessC2S{})

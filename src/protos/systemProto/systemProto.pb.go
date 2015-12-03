@@ -13,6 +13,8 @@ It has these top-level messages:
 	System_ConnectDBServerS2C
 	System_ConnectTransferServerC2S
 	System_ConnectTransferServerS2C
+	System_ConnectWorldServerC2S
+	System_ConnectWorldServerS2C
 	System_ClientSessionOnlineC2S
 	System_ClientSessionOfflineC2S
 	System_ClientLoginSuccessC2S
@@ -86,6 +88,40 @@ type System_ConnectTransferServerS2C struct {
 func (m *System_ConnectTransferServerS2C) Reset()         { *m = System_ConnectTransferServerS2C{} }
 func (m *System_ConnectTransferServerS2C) String() string { return proto.CompactTextString(m) }
 func (*System_ConnectTransferServerS2C) ProtoMessage()    {}
+
+// 连接World服务器
+type System_ConnectWorldServerC2S struct {
+	ServerName       *string `protobuf:"bytes,1,req" json:"ServerName,omitempty"`
+	ServerID         *uint32 `protobuf:"varint,2,req" json:"ServerID,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *System_ConnectWorldServerC2S) Reset()         { *m = System_ConnectWorldServerC2S{} }
+func (m *System_ConnectWorldServerC2S) String() string { return proto.CompactTextString(m) }
+func (*System_ConnectWorldServerC2S) ProtoMessage()    {}
+
+func (m *System_ConnectWorldServerC2S) GetServerName() string {
+	if m != nil && m.ServerName != nil {
+		return *m.ServerName
+	}
+	return ""
+}
+
+func (m *System_ConnectWorldServerC2S) GetServerID() uint32 {
+	if m != nil && m.ServerID != nil {
+		return *m.ServerID
+	}
+	return 0
+}
+
+// 连接World服务器返回
+type System_ConnectWorldServerS2C struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *System_ConnectWorldServerS2C) Reset()         { *m = System_ConnectWorldServerS2C{} }
+func (m *System_ConnectWorldServerS2C) String() string { return proto.CompactTextString(m) }
+func (*System_ConnectWorldServerS2C) ProtoMessage()    {}
 
 // 通知游戏服务器用户上线
 type System_ClientSessionOnlineC2S struct {

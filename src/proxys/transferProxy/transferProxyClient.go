@@ -97,6 +97,7 @@ func sendSystemMsgToServer(msg []byte) {
 
 //发送连接TransferServer
 func ConnectTransferServer() {
+	INFO(global.ServerName + " Connect TransferServer ...")
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectTransferServerC2S{
 		ServerName: protos.String(global.ServerName),
 		ServerID:   protos.Uint32(global.ServerID),
@@ -104,7 +105,7 @@ func ConnectTransferServer() {
 	sendSystemMsgToServer(send_msg)
 }
 
-//连接DB服务器返回
+//连接Transfer服务器返回
 func connectTransferServerCallBack(protoMsg systemProto.ProtoMsg) {
 	//	rev_msg := protoMsg.Body.(*systemProto.System_ConnectTransferServerS2C)
 	INFO(global.ServerName + " Connect TransferServer Success")

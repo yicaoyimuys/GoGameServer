@@ -101,7 +101,6 @@ func connectDBServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ConnectDBServerC2S)
 
 	serverName := rev_msg.GetServerName()
-	INFO(serverName + " Connect DBServer")
 	serverName = strings.Split(serverName, "[")[0]
 	servers[serverName] = session
 

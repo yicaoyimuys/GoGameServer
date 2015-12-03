@@ -6,6 +6,7 @@ import (
 	"github.com/funny/link/packet"
 	"global"
 	"module"
+	"protos"
 	"protos/gameProto"
 	"protos/systemProto"
 	//	. "tools"
@@ -49,6 +50,8 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 	}
 
 	switch protoMsg.ID {
+	case systemProto.ID_System_ConnectWorldServerC2S:
+		connectWorldServer(session, protoMsg)
 	case systemProto.ID_System_ClientSessionOnlineC2S:
 		setSessionOnline(session, protoMsg)
 	case systemProto.ID_System_ClientSessionOfflineC2S:
@@ -123,4 +126,16 @@ func setSessionOffline(protoMsg systemProto.ProtoMsg) {
 	if userSession != nil {
 		module.User.Offline(userSession)
 	}
+}
+
+//其他客户端连接WorldServer处理
+func connectWorldServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
+	rev_msg := protoMsg.Body.(*systemProto.System_ConnectWorldServerC2S)
+
+	//	serverName := rev_msg.GetServerName()
+	serverID := rev_msg.GetServerID()
+	servers[serverID] = session
+
+	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectWorldServerS2C{})
+	protos.Send(send_msg, session)
 }
