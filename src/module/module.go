@@ -6,7 +6,7 @@ import (
 )
 
 type CacheModule interface {
-	AddOnlineUser(userName string, userID uint64, session *link.Session) bool
+	AddOnlineUser(userName string, userID uint64, session *link.Session, gameServerID uint32) bool
 	GetOnlineUserByUserName(userName string) *OnlineUserModel
 	GetOnlineUserByUserID(userID uint64) *OnlineUserModel
 	GetOnlineUserBySession(sessionID uint64) *OnlineUserModel
@@ -22,7 +22,7 @@ type UserModule interface {
 	UserLoginHandle(session *link.Session, userName string, userID uint64)
 
 	Login(userName string, session *link.Session)
-	LoginSuccess(session *link.Session, userName string, userID uint64) bool
+	LoginSuccess(session *link.Session, userName string, userID uint64, gameServerID uint32) bool
 	Online(session *link.Session)
 	Offline(session *link.Session)
 	AgainConnect(oldSessionID uint64, session *link.Session) uint64

@@ -63,10 +63,15 @@ func startGateway() {
 	checkError(err)
 
 	listener.Serve(func(session *link.Session) {
+		//将此Session记录在缓存内，消息回传时使用
+		global.AddSession(session)
+		//通知LoginServer用户上线
+		transferProxy.SetClientSessionOnline(session)
+		//添加session关闭时回调
 		session.AddCloseCallback(session, func() {
+			//通知LoginServer、GameServer用户下线
 			transferProxy.SetClientSessionOffline(session.Id())
 		})
-		transferProxy.SetClientSessionOnline(session)
 
 		var msg packet.RAW
 		for {

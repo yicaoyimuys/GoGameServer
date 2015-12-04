@@ -182,42 +182,36 @@ func connectTransferServer(session *link.Session, protoMsg systemProto.ProtoMsg)
 	protos.Send(send_msg, session)
 }
 
-//处理玩家登录成功
+//处理玩家登录成功，分配服务器
 func clientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
 
+	//用户SessionID
+	userSessionID := rev_msg.GetSessionID()
+
+	//给该用户分配GameServer
+	allotGameServer(userSessionID)
+
 	//给该用户所分配的GameServerID
-	gameServerID := getUserGameServerID(rev_msg.GetSessionID())
+	gameServerID := getUserGameServerID(userSessionID)
 	if gameServerID == 0 {
 		return
 	}
 
-	//发送消息到GameServer
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ClientLoginSuccessS2C{
-		UserID:       rev_msg.UserID,
-		UserName:     rev_msg.UserName,
-		SessionID:    rev_msg.SessionID,
-		GameServerID: protos.Uint32(gameServerID),
-	})
+	//给该消息填充上所分配的GameServerID
+	rev_msg.GameServerID = protos.Uint32(gameServerID)
 
+	//通知GameServer用户登录成功
+	send_msg := systemProto.MarshalProtoMsg(rev_msg)
 	sendSystemMsg2("GameServer", gameServerID, packet.RAW(send_msg))
 }
 
-//通知游戏服务器用户上线, 网关调用
+//LoginServer用户上线
 func SetClientSessionOnline(userSession *link.Session) {
-	//给该用户分配游戏服务器
-	allotGameServer(userSession.Id())
-
 	//给该用户所分配的GameServerID
 	gameServerID := getUserGameServerID(userSession.Id())
-	if gameServerID == 0 {
-		return
-	}
 
-	//将此Session记录在缓存内，消息回传时使用
-	global.AddSession(userSession)
-
-	//发送消息到GameServer和LoginServer
+	//发送用户上线消息到serverName
 	protoMsg := &systemProto.System_ClientSessionOnlineC2S{
 		SessionID:    protos.Uint64(userSession.Id()),
 		Network:      protos.String(userSession.Conn().RemoteAddr().Network()),
@@ -226,17 +220,13 @@ func SetClientSessionOnline(userSession *link.Session) {
 	}
 	send_msg := systemProto.MarshalProtoMsg(protoMsg)
 
-	sendSystemMsg2("GameServer", gameServerID, packet.RAW(send_msg))
-	sendSystemMsg2("LoginServer", 0, packet.RAW(send_msg))
+	sendSystemMsg2("LoginServer", gameServerID, packet.RAW(send_msg))
 }
 
-//通知游戏服务器用户下线, 网关调用
+//通知GameServer、LoginServer用户下线, 网关调用
 func SetClientSessionOffline(sessionID uint64) {
 	//给该用户所分配的GameServerID
 	gameServerID := getUserGameServerID(sessionID)
-	if gameServerID == 0 {
-		return
-	}
 
 	//发送消息到GameServer和LoginServer
 	protoMsg := &systemProto.System_ClientSessionOfflineC2S{

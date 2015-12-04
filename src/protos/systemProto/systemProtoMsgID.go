@@ -19,5 +19,4 @@ const (
 
 	//客户端登录状态使用
 	ID_System_ClientLoginSuccessC2S = 10011
-	ID_System_ClientLoginSuccessS2C = 10012
 )

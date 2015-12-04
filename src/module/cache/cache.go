@@ -5,7 +5,7 @@ import (
 	. "model"
 	"module"
 	"sync"
-	//	. "tools"
+//	. "tools"
 )
 
 type CacheModule struct {
@@ -27,7 +27,7 @@ func init() {
 }
 
 //添加在线用户缓存
-func (this *CacheModule) AddOnlineUser(userName string, userID uint64, session *link.Session) bool {
+func (this *CacheModule) AddOnlineUser(userName string, userID uint64, session *link.Session, gameServerID uint32) bool {
 	this.onlineUsersMutex.Lock()
 	defer this.onlineUsersMutex.Unlock()
 
@@ -37,9 +37,10 @@ func (this *CacheModule) AddOnlineUser(userName string, userID uint64, session *
 	_, exists2 := this.onlineUsersSession[session.Id()]
 	if !exists1 && !exists2 {
 		model := &OnlineUserModel{
-			Session:  session,
-			UserID:   userID,
-			UserName: userName,
+			Session:  		session,
+			UserID:   		userID,
+			UserName: 		userName,
+			GameServerID:	gameServerID,
 		}
 		this.onlineUsers[userName] = model
 		this.onlineUsersID[userID] = userName

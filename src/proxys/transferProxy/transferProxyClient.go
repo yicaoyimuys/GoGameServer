@@ -57,7 +57,7 @@ func dealReceiveSystemMsgS2C(msg packet.RAW) {
 		setSessionOnline(protoMsg)
 	case systemProto.ID_System_ClientSessionOfflineC2S:
 		setSessionOffline(protoMsg)
-	case systemProto.ID_System_ClientLoginSuccessS2C:
+	case systemProto.ID_System_ClientLoginSuccessC2S:
 		setClientLoginSuccess(protoMsg)
 	}
 }
@@ -105,32 +105,47 @@ func ConnectTransferServer() {
 	sendSystemMsgToServer(send_msg)
 }
 
-//连接Transfer服务器返回
+//连接TransferServer返回
 func connectTransferServerCallBack(protoMsg systemProto.ProtoMsg) {
 	//	rev_msg := protoMsg.Body.(*systemProto.System_ConnectTransferServerS2C)
 	INFO(global.ServerName + " Connect TransferServer Success")
 }
 
-//通知游戏服务器用户登录成功
-func SetClientLoginSuccess(userName string, userID uint64, sessionID uint64) {
+//通知GameServer用户登录成功
+func SetClientLoginSuccess(userName string, userID uint64, session *link.Session) {
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ClientLoginSuccessC2S{
-		UserID:    protos.Uint64(userID),
-		UserName:  protos.String(userName),
-		SessionID: protos.Uint64(sessionID),
+		UserID:    		protos.Uint64(userID),
+		UserName:  		protos.String(userName),
+		SessionID: 		protos.Uint64(session.Id()),
+		GameServerID:	protos.Uint32(0),
+		Network:      	protos.String(session.Conn().RemoteAddr().Network()),
+		Addr:         	protos.String(session.Conn().RemoteAddr().String()),
 	})
 	sendSystemMsgToServer(send_msg)
 }
 
-//在游戏服务器设置用户登录成功
+//在GameServer设置用户登录成功
 func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
-	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessS2C)
-	userSession := global.GetSession(rev_msg.GetSessionID())
-	if userSession != nil {
-		module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID())
-	}
+	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
+	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
+	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
+	go func() {
+		var msg packet.RAW
+		for {
+			if err := userSession.Receive(&msg); err != nil {
+				break
+			}
+			module.ReceiveMessage(userSession, msg)
+		}
+	}()
+	module.User.Online(userSession)
+	module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID(), rev_msg.GetGameServerID())
+
+	//通知WorldServer用户登录成功
+	worldProxy.SendSystemMsgToServer(systemProto.MarshalProtoMsg(rev_msg))
 }
 
-//在游戏服务端创建虚拟用户
+//在LoginServer创建虚拟用户
 func setSessionOnline(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOnlineC2S)
 	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
@@ -154,6 +169,9 @@ func setSessionOffline(protoMsg systemProto.ProtoMsg) {
 	if userSession != nil {
 		module.User.Offline(userSession)
 	}
+
+	//通知WorldServer用户下线
+	worldProxy.SendSystemMsgToServer(systemProto.MarshalProtoMsg(rev_msg))
 }
 
 //处理游戏逻辑

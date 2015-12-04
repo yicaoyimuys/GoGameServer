@@ -80,7 +80,7 @@ func dealReceiveMsgS2C(msg packet.RAW) {
 }
 
 //发送系统消息到WorldServer
-func sendSystemMsgToServer(msg []byte) {
+func SendSystemMsgToServer(msg []byte) {
 	if session == nil {
 		return
 	}
@@ -95,39 +95,6 @@ func SendGameMsgToServer(msg []byte) {
 	protos.Send(msg, session)
 }
 
-//通知WorldServer用户上线
-func SetClientSessionOnline(userSession *link.Session) {
-	//发送消息到WorldServer
-	protoMsg := &systemProto.System_ClientSessionOnlineC2S{
-		SessionID:    protos.Uint64(userSession.Id()),
-		Network:      protos.String(userSession.Conn().RemoteAddr().Network()),
-		Addr:         protos.String(userSession.Conn().RemoteAddr().String()),
-		GameServerID: protos.Uint32(global.ServerID),
-	}
-	send_msg := systemProto.MarshalProtoMsg(protoMsg)
-	sendSystemMsgToServer(send_msg)
-}
-
-//通知WorldServer用户下线
-func SetClientSessionOffline(sessionID uint64) {
-	//发送消息到WorldServer
-	protoMsg := &systemProto.System_ClientSessionOfflineC2S{
-		SessionID: protos.Uint64(sessionID),
-	}
-	send_msg := systemProto.MarshalProtoMsg(protoMsg)
-	sendSystemMsgToServer(send_msg)
-}
-
-//通知WorldServer用户登录成功
-func SetClientLoginSuccess(userName string, userID uint64, sessionID uint64) {
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ClientLoginSuccessC2S{
-		UserID:    protos.Uint64(userID),
-		UserName:  protos.String(userName),
-		SessionID: protos.Uint64(sessionID),
-	})
-	sendSystemMsgToServer(send_msg)
-}
-
 //发送连接WorldServer
 func ConnectWorldServer() {
 	INFO(global.ServerName + " Connect WorldServer ...")
@@ -135,7 +102,7 @@ func ConnectWorldServer() {
 		ServerName: protos.String(global.ServerName),
 		ServerID:   protos.Uint32(global.ServerID),
 	})
-	sendSystemMsgToServer(send_msg)
+	SendSystemMsgToServer(send_msg)
 }
 
 //连接Transfer服务器返回

@@ -18,7 +18,6 @@ It has these top-level messages:
 	System_ClientSessionOnlineC2S
 	System_ClientSessionOfflineC2S
 	System_ClientLoginSuccessC2S
-	System_ClientLoginSuccessS2C
 */
 package systemProto
 
@@ -186,6 +185,9 @@ type System_ClientLoginSuccessC2S struct {
 	UserID           *uint64 `protobuf:"varint,1,req" json:"UserID,omitempty"`
 	UserName         *string `protobuf:"bytes,2,req" json:"UserName,omitempty"`
 	SessionID        *uint64 `protobuf:"varint,3,req" json:"SessionID,omitempty"`
+	GameServerID     *uint32 `protobuf:"varint,4,req" json:"GameServerID,omitempty"`
+	Network          *string `protobuf:"bytes,5,req" json:"Network,omitempty"`
+	Addr             *string `protobuf:"bytes,6,req" json:"Addr,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -214,45 +216,25 @@ func (m *System_ClientLoginSuccessC2S) GetSessionID() uint64 {
 	return 0
 }
 
-// 通知游戏服务器用户登录成功返回
-type System_ClientLoginSuccessS2C struct {
-	UserID           *uint64 `protobuf:"varint,1,req" json:"UserID,omitempty"`
-	UserName         *string `protobuf:"bytes,2,req" json:"UserName,omitempty"`
-	SessionID        *uint64 `protobuf:"varint,3,req" json:"SessionID,omitempty"`
-	GameServerID     *uint32 `protobuf:"varint,4,req" json:"GameServerID,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *System_ClientLoginSuccessS2C) Reset()         { *m = System_ClientLoginSuccessS2C{} }
-func (m *System_ClientLoginSuccessS2C) String() string { return proto.CompactTextString(m) }
-func (*System_ClientLoginSuccessS2C) ProtoMessage()    {}
-
-func (m *System_ClientLoginSuccessS2C) GetUserID() uint64 {
-	if m != nil && m.UserID != nil {
-		return *m.UserID
-	}
-	return 0
-}
-
-func (m *System_ClientLoginSuccessS2C) GetUserName() string {
-	if m != nil && m.UserName != nil {
-		return *m.UserName
-	}
-	return ""
-}
-
-func (m *System_ClientLoginSuccessS2C) GetSessionID() uint64 {
-	if m != nil && m.SessionID != nil {
-		return *m.SessionID
-	}
-	return 0
-}
-
-func (m *System_ClientLoginSuccessS2C) GetGameServerID() uint32 {
+func (m *System_ClientLoginSuccessC2S) GetGameServerID() uint32 {
 	if m != nil && m.GameServerID != nil {
 		return *m.GameServerID
 	}
 	return 0
+}
+
+func (m *System_ClientLoginSuccessC2S) GetNetwork() string {
+	if m != nil && m.Network != nil {
+		return *m.Network
+	}
+	return ""
+}
+
+func (m *System_ClientLoginSuccessC2S) GetAddr() string {
+	if m != nil && m.Addr != nil {
+		return *m.Addr
+	}
+	return ""
 }
 
 func init() {

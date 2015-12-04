@@ -52,8 +52,6 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 	switch protoMsg.ID {
 	case systemProto.ID_System_ConnectWorldServerC2S:
 		connectWorldServer(session, protoMsg)
-	case systemProto.ID_System_ClientSessionOnlineC2S:
-		setSessionOnline(session, protoMsg)
 	case systemProto.ID_System_ClientSessionOfflineC2S:
 		setSessionOffline(protoMsg)
 	case systemProto.ID_System_ClientLoginSuccessC2S:
@@ -95,16 +93,6 @@ func dealGameMsg(msg packet.RAW) {
 //在World服务器设置用户登录成功
 func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
-	userSession := global.GetSession(rev_msg.GetSessionID())
-	if userSession != nil {
-		module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID())
-	}
-}
-
-//在World服务端创建虚拟用户
-func setSessionOnline(session *link.Session, protoMsg systemProto.ProtoMsg) {
-	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOnlineC2S)
-
 	userConn := NewWorldProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
 	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
 	go func() {
@@ -117,6 +105,7 @@ func setSessionOnline(session *link.Session, protoMsg systemProto.ProtoMsg) {
 		}
 	}()
 	module.User.Online(userSession)
+	module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID(), rev_msg.GetGameServerID())
 }
 
 //在World服务端删除虚拟用户

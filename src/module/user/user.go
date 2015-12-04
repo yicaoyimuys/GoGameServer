@@ -9,7 +9,6 @@ import (
 	"proxys/dbProxy"
 	"proxys/redisProxy"
 	"proxys/transferProxy"
-	"proxys/worldProxy"
 	"time"
 	. "tools"
 )
@@ -28,8 +27,10 @@ func (this UserModule) UserLoginHandle(session *link.Session, userName string, u
 		module.SendLoginResult(0, session)
 	} else {
 		//登录成功处理
-		success := this.LoginSuccess(session, userName, userID)
+		success := this.LoginSuccess(session, userName, userID, 0)
 		if success {
+			//通知GameServer登录成功
+			transferProxy.SetClientLoginSuccess(userName, userID, session)
 			//发送登录成功消息
 			module.SendLoginResult(userID, session)
 			//更新最后一次登录时间
@@ -50,8 +51,10 @@ func (this UserModule) Login(userName string, session *link.Session) {
 			//替换Session
 			module.Cache.RemoveOnlineUser(onlineUser.Session.Id())
 			//登录成功处理
-			success := this.LoginSuccess(session, onlineUser.UserName, onlineUser.UserID)
+			success := this.LoginSuccess(session, onlineUser.UserName, onlineUser.UserID, 0)
 			if success {
+				//通知GameServer登录成功
+				transferProxy.SetClientLoginSuccess(userName, onlineUser.UserID, session)
 				//发送登录成功消息
 				module.SendLoginResult(onlineUser.UserID, session)
 				//更新最后一次登录时间
@@ -78,27 +81,14 @@ func (this UserModule) updateLastLoginTime(session *link.Session, userID uint64)
 }
 
 //用户登录成功处理
-func (this UserModule) LoginSuccess(session *link.Session, userName string, userID uint64) bool {
-	cacheSuccess := module.Cache.AddOnlineUser(userName, userID, session)
+func (this UserModule) LoginSuccess(session *link.Session, userName string, userID uint64, gameServerID uint32) bool {
+	cacheSuccess := module.Cache.AddOnlineUser(userName, userID, session, gameServerID)
 	if cacheSuccess {
 		session.AddCloseCallback(session, func() {
 			module.Cache.RemoveOnlineUser(session.Id())
 			DEBUG("下线：在线人数", module.Cache.GetOnlineUsersNum())
 		})
 		DEBUG("上线：在线人数", module.Cache.GetOnlineUsersNum())
-
-		//如果当前是LoginServer
-		if global.IsLoginServer() {
-			//通知GameServer登录成功
-			transferProxy.SetClientLoginSuccess(userName, userID, session.Id())
-		}
-
-		//如果当前是GameServer
-		if global.IsGameServer() {
-			//通知WroldServer登录成功
-			worldProxy.SetClientLoginSuccess(userName, userID, session.Id())
-		}
-
 		return true
 	} else {
 		ERR("what????")
@@ -109,21 +99,11 @@ func (this UserModule) LoginSuccess(session *link.Session, userName string, user
 //用户上线
 func (this UserModule) Online(session *link.Session) {
 	global.AddSession(session)
-	//如果当前是GameServer
-	if global.IsGameServer() {
-		//通知WroldServer用户上线
-		worldProxy.SetClientSessionOnline(session)
-	}
 }
 
 //用户下线
 func (this UserModule) Offline(session *link.Session) {
 	session.Close()
-	//如果当前是GameServer
-	if global.IsGameServer() {
-		//通知WroldServer用户下线
-		worldProxy.SetClientSessionOffline(session.Id())
-	}
 }
 
 //重新连接

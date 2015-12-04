@@ -5,9 +5,10 @@ import (
 )
 
 type OnlineUserModel struct {
-	Session  *link.Session
-	UserID   uint64
-	UserName string
+	Session      *link.Session
+	UserID       uint64
+	UserName     string
+	GameServerID uint32
 }
 
 type UserModel struct {
