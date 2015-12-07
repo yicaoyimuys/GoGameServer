@@ -127,7 +127,6 @@ type System_ClientSessionOnlineC2S struct {
 	SessionID        *uint64 `protobuf:"varint,1,req" json:"SessionID,omitempty"`
 	Network          *string `protobuf:"bytes,2,req" json:"Network,omitempty"`
 	Addr             *string `protobuf:"bytes,3,req" json:"Addr,omitempty"`
-	GameServerID     *uint32 `protobuf:"varint,4,req" json:"GameServerID,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -154,13 +153,6 @@ func (m *System_ClientSessionOnlineC2S) GetAddr() string {
 		return *m.Addr
 	}
 	return ""
-}
-
-func (m *System_ClientSessionOnlineC2S) GetGameServerID() uint32 {
-	if m != nil && m.GameServerID != nil {
-		return *m.GameServerID
-	}
-	return 0
 }
 
 // 通知游戏服务器用户下线

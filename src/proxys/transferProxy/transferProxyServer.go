@@ -208,19 +208,14 @@ func clientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 
 //LoginServer用户上线
 func SetClientSessionOnline(userSession *link.Session) {
-	//给该用户所分配的GameServerID
-	gameServerID := getUserGameServerID(userSession.Id())
-
 	//发送用户上线消息到serverName
 	protoMsg := &systemProto.System_ClientSessionOnlineC2S{
 		SessionID:    protos.Uint64(userSession.Id()),
 		Network:      protos.String(userSession.Conn().RemoteAddr().Network()),
 		Addr:         protos.String(userSession.Conn().RemoteAddr().String()),
-		GameServerID: protos.Uint32(gameServerID),
 	}
 	send_msg := systemProto.MarshalProtoMsg(protoMsg)
-
-	sendSystemMsg2("LoginServer", gameServerID, packet.RAW(send_msg))
+	sendSystemMsg2("LoginServer", 0, packet.RAW(send_msg))
 }
 
 //通知GameServer、LoginServer用户下线, 网关调用
