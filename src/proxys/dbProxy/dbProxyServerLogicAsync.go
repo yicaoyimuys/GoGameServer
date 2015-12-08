@@ -3,7 +3,7 @@ package dbProxy
 import (
 	"github.com/funny/link"
 	"github.com/funny/link/packet"
-	"module_db"
+	"dao"
 	"protos/dbProto"
 )
 
@@ -23,5 +23,5 @@ func dealReceiveAsyncDBMsgC2S(msg packet.RAW) {
 //更新用户最后登录时间
 func updateUserLastLoginTime(session *link.Session, protoMsg dbProto.ProtoMsg) error {
 	rev_msg := protoMsg.Body.(*dbProto.DB_User_UpdateLastLoginTimeC2S)
-	return module_db.UpdateUserLastLoginTime(rev_msg.GetUserID(), rev_msg.GetTime())
+	return dao.UpdateUserLastLoginTime(rev_msg.GetUserID(), rev_msg.GetTime())
 }

@@ -1,4 +1,4 @@
-package module_db
+package dao
 
 import (
 	"errors"
