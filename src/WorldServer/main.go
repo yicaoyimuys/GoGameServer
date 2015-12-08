@@ -6,7 +6,6 @@ import (
 
 import (
 	"global"
-	"proxys/dbProxy"
 	"proxys/redisProxy"
 	"proxys/worldProxy"
 	. "tools"
@@ -37,10 +36,6 @@ func main() {
 
 	//启动
 	global.Startup(global.ServerName, "world_log", nil)
-
-	//连接DB
-	dbProxyErr := dbProxy.InitClient(cfg.GetValue("db_ip"), cfg.GetValue("db_port"))
-	checkError(dbProxyErr)
 
 	//连接Redis
 	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))

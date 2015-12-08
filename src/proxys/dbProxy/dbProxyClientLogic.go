@@ -40,12 +40,3 @@ func userLoginCallBack(session *link.Session, protoMsg dbProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*dbProto.DB_User_LoginS2C)
 	module.User.UserLoginHandle(session, rev_msg.GetName(), rev_msg.GetID())
 }
-
-//更新用户最后登录时间
-func UpdateUserLastLoginTime(identification uint64, userID uint64, time int64) {
-	msg := dbProto.MarshalProtoMsg(identification, &dbProto.DB_User_UpdateLastLoginTimeC2S{
-		UserID: protos.Uint64(userID),
-		Time:   protos.Int64(time),
-	})
-	sendDBMsgToServer(msg)
-}

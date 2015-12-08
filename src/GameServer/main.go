@@ -8,7 +8,6 @@ import (
 
 import (
 	"global"
-	"proxys/dbProxy"
 	"proxys/redisProxy"
 	"proxys/transferProxy"
 	"proxys/worldProxy"
@@ -48,10 +47,6 @@ func main() {
 	//连接WorldServer
 	worldProxyErr := worldProxy.InitClient(cfg.GetValue("world_ip"), cfg.GetValue("world_port"))
 	checkError(worldProxyErr)
-
-	//连接DB
-	dbProxyErr := dbProxy.InitClient(cfg.GetValue("db_ip"), cfg.GetValue("db_port"))
-	checkError(dbProxyErr)
 
 	//连接Redis
 	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))

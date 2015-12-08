@@ -1,17 +1,16 @@
 package dbProxy
 
 import (
-	"container/list"
 	"github.com/funny/binary"
 	"github.com/funny/link"
 	"github.com/funny/link/packet"
 	"protos"
-	"protos/dbProto"
 	"protos/systemProto"
 	"strings"
 	. "tools"
 	"tools/db"
 	"tools/timer"
+	"proxys/redisProxy"
 )
 
 type goroutineMsg struct {
@@ -29,17 +28,15 @@ const (
 
 var (
 	servers                  map[string]*link.Session
-	asyncMsgs                *list.List
 	syncDbTimerID            uint64
 	revSyncMsgGoroutines     []goroutineObj
 	revSyncMsgGoroutineIndex int
-	revSyncMsgGoroutineNum   int
+	revSyncMsgGoroutineNum   int = 10
 )
 
 //初始化
 func InitServer(port string) error {
 	servers = make(map[string]*link.Session)
-	asyncMsgs = list.New()
 
 	db.Init()
 
@@ -65,9 +62,6 @@ func InitServer(port string) error {
 			if systemProto.IsValidID(msgID) {
 				//系统消息
 				dealReceiveSystemMsgC2S(session, msg)
-			} else if dbProto.IsValidAsyncID(msgID) {
-				//异步DB消息
-				asyncMsgs.PushBack(msg)
 			} else {
 				//同步DB消息
 				useObj := revSyncMsgGoroutines[revSyncMsgGoroutineIndex]
@@ -121,18 +115,21 @@ func StopSyncDB() {
 
 //同步数据到DB服务器
 func onSyncDBTimer() {
-	INFO("SyncDB Num: ", asyncMsgs.Len())
-	for msg := asyncMsgs.Front(); msg != nil; msg = msg.Next() {
-		protoMsg := msg.Value.(packet.RAW)
-		dealReceiveAsyncDBMsgC2S(protoMsg)
+	datas := redisProxy.PullDBWriteMsg()
+	if datas == nil{
+		return
 	}
-	asyncMsgs.Init()
+	dlen := len(datas)
+	for i := 0; i < dlen; i++ {
+		msg := datas[i]
+		dealReceiveAsyncDBMsgC2S(packet.RAW(msg))
+	}
+	INFO("SyncDB Num: ", dlen)
 }
 
 //创建接收同步消息的Goroutines
 func createRevGoroutines() {
 	revSyncMsgGoroutineIndex = 0
-	revSyncMsgGoroutineNum = 5
 	revSyncMsgGoroutines = make([]goroutineObj, revSyncMsgGoroutineNum)
 
 	for i := 0; i < revSyncMsgGoroutineNum; i++ {

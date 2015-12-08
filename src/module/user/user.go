@@ -77,7 +77,6 @@ func (this UserModule) Login(userName string, session *link.Session) {
 func (this UserModule) updateLastLoginTime(session *link.Session, userID uint64) {
 	nowTime := time.Now().Unix()
 	redisProxy.UpdateUserLastLoginTime(userID, nowTime)
-	dbProxy.UpdateUserLastLoginTime(session.Id(), userID, nowTime)
 }
 
 //用户登录成功处理
