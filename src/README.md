@@ -17,12 +17,12 @@
 	tools -- 工具类
 </pre>
 
+###感谢:
 <pre>
-	### 感谢:
-	- github.com/funny/link -- 网络通信模块
-	- github.com/go-sql-driver/mysql -- mysql-driver
-	- github.com/hoisie/redis -- Redis访问操作模块
-	- github.com/spaolacci/murmur3 -- MurmurHash算法
+	github.com/funny/link -- 网络通信模块
+	github.com/go-sql-driver/mysql -- mysql-driver
+	github.com/hoisie/redis -- Redis访问操作模块
+	github.com/spaolacci/murmur3 -- MurmurHash算法
 </pre>
 
 <pre>
