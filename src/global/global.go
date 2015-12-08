@@ -22,6 +22,10 @@ func LocalServer() bool {
 	return GetTrueServerName() == "LocalServer"
 }
 
+func IsWorldServer() bool {
+	return GetTrueServerName() == "WorldServer"
+}
+
 func IsGameServer() bool {
 	return GetTrueServerName() == "GameServer"
 }

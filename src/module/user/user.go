@@ -29,12 +29,8 @@ func (this UserModule) UserLoginHandle(session *link.Session, userName string, u
 		//登录成功处理
 		success := this.LoginSuccess(session, userName, userID, 0)
 		if success {
-			//通知GameServer登录成功
-			transferProxy.SetClientLoginSuccess(userName, userID, session)
-			//发送登录成功消息
-			module.SendLoginResult(userID, session)
-			//更新最后一次登录时间
-			this.updateLastLoginTime(session, userID)
+			//登录成功后处理
+			this.dealLoginSuccess(session, userName, userID)
 		} else {
 			module.SendLoginResult(0, session)
 		}
@@ -53,12 +49,8 @@ func (this UserModule) Login(userName string, session *link.Session) {
 			//登录成功处理
 			success := this.LoginSuccess(session, onlineUser.UserName, onlineUser.UserID, 0)
 			if success {
-				//通知GameServer登录成功
-				transferProxy.SetClientLoginSuccess(userName, onlineUser.UserID, session)
-				//发送登录成功消息
-				module.SendLoginResult(onlineUser.UserID, session)
-				//更新最后一次登录时间
-				this.updateLastLoginTime(session, onlineUser.UserID)
+				//登录成功后处理
+				this.dealLoginSuccess(session, userName, onlineUser.UserID)
 			} else {
 				module.SendLoginResult(0, session)
 			}
@@ -73,10 +65,21 @@ func (this UserModule) Login(userName string, session *link.Session) {
 	}
 }
 
-//更新用户最后上线时间，更新内存和数据库
-func (this UserModule) updateLastLoginTime(session *link.Session, userID uint64) {
-	nowTime := time.Now().Unix()
-	redisProxy.UpdateUserLastLoginTime(userID, nowTime)
+//登录成功后处理
+func (this UserModule) dealLoginSuccess(session *link.Session, userName string, userID uint64){
+	//如果用户在下线列表中，则移除
+	module.Cache.RemoveOfflineUser(userID)
+	//通知GameServer登录成功
+	transferProxy.SetClientLoginSuccess(userName, userID, session)
+	//发送登录成功消息
+	module.SendLoginResult(userID, session)
+	//更新最后一次登录时间
+	redisProxy.UpdateUserLastLoginTime(userID, time.Now().Unix())
+	//用户下线时处理
+	session.AddCloseCallback(session, func() {
+		//记录用户下线时间
+		module.Cache.AddOfflineUser(userID)
+	})
 }
 
 //用户登录成功处理
@@ -85,9 +88,9 @@ func (this UserModule) LoginSuccess(session *link.Session, userName string, user
 	if cacheSuccess {
 		session.AddCloseCallback(session, func() {
 			module.Cache.RemoveOnlineUser(session.Id())
-			DEBUG("下线：在线人数", module.Cache.GetOnlineUsersNum())
+			DEBUG("用户下线：当前在线人数", module.Cache.GetOnlineUsersNum())
 		})
-		DEBUG("上线：在线人数", module.Cache.GetOnlineUsersNum())
+		DEBUG("用户上线：当前在线人数", module.Cache.GetOnlineUsersNum())
 		return true
 	} else {
 		ERR("what????")

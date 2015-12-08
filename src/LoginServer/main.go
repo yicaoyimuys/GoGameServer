@@ -18,6 +18,7 @@ import (
 	_ "module/cache"
 	_ "module/config"
 	_ "module/user"
+	"module"
 )
 
 var (
@@ -49,6 +50,9 @@ func main() {
 	//连接Redis
 	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))
 	checkError(redisProxyErr)
+
+	//开启用户下线处理
+	module.Cache.StartDealOfflineUser()
 
 	//保持进程
 	global.Run()

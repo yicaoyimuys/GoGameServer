@@ -5,10 +5,10 @@ import (
 	. "model"
 	"strconv"
 	"time"
-	. "tools"
 	"tools/cfg"
 	"tools/db"
 	"tools/guid"
+	"tools/random"
 )
 
 var userGuid *guid.Guid = guid.NewGuid()
@@ -39,7 +39,7 @@ func GetUserByUserName(userName string) (*DBUserModel, error) {
 
 //注册新用户
 func insertUser(userName string, userId uint64) (*DBUserModel, error) {
-	addMoney := RandomInt31n(999)
+	addMoney := random.RandomInt31n(999)
 
 	nowTime := time.Now().Unix()
 	var value = make(map[string]interface{}) //设置map存储数据，map[key]value

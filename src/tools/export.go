@@ -12,13 +12,12 @@ import (
 )
 
 var (
-	_debug_open bool
+	debug_open bool
 )
 
 func init() {
-	config := cfg.Get()
-	if config["debug"] == "true" {
-		_debug_open = true
+	if cfg.GetValue("debug") == "true" {
+		debug_open = true
 	}
 }
 
@@ -40,7 +39,7 @@ func NOTICE(v ...interface{}) {
 }
 
 func DEBUG(v ...interface{}) {
-	if _debug_open {
+	if debug_open {
 		log.Printf("\033[1;35m[DEBUG] %v \033[0m\n", strings.TrimRight(fmt.Sprintln(v...), "\n"))
 	}
 }

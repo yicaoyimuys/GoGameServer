@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	//GC处理间隔8分钟
 	GC_INTERVAL = 60 * 8
 )
 

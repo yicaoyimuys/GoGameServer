@@ -11,6 +11,7 @@ import (
 	"tools/db"
 	"tools/timer"
 	"proxys/redisProxy"
+	"tools/debug"
 )
 
 type goroutineMsg struct {
@@ -23,6 +24,7 @@ type goroutineObj struct {
 }
 
 const (
+	//处理写数据入库间隔(5分钟)
 	SYSDB_INTERVAL = 5 * 60
 )
 
@@ -115,6 +117,9 @@ func StopSyncDB() {
 
 //同步数据到DB服务器
 func onSyncDBTimer() {
+	debug.Start("SyncDBTimer")
+	defer debug.Stop("SyncDBTimer")
+
 	datas := redisProxy.PullDBWriteMsg()
 	if datas == nil{
 		return

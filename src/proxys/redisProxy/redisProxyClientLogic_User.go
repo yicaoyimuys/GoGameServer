@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	DB_User_Key     = "DB_User"
-	DB_UserName_Key = "DB_UserName"
+	DB_User_Key     = "DB_User_"
+	DB_UserName_Key = "DB_UserName_"
 )
 
 //设置DBUser缓存
@@ -46,6 +46,12 @@ func GetDBUserByUserName(userName string) *DBUserModel {
 	}
 	userID, err := strconv.ParseUint(string(data), 10, 64)
 	return GetDBUser(userID)
+}
+
+//删除用户数据
+func RemoveDBUser(userID uint64) {
+	key := DB_User_Key + strconv.FormatUint(userID, 10)
+	client.Del(key)
 }
 
 //更新用户最后登录时间

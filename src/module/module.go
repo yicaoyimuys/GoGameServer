@@ -12,6 +12,9 @@ type CacheModule interface {
 	GetOnlineUserBySession(sessionID uint64) *OnlineUserModel
 	RemoveOnlineUser(sessionID uint64)
 	GetOnlineUsersNum() int32
+	AddOfflineUser(userID uint64)
+	RemoveOfflineUser(userID uint64)
+	StartDealOfflineUser()
 }
 
 type ConfigModule interface {

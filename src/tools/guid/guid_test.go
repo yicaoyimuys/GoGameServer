@@ -20,7 +20,7 @@ func TestNewID(t *testing.T) {
 	test = make(map[uint64]int)
 	for i := 0; i < 1; i++ {
 		go func() {
-			//			id := guid.NewID(uint16(RandomInt31n(4095)))
+			//			id := guid.NewID(uint16(random.RandomInt31n(4095)))
 			id := guid.NewID(1)
 			//			fmt.Println(id)
 			addID(id)

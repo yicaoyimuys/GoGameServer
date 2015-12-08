@@ -30,7 +30,7 @@ func Test_gateway(t *testing.T) {
 	for i := 0; i < 3000; i++ {
 		wg.Add(1)
 		go func(flag int) {
-			//			if flag != 0 && RandomInt31n(100) < 50 {
+			//			if flag != 0 && random.RandomInt31n(100) < 50 {
 			//				flag -= 1
 			//			}
 			defer wg.Done()
@@ -49,7 +49,7 @@ func Test_gateway(t *testing.T) {
 			if !unitest.NotError(t, err) {
 				return
 			}
-			defer client.Close()
+//			defer client.Close()
 
 			count += 1
 
@@ -93,34 +93,34 @@ func Test_gateway(t *testing.T) {
 			count += 1
 
 			//发送获取用户信息消息
-			if msg1.GetUserID() != 0 {
-				err = client.Send(createGetUserInfoBytes(msg1.GetUserID()))
-				if !unitest.NotError(t, err) {
-					return
-				}
+			err = client.Send(createGetUserInfoBytes(msg1.GetUserID()))
+			if !unitest.NotError(t, err) {
+				return
+			}
 
-				count += 1
+			count += 1
 
-				//接受用户信息消息
-				err = client.Receive(&revMsg)
-				if !unitest.NotError(t, err) {
-					return
-				}
+			//接受用户信息消息
+			err = client.Receive(&revMsg)
+			if !unitest.NotError(t, err) {
+				return
+			}
 
-				count += 1
+			count += 1
 
-				if binary.GetUint16LE(revMsg[:2]) == gameProto.ID_ErrorMsgS2C {
-					msg2 := &gameProto.ErrorMsgS2C{}
-					proto.Unmarshal(revMsg[2:], msg2)
-					//					DEBUG(binary.GetUint16LE(revMsg[:2]), msg2)
-				} else {
-					msg2 := &gameProto.GetUserInfoS2C{}
-					proto.Unmarshal(revMsg[2:], msg2)
-					//					DEBUG(binary.GetUint16LE(revMsg[:2]), msg2)
+			if binary.GetUint16LE(revMsg[:2]) == gameProto.ID_ErrorMsgS2C {
+				msg2 := &gameProto.ErrorMsgS2C{}
+				proto.Unmarshal(revMsg[2:], msg2)
+				t.FailNow()
 
-					successNum += 1
-					DEBUG("成功：", userName, msg1.GetUserID(), successNum)
-				}
+				//					DEBUG(binary.GetUint16LE(revMsg[:2]), msg2)
+			} else {
+				msg2 := &gameProto.GetUserInfoS2C{}
+				proto.Unmarshal(revMsg[2:], msg2)
+				//					DEBUG(binary.GetUint16LE(revMsg[:2]), msg2)
+
+				successNum += 1
+				DEBUG("成功：", userName, msg1.GetUserID(), successNum)
 			}
 
 			timer.Stop()
