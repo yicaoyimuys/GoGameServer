@@ -1,3 +1,4 @@
+##服务器
 <pre>
 	GateServer -- 游戏网关服务器
 	LoginServer -- 登录认证服务器
@@ -6,6 +7,7 @@
 	DBServer -- DB服务器
 </pre>
 
+##模块代码
 <pre>
     dao -- DB访问操作模块
     global -- 全局使用的功能
@@ -17,14 +19,7 @@
 	tools -- 工具类
 </pre>
 
-###感谢:
-<pre>
-	github.com/funny/link -- 网络通信模块
-	github.com/go-sql-driver/mysql -- mysql-driver
-	github.com/hoisie/redis -- Redis访问操作模块
-	github.com/spaolacci/murmur3 -- MurmurHash算法
-</pre>
-
+##配置
 <pre>
     #GO基本配置
     export GOROOT=/usr/local/go1.4.2
@@ -41,4 +36,12 @@
 	export GOGAMESERVER_PATH=/Users/GoGameServer/
 	export GOPATH=$GOPATH:$GOGAMESERVER_PATH
 	export PATH=$PATH:$GOGAMESERVER_PATH/bin
+</pre>
+
+##感谢
+<pre>
+	github.com/funny/link -- 网络通信模块
+	github.com/go-sql-driver/mysql -- mysql-driver
+	github.com/hoisie/redis -- Redis访问操作模块
+	github.com/spaolacci/murmur3 -- MurmurHash算法
 </pre>
