@@ -12,6 +12,7 @@ all:
 	$(GO) install GameServer
 	$(GO) install DBServer
 	$(GO) install LoginServer
+	$(GO) install LogServer
 	
 local:
 	$(GO) install LocalServer
@@ -19,7 +20,7 @@ local:
 clean:
 	rm -rf bin pkg
 	rm -rf dump.rdb
-	rm -rf logs/db.log logs/game.log logs/gateway.log logs/local.log logs/login.log
+	rm -rf logs/db.log logs/game.log logs/gateway.log logs/local.log logs/login.log logs/log.log
  
 fmt:
 	$(GO) fmt $(SRC_DIR)/...
@@ -34,6 +35,7 @@ create_proto:
 	cd $(SRC_DIR)/protos/systemProto && protoc --go_out=. systemProto.proto
 	cd $(SRC_DIR)/protos/dbProto && protoc --go_out=. dbProto.proto
 	cd $(SRC_DIR)/protos/gameProto && protoc --go_out=. gameProto.proto
+	cd $(SRC_DIR)/protos/logProto && protoc --go_out=. logProto.proto
 	
 #交叉编译：
 #首先进入go源码目录

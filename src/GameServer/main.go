@@ -20,6 +20,7 @@ import (
 	_ "module/cache"
 	_ "module/config"
 	_ "module/user"
+	"proxys/logProxy"
 )
 
 var (
@@ -51,6 +52,10 @@ func main() {
 	//连接Redis
 	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))
 	checkError(redisProxyErr)
+
+	//连接LogServer
+	logProxyErr := logProxy.InitClient(cfg.GetValue("log_ip"), cfg.GetValue("log_port"))
+	checkError(logProxyErr)
 
 	//保持进程
 	global.Run()

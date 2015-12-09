@@ -2,6 +2,8 @@
 
 sh stop.sh
 
+$GOGAMESERVER_PATH/bin/LogServer &
+sleep 1
 $GOGAMESERVER_PATH/bin/DBServer &
 sleep 1
 $GOGAMESERVER_PATH/bin/GateServer &

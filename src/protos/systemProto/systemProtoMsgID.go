@@ -13,10 +13,14 @@ const (
 	ID_System_ConnectWorldServerC2S = 10005
 	ID_System_ConnectWorldServerS2C = 10006
 
+	//连接Log服务器
+	ID_System_ConnectLogServerC2S = 10007
+	ID_System_ConnectLogServerS2C = 10008
+
 	//客户端Session状态使用
-	ID_System_ClientSessionOnlineC2S  = 10007
-	ID_System_ClientSessionOfflineC2S = 10009
+	ID_System_ClientSessionOnlineC2S  = 10011
+	ID_System_ClientSessionOfflineC2S = 10013
 
 	//客户端登录状态使用
-	ID_System_ClientLoginSuccessC2S = 10011
+	ID_System_ClientLoginSuccessC2S = 10015
 )

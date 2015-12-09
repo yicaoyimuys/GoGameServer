@@ -25,19 +25,22 @@ func dealReceiveDBMsgC2S(session *link.Session, msg packet.RAW) {
 //用户登录
 func userLogin(session *link.Session, protoMsg dbProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*dbProto.DB_User_LoginC2S)
+	userName := rev_msg.GetName()
 
-	sendProtoMsg := &dbProto.DB_User_LoginS2C{}
-
-	//从数据库中获取
-	dbUser, _ := dao.GetUserByUserName(rev_msg.GetName())
-	if dbUser != nil {
+	//先从缓存中读取
+	dbUser := redisProxy.GetDBUserByUserName(userName)
+	if dbUser == nil {
+		//从数据库中获取
+		dbUser, _ = dao.GetUserByUserName(userName)
 		//将数据缓存到Redis
 		redisProxy.SetDBUser(dbUser)
+	}
 
+	sendProtoMsg := &dbProto.DB_User_LoginS2C{}
+	if dbUser != nil {
 		sendProtoMsg.ID = protos.Uint64(dbUser.ID)
 		sendProtoMsg.Name = protos.String(dbUser.Name)
 	}
-
 	send_msg := dbProto.MarshalProtoMsg(protoMsg.Identification, sendProtoMsg)
 	sendDBMsgToClient(session, send_msg)
 }

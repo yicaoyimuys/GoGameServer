@@ -15,6 +15,9 @@ const (
 
 //设置DBUser缓存
 func SetDBUser(dbUser *DBUserModel) {
+	if dbUser == nil{
+		return
+	}
 	userID := strconv.FormatUint(dbUser.ID, 10)
 
 	userKey := DB_User_Key + userID

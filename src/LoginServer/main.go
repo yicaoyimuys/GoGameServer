@@ -7,7 +7,6 @@ import (
 import (
 	"global"
 	"proxys/dbProxy"
-	"proxys/redisProxy"
 	"proxys/transferProxy"
 	. "tools"
 	"tools/cfg"
@@ -19,6 +18,7 @@ import (
 	_ "module/config"
 	_ "module/user"
 	"module"
+	"proxys/logProxy"
 )
 
 var (
@@ -47,9 +47,9 @@ func main() {
 	dbProxyErr := dbProxy.InitClient(cfg.GetValue("db_ip"), cfg.GetValue("db_port"))
 	checkError(dbProxyErr)
 
-	//连接Redis
-	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))
-	checkError(redisProxyErr)
+	//连接LogServer
+	logProxyErr := logProxy.InitClient(cfg.GetValue("log_ip"), cfg.GetValue("log_port"))
+	checkError(logProxyErr)
 
 	//开启用户下线处理
 	module.Cache.StartDealOfflineUser()

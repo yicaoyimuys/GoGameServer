@@ -11,6 +11,7 @@ import (
 	"proxys/transferProxy"
 	"time"
 	. "tools"
+	"proxys/logProxy"
 )
 
 type UserModule struct {
@@ -56,12 +57,7 @@ func (this UserModule) Login(userName string, session *link.Session) {
 			}
 		}
 	} else {
-		cacheDbUser := redisProxy.GetDBUserByUserName(userName)
-		if cacheDbUser != nil {
-			this.UserLoginHandle(session, cacheDbUser.Name, cacheDbUser.ID)
-		} else {
-			dbProxy.UserLogin(session.Id(), userName)
-		}
+		dbProxy.UserLogin(session.Id(), userName)
 	}
 }
 
@@ -80,6 +76,8 @@ func (this UserModule) dealLoginSuccess(session *link.Session, userName string, 
 		//记录用户下线时间
 		module.Cache.AddOfflineUser(userID)
 	})
+	//记录Log
+	logProxy.UserLogin(userID)
 }
 
 //用户登录成功处理

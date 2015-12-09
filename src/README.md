@@ -5,6 +5,7 @@
 	GameServer -- 游戏服务器(处理快速逻辑)
 	WorldServer -- 世界服务器(处理慢速逻辑)
 	DBServer -- DB服务器
+	LogServer -- 日志记录服务器
 </pre>
 
 ##模块代码

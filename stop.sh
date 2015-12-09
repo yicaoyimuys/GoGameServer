@@ -14,3 +14,4 @@ func GameServer
 func WorldServer
 func LoginServer
 func DBServer
+func LogServer

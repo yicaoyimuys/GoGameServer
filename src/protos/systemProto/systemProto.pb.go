@@ -15,6 +15,8 @@ It has these top-level messages:
 	System_ConnectTransferServerS2C
 	System_ConnectWorldServerC2S
 	System_ConnectWorldServerS2C
+	System_ConnectLogServerC2S
+	System_ConnectLogServerS2C
 	System_ClientSessionOnlineC2S
 	System_ClientSessionOfflineC2S
 	System_ClientLoginSuccessC2S
@@ -121,6 +123,32 @@ type System_ConnectWorldServerS2C struct {
 func (m *System_ConnectWorldServerS2C) Reset()         { *m = System_ConnectWorldServerS2C{} }
 func (m *System_ConnectWorldServerS2C) String() string { return proto.CompactTextString(m) }
 func (*System_ConnectWorldServerS2C) ProtoMessage()    {}
+
+// 连接Log服务器
+type System_ConnectLogServerC2S struct {
+	ServerName       *string `protobuf:"bytes,1,req" json:"ServerName,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *System_ConnectLogServerC2S) Reset()         { *m = System_ConnectLogServerC2S{} }
+func (m *System_ConnectLogServerC2S) String() string { return proto.CompactTextString(m) }
+func (*System_ConnectLogServerC2S) ProtoMessage()    {}
+
+func (m *System_ConnectLogServerC2S) GetServerName() string {
+	if m != nil && m.ServerName != nil {
+		return *m.ServerName
+	}
+	return ""
+}
+
+// 连接Log服务器返回
+type System_ConnectLogServerS2C struct {
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *System_ConnectLogServerS2C) Reset()         { *m = System_ConnectLogServerS2C{} }
+func (m *System_ConnectLogServerS2C) String() string { return proto.CompactTextString(m) }
+func (*System_ConnectLogServerS2C) ProtoMessage()    {}
 
 // 通知游戏服务器用户上线
 type System_ClientSessionOnlineC2S struct {

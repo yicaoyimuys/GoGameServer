@@ -30,6 +30,16 @@ message System_ConnectWorldServerC2S{
 message System_ConnectWorldServerS2C{
 }
 
+//连接Log服务器
+message System_ConnectLogServerC2S{
+	required string ServerName = 1;
+}
+
+//连接Log服务器返回
+message System_ConnectLogServerS2C{
+
+}
+
 //通知游戏服务器用户上线
 message System_ClientSessionOnlineC2S{
 	required uint64 SessionID = 1;
