@@ -11,6 +11,7 @@ import (
 	"strconv"
 	. "tools"
 	"tools/file"
+	"global"
 )
 
 type receiveMsg struct {
@@ -154,6 +155,11 @@ func connectLogServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 
 	serverName := rev_msg.GetServerName()
 	servers[serverName] = session
+
+	session.AddCloseCallback(session, func(){
+		delete(servers, serverName)
+		ERR(serverName + " Disconnect At " + global.ServerName)
+	})
 
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectLogServerS2C{})
 	protos.Send(send_msg, session)

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	session *link.Session
+	logClient *link.Session
 )
 
 //初始化
@@ -22,8 +22,11 @@ func InitClient(ip string, port string) error {
 	if err != nil {
 		return err
 	}
+	client.AddCloseCallback(client, func(){
+		ERR("DBServer Disconnect At " + global.ServerName)
+	})
 
-	session = client
+	logClient = client
 	go dealReceiveMsgS2C()
 	ConnectDBServer()
 
@@ -32,11 +35,11 @@ func InitClient(ip string, port string) error {
 
 //发送DB消息到服务器
 func sendDBMsgToServer(msg []byte) {
-	if session == nil {
-		dealReceiveDBMsgC2S(session, msg)
+	if logClient == nil {
+		dealReceiveDBMsgC2S(logClient, msg)
 		dealReceiveAsyncDBMsgC2S(msg)
 	} else {
-		protos.Send(msg, session)
+		protos.Send(msg, logClient)
 	}
 }
 
@@ -44,7 +47,7 @@ func sendDBMsgToServer(msg []byte) {
 func dealReceiveMsgS2C() {
 	var msg packet.RAW
 	for {
-		if err := session.Receive(&msg); err != nil {
+		if err := logClient.Receive(&msg); err != nil {
 			break
 		}
 		dealReceiveSystemMsgS2C(msg)
@@ -71,7 +74,7 @@ func ConnectDBServer() {
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectDBServerC2S{
 		ServerName: protos.String(global.ServerName),
 	})
-	protos.Send(send_msg, session)
+	protos.Send(send_msg, logClient)
 }
 
 //连接DB服务器返回

@@ -12,6 +12,7 @@ import (
 	"tools/timer"
 	"proxys/redisProxy"
 	"tools/debug"
+	"global"
 )
 
 type goroutineMsg struct {
@@ -99,6 +100,11 @@ func connectDBServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	serverName := rev_msg.GetServerName()
 	serverName = strings.Split(serverName, "[")[0]
 	servers[serverName] = session
+
+	session.AddCloseCallback(session, func(){
+		delete(servers, serverName)
+		ERR(serverName + " Disconnect At " + global.ServerName)
+	})
 
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectDBServerS2C{})
 	protos.Send(send_msg, session)

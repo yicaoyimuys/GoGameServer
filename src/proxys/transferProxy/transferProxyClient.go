@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	session *link.Session
+	transferClient *link.Session
 )
 
 //初始化
@@ -24,8 +24,11 @@ func InitClient(ip string, port string) error {
 	if err != nil {
 		return err
 	}
+	client.AddCloseCallback(client, func(){
+		ERR("TransferServer Disconnect At " + global.ServerName)
+	})
 
-	session = client
+	transferClient = client
 	go dealReceiveMsg()
 	ConnectTransferServer()
 
@@ -36,7 +39,7 @@ func InitClient(ip string, port string) error {
 func dealReceiveMsg() {
 	for {
 		var msg packet.RAW
-		if err := session.Receive(&msg); err != nil {
+		if err := transferClient.Receive(&msg); err != nil {
 			break
 		}
 		dealReceiveMsgS2C(msg)
@@ -89,10 +92,10 @@ func dealReceiveMsgS2C(msg packet.RAW) {
 
 //发送系统消息到TransferServer
 func sendSystemMsgToServer(msg []byte) {
-	if session == nil {
+	if transferClient == nil {
 		return
 	}
-	protos.Send(msg, session)
+	protos.Send(msg, transferClient)
 }
 
 //发送连接TransferServer
@@ -127,7 +130,7 @@ func SetClientLoginSuccess(userName string, userID uint64, session *link.Session
 //在GameServer设置用户登录成功
 func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
-	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
+	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, transferClient)
 	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
 	go func() {
 		var msg packet.RAW
@@ -148,7 +151,7 @@ func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 //在LoginServer创建虚拟用户
 func setSessionOnline(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOnlineC2S)
-	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
+	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, transferClient)
 	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
 	go func() {
 		var msg packet.RAW

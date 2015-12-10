@@ -10,7 +10,7 @@ import (
 	"protos/systemProto"
 	"strconv"
 	"strings"
-	//	. "tools"
+	. "tools"
 	"tools/hashs"
 )
 
@@ -170,14 +170,38 @@ func connectTransferServer(session *link.Session, protoMsg systemProto.ProtoMsg)
 	serverList = append(serverList, server)
 	servers[useServerName] = serverList
 
+	//服务器断开连接处理
+	session.AddCloseCallback(session, func(){
+		serverList = append(serverList[:server.serverIndex], serverList[server.serverIndex+1:]...)
+		servers[useServerName] = serverList
+		ERR(serverName + " Disconnect At " + global.ServerName)
+	})
+
 	//GameServer可以有多个
 	if useServerName == "GameServer" {
 		addr := strings.Split(session.Conn().RemoteAddr().String(), ":")
 		addrIp := addr[0]
 		addrPort, _ := strconv.Atoi(addr[1])
-		gameConsistent.Add(hashs.NewNode(server.serverIndex, addrIp, addrPort, serverName, 1))
+		gameNode := hashs.NewNode(server.serverIndex, addrIp, addrPort, serverName, 1)
+		gameConsistent.Add(gameNode)
+
+		//GameServer断开连接处理
+		session.AddCloseCallback(session, func(){
+			//移除此Node
+			gameConsistent.Remove(gameNode)
+			//将此Node的所有用户断开连接
+			for clientSessionID, gameNodeIndex := range gameUserSessions {
+				if server.serverIndex == gameNodeIndex {
+					clientSession := global.GetSession(clientSessionID)
+					if clientSession != nil {
+						clientSession.Close()
+					}
+				}
+			}
+		})
 	}
 
+	//发送连接成功消息
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectTransferServerS2C{})
 	protos.Send(send_msg, session)
 }

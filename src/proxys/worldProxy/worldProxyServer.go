@@ -9,7 +9,7 @@ import (
 	"protos"
 	"protos/gameProto"
 	"protos/systemProto"
-	//	. "tools"
+	. "tools"
 )
 
 var (
@@ -55,7 +55,7 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 	case systemProto.ID_System_ClientSessionOfflineC2S:
 		setSessionOffline(protoMsg)
 	case systemProto.ID_System_ClientLoginSuccessC2S:
-		setClientLoginSuccess(protoMsg)
+		setClientLoginSuccess(session, protoMsg)
 	}
 }
 
@@ -91,7 +91,7 @@ func dealGameMsg(msg packet.RAW) {
 }
 
 //在World服务器设置用户登录成功
-func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
+func setClientLoginSuccess(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
 	userConn := NewWorldProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
 	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
@@ -121,9 +121,15 @@ func setSessionOffline(protoMsg systemProto.ProtoMsg) {
 func connectWorldServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ConnectWorldServerC2S)
 
-	//	serverName := rev_msg.GetServerName()
+	serverName := rev_msg.GetServerName()
 	serverID := rev_msg.GetServerID()
 	servers[serverID] = session
+
+	//GameServer断开连接处理
+	session.AddCloseCallback(session, func(){
+		delete(servers, serverID)
+		ERR(serverName + " Disconnect At " + global.ServerName)
+	})
 
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectWorldServerS2C{})
 	protos.Send(send_msg, session)

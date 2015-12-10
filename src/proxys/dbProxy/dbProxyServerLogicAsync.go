@@ -1,7 +1,6 @@
 package dbProxy
 
 import (
-	"github.com/funny/link"
 	"github.com/funny/link/packet"
 	"dao"
 	"protos/dbProto"
@@ -16,12 +15,12 @@ func dealReceiveAsyncDBMsgC2S(msg packet.RAW) {
 
 	switch protoMsg.ID {
 	case dbProto.ID_DB_User_UpdateLastLoginTimeC2S:
-		updateUserLastLoginTime(session, protoMsg)
+		updateUserLastLoginTime(protoMsg)
 	}
 }
 
 //更新用户最后登录时间
-func updateUserLastLoginTime(session *link.Session, protoMsg dbProto.ProtoMsg) error {
+func updateUserLastLoginTime(protoMsg dbProto.ProtoMsg) error {
 	rev_msg := protoMsg.Body.(*dbProto.DB_User_UpdateLastLoginTimeC2S)
 	return dao.UpdateUserLastLoginTime(rev_msg.GetUserID(), rev_msg.GetTime())
 }

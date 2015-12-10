@@ -9,9 +9,14 @@ function func(){
 	done
 }
 
-func GateServer
-func GameServer
-func WorldServer
-func LoginServer
-func DBServer
-func LogServer
+if [ $# -eq 0 ]
+	then
+		func GateServer
+		func GameServer
+		func WorldServer
+		func LoginServer
+		func DBServer
+		func LogServer
+	else
+		func $1
+fi

@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	session *link.Session
+	worldClient *link.Session
 )
 
 //初始化
@@ -22,8 +22,11 @@ func InitClient(ip string, port string) error {
 	if err != nil {
 		return err
 	}
+	client.AddCloseCallback(client, func(){
+		ERR("WorldServer Disconnect At " + global.ServerName)
+	})
 
-	session = client
+	worldClient = client
 	go dealReceiveMsg()
 	ConnectWorldServer()
 
@@ -34,7 +37,7 @@ func InitClient(ip string, port string) error {
 func dealReceiveMsg() {
 	for {
 		var msg packet.RAW
-		if err := session.Receive(&msg); err != nil {
+		if err := worldClient.Receive(&msg); err != nil {
 			break
 		}
 		dealReceiveMsgS2C(msg)
@@ -81,18 +84,18 @@ func dealReceiveMsgS2C(msg packet.RAW) {
 
 //发送系统消息到WorldServer
 func SendSystemMsgToServer(msg []byte) {
-	if session == nil {
+	if worldClient == nil {
 		return
 	}
-	protos.Send(msg, session)
+	protos.Send(msg, worldClient)
 }
 
 //发送游戏消息到WorldServer
 func SendGameMsgToServer(msg []byte) {
-	if session == nil {
+	if worldClient == nil {
 		return
 	}
-	protos.Send(msg, session)
+	protos.Send(msg, worldClient)
 }
 
 //发送连接WorldServer

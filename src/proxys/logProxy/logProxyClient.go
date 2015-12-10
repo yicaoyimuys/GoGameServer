@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	session *link.Session
+	logClient *link.Session
 )
 
 //初始化
@@ -21,8 +21,11 @@ func InitClient(ip string, port string) error {
 	if err != nil {
 		return err
 	}
+	client.AddCloseCallback(client, func(){
+		ERR("LogServer Disconnect At " + global.ServerName)
+	})
 
-	session = client
+	logClient = client
 	go dealReceiveMsg()
 	ConnectLogServer()
 
@@ -33,7 +36,7 @@ func InitClient(ip string, port string) error {
 func dealReceiveMsg() {
 	for {
 		var msg packet.RAW
-		if err := session.Receive(&msg); err != nil {
+		if err := logClient.Receive(&msg); err != nil {
 			break
 		}
 		dealReceiveMsgS2C(msg)
@@ -69,19 +72,19 @@ func dealReceiveMsgS2C(msg packet.RAW) {
 
 //发送系统消息到LogServer
 func SendSystemMsgToServer(msg []byte) {
-	if session == nil {
+	if logClient == nil {
 		return
 	}
-	protos.Send(msg, session)
+	protos.Send(msg, logClient)
 }
 
 //发送Log消息到LogServer
 func SendLogMsgToServer(msg []byte) {
-	if session == nil {
+	if logClient == nil {
 		dealLogMsgC2S(msg)
 		return
 	}
-	protos.Send(msg, session)
+	protos.Send(msg, logClient)
 }
 
 //发送连接LogServer
