@@ -1,5 +1,5 @@
 #!/bin/sh 
-redis-cli flushdb &
+redis-cli -p 6379 -a yangsong flushdb &
 sleep 1
-redis-cli flushall &
+redis-cli -p 6379 -a yangsong flushall &
 sleep 1
