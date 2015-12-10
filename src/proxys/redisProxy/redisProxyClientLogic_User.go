@@ -59,19 +59,16 @@ func RemoveDBUser(userID uint64) {
 }
 
 //更新用户最后登录时间
-func UpdateUserLastLoginTime(userID uint64, time int64) {
+func UpdateUserLastLoginTime(dbUser *DBUserModel) {
 	//更新内存
-	var dbUser *DBUserModel = GetDBUser(userID)
-	if dbUser == nil {
-		return
-	}
-	dbUser.LastLoginTime = time
-	SetDBUser(dbUser)
+	userKey := DB_User_Key + strconv.FormatUint(dbUser.ID, 10)
+	data, _ := json.Marshal(dbUser)
+	client.Set(userKey, data)
 
 	//更新DB
 	msg := dbProto.MarshalProtoMsg(0, &dbProto.DB_User_UpdateLastLoginTimeC2S{
-		UserID: protos.Uint64(userID),
-		Time:   protos.Int64(time),
+		UserID: protos.Uint64(dbUser.ID),
+		Time:   protos.Int64(dbUser.LastLoginTime),
 	})
 	PushDBWriteMsg(msg)
 }

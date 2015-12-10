@@ -48,5 +48,8 @@ func userLogin(session *link.Session, protoMsg dbProto.ProtoMsg) {
 	sendDBMsgToClient(session, send_msg)
 
 	//更新最后登录时间
-	redisProxy.UpdateUserLastLoginTime(dbUser.ID, time.Now().Unix())
+	if dbUser != nil{
+		dbUser.LastLoginTime = time.Now().Unix()
+		redisProxy.UpdateUserLastLoginTime(dbUser)
+	}
 }
