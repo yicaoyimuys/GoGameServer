@@ -4,8 +4,6 @@ bin/
 
 pkg/
 
-logs/
-
-dump.rdb
+*.rdb
 
 *.log
