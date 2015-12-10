@@ -57,7 +57,8 @@ func getPort() {
 
 func stopDBServer() {
 	INFO("Waiting SyncDB...")
-	dbProxy.StopSyncDB()
+	dbProxy.SyncDB()
+	INFO("SyncDB Success")
 }
 
 func checkError(err error) {

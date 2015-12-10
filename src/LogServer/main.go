@@ -27,7 +27,7 @@ func main()  {
 	getPort()
 
 	//启动
-	global.Startup(global.ServerName, "log_log", nil)
+	global.Startup(global.ServerName, "log_log", stopLogServer)
 
 	//启动LogProxy
 	err := logProxy.InitServer(log_port)
@@ -41,6 +41,12 @@ func getPort() {
 	log_ip = cfg.GetValue("log_ip")
 	log_port = cfg.GetValue("log_port")
 	global.ServerName = "LogServer[" + log_port + "]"
+}
+
+func stopLogServer() {
+	INFO("Waiting SyncLog...")
+	logProxy.SyncLog()
+	INFO("SyncLog Success")
 }
 
 func checkError(err error) {

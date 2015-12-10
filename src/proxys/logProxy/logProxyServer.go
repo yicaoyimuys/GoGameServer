@@ -9,6 +9,7 @@ import (
 	"protos/systemProto"
 	"time"
 	"strconv"
+	. "tools"
 	"tools/file"
 )
 
@@ -106,6 +107,14 @@ func dealLogMsgC2S(msg packet.RAW) {
 	}
 }
 
+//等待所有log写入文件
+func SyncLog() {
+	INFO("SyncLog Num: ", len(receiveMsgs))
+	for len(receiveMsgs) > 0 {
+		
+	}
+}
+
 //写入log
 func writeLogFile(msg logProto.ProtoMsg)  {
 	data := msg.Body.(*logProto.Log_CommonLogC2S)
@@ -125,7 +134,7 @@ func writeLogFile(msg logProto.ProtoMsg)  {
 	if file == nil{
 		return
 	}
-
+	
 	defer file.Close()
 
 	//写入文件

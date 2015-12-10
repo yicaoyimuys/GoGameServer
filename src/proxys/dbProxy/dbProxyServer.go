@@ -111,7 +111,7 @@ func startSysDB() {
 }
 
 //停止定时同步DB数据
-func StopSyncDB() {
+func SyncDB() {
 	timer.Remove(syncDbTimerID)
 	onSyncDBTimer()
 }
@@ -126,11 +126,11 @@ func onSyncDBTimer() {
 		return
 	}
 	dlen := len(datas)
+	INFO("SyncDB Num: ", dlen)
 	for i := 0; i < dlen; i++ {
 		msg := datas[i]
 		dealReceiveAsyncDBMsgC2S(packet.RAW(msg))
 	}
-	INFO("SyncDB Num: ", dlen)
 }
 
 //创建接收同步消息的Goroutines
