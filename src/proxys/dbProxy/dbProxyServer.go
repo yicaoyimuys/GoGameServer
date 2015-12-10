@@ -107,6 +107,7 @@ func connectDBServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 //开启定时同步DB数据
 func startSysDB() {
 	syncDbTimerID = timer.DoTimer(int64(SYSDB_INTERVAL), onSyncDBTimer)
+	onSyncDBTimer()
 }
 
 //停止定时同步DB数据

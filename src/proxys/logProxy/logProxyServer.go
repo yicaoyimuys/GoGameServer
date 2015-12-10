@@ -7,7 +7,9 @@ import (
 	"protos"
 	"protos/logProto"
 	"protos/systemProto"
-	. "tools"
+	"time"
+	"strconv"
+	"tools/file"
 )
 
 type receiveMsg struct {
@@ -100,8 +102,41 @@ func dealLogMsgC2S(msg packet.RAW) {
 
 	switch protoMsg.ID {
 	case logProto.ID_Log_CommonLogC2S:
-		INFO("收到Log: ", protoMsg)
+		writeLogFile(protoMsg)
 	}
+}
+
+//写入log
+func writeLogFile(msg logProto.ProtoMsg)  {
+	data := msg.Body.(*logProto.Log_CommonLogC2S)
+
+	t := time.Unix(data.GetTime(), 0)
+
+	//创建目录
+	dirPath := "gamelogs/" + data.GetDir() + "/"+ t.Format("2006-01-02")
+	err := file.CreateDir(dirPath)
+	if err != nil {
+		return
+	}
+
+	//创建文件
+	filePath := dirPath + "/" + t.Format("15") + ".log";
+	file := file.OpenFile(filePath)
+	if file == nil{
+		return
+	}
+
+	defer file.Close()
+
+	//写入文件
+	str := ""
+	str += strconv.FormatUint(uint64(data.GetType()), 10)
+	str += "_"
+	str += strconv.FormatInt(data.GetTime(), 10)
+	str += "_"
+	str += data.GetContent()
+	str += "\n"
+	file.WriteString(str)
 }
 
 //其他客户端连接LogServer处理

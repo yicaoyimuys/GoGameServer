@@ -51,7 +51,7 @@ func main() {
 	logProxyErr := logProxy.InitClient(cfg.GetValue("log_ip"), cfg.GetValue("log_port"))
 	checkError(logProxyErr)
 
-	//开启用户下线处理
+	//开启下线用户处理
 	module.Cache.StartDealOfflineUser()
 
 	//保持进程
