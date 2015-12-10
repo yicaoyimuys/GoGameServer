@@ -7,6 +7,8 @@ import (
 	"protos"
 	"protos/dbProto"
 	"proxys/redisProxy"
+//	."tools"
+	"time"
 )
 
 //处理接收到的同步DB消息
@@ -36,6 +38,7 @@ func userLogin(session *link.Session, protoMsg dbProto.ProtoMsg) {
 		redisProxy.SetDBUser(dbUser)
 	}
 
+	//返回消息
 	sendProtoMsg := &dbProto.DB_User_LoginS2C{}
 	if dbUser != nil {
 		sendProtoMsg.ID = protos.Uint64(dbUser.ID)
@@ -43,4 +46,7 @@ func userLogin(session *link.Session, protoMsg dbProto.ProtoMsg) {
 	}
 	send_msg := dbProto.MarshalProtoMsg(protoMsg.Identification, sendProtoMsg)
 	sendDBMsgToClient(session, send_msg)
+
+	//更新最后登录时间
+	redisProxy.UpdateUserLastLoginTime(dbUser.ID, time.Now().Unix())
 }

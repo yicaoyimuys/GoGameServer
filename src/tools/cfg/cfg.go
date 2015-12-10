@@ -26,8 +26,8 @@ func Get() map[string]string {
 }
 
 func Reload() {
-	var baseConfigPath string = os.Getenv("GOGAMESERVER_PATH") + "/config_base.ini"
-	var serverConfigPath string = os.Getenv("GOGAMESERVER_PATH") + "/config_server.ini"
+	var baseConfigPath string = os.Getenv("GOGAMESERVER_PATH") + "/data/server/config_base.ini"
+	var serverConfigPath string = os.Getenv("GOGAMESERVER_PATH") + "/data/server/config_server.ini"
 
 	_lock.Lock()
 	_map = make(map[string]string)

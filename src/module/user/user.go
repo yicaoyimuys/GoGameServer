@@ -9,7 +9,6 @@ import (
 	"proxys/dbProxy"
 	"proxys/redisProxy"
 	"proxys/transferProxy"
-	"time"
 	. "tools"
 	"proxys/logProxy"
 )
@@ -63,14 +62,12 @@ func (this UserModule) Login(userName string, session *link.Session) {
 
 //登录成功后处理
 func (this UserModule) dealLoginSuccess(session *link.Session, userName string, userID uint64){
-	//如果用户在下线列表中，则移除
-	module.Cache.RemoveOfflineUser(userID)
 	//通知GameServer登录成功
 	transferProxy.SetClientLoginSuccess(userName, userID, session)
 	//发送登录成功消息
 	module.SendLoginResult(userID, session)
-	//更新最后一次登录时间
-	redisProxy.UpdateUserLastLoginTime(userID, time.Now().Unix())
+	//如果用户在下线列表中，则移除
+	module.Cache.RemoveOfflineUser(userID)
 	//用户下线时处理
 	session.AddCloseCallback(session, func() {
 		//记录用户下线时间

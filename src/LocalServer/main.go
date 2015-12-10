@@ -60,7 +60,7 @@ func startLocalServer() {
 	db.Init()
 
 	//连接Redis
-	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))
+	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"), cfg.GetValue("redis_pwd"))
 	checkError(redisProxyErr)
 
 	listener, err := link.Serve("tcp", "0.0.0.0:"+local_port, packet.New(

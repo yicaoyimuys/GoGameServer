@@ -31,7 +31,7 @@ func init() {
 
 // 读取文件并且序列化
 func readFile(fileName string, v interface{}) {
-	path := os.Getenv("GOGAMESERVER_PATH") + "/jsons/" + fileName
+	path := os.Getenv("GOGAMESERVER_PATH") + "/data/jsons/" + fileName
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		ERR("读取配置错误", fileName)

@@ -39,7 +39,7 @@ func main() {
 	global.Startup(global.ServerName, "world_log", nil)
 
 	//连接Redis
-	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))
+	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"), cfg.GetValue("redis_pwd"))
 	checkError(redisProxyErr)
 
 	//连接LogServer

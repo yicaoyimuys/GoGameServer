@@ -38,7 +38,7 @@ func main() {
 	global.Startup(global.ServerName, "db_log", stopDBServer)
 
 	//连接Redis
-	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"))
+	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"), cfg.GetValue("redis_pwd"))
 	checkError(redisProxyErr)
 
 	//开启DBServer监听
