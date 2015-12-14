@@ -21,7 +21,7 @@ var (
 func InitServer(port string) error {
 	servers = make(map[uint32]*link.Session)
 
-	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType, func(session *link.Session) {
+	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType_Safe, func(session *link.Session) {
 		var msg []byte
 		for {
 			if err := session.Receive(&msg); err != nil {

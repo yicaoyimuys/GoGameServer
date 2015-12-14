@@ -55,7 +55,7 @@ func getPort() {
 }
 
 func startGateway() {
-	err := global.Listener("tcp", "0.0.0.0:"+gateway_port, global.PackCodecType_Gate, func(session *link.Session) {
+	err := global.Listener("tcp", "0.0.0.0:"+gateway_port, global.PackCodecType_UnSafe, func(session *link.Session) {
 		//将此Session记录在缓存内，消息回传时使用
 		global.AddSession(session)
 		//通知LoginServer用户上线

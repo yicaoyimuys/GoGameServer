@@ -16,7 +16,7 @@ var (
 //初始化
 func InitClient(ip string, port string) error {
 	addr := ip + ":" + port
-	client, err := link.Connect("tcp", addr, global.PackCodecType)
+	client, err := link.Connect("tcp", addr, global.PackCodecType_Async)
 	if err != nil {
 		return err
 	}

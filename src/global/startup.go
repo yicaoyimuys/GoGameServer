@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	PackCodecType 		link.CodecType = link.ThreadSafe(link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codecType.NetCodecType{}))
-	PackCodecType_Gate 	link.CodecType = link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codecType.NetCodecType{})
+	PackCodecType_UnSafe 	link.CodecType = link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codecType.NetCodecType{})
+	PackCodecType_Safe 		link.CodecType = link.ThreadSafe(PackCodecType_UnSafe)
+	PackCodecType_Async 	link.CodecType = link.Async(4096, PackCodecType_UnSafe)
 )
 
 //服务器启动

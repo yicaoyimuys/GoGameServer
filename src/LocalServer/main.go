@@ -62,7 +62,7 @@ func startLocalServer() {
 	checkError(redisProxyErr)
 
 	//开启客户端监听
-	err := global.Listener("tcp", "0.0.0.0:"+local_port, global.PackCodecType_Gate, func(session *link.Session) {
+	err := global.Listener("tcp", "0.0.0.0:"+local_port, global.PackCodecType_UnSafe, func(session *link.Session) {
 		session.AddCloseCallback(session, func() {
 			session.Close()
 		})

@@ -16,7 +16,7 @@ var (
 func InitClient(ip string, port string) error {
 	//连接DB服务器
 	addr := ip + ":" + port
-	client, err := link.Connect("tcp", addr, global.PackCodecType)
+	client, err := link.Connect("tcp", addr, global.PackCodecType_Safe)
 	if err != nil {
 		return err
 	}

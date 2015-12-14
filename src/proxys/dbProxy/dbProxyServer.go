@@ -46,7 +46,7 @@ func InitServer(port string) error {
 
 	createRevGoroutines()
 
-	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType, func(session *link.Session) {
+	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType_Safe, func(session *link.Session) {
 		for {
 			var msg []byte
 			if err := session.Receive(&msg); err != nil {
