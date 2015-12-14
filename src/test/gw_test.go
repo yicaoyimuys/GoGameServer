@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 	"time"
-	"tools/codetype"
+	"tools/codecType"
 )
 
 import (
@@ -19,7 +19,7 @@ import (
 	"tools/unitest"
 )
 
-var protocol = link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codetype.NetCodecType{})
+var protocol = link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codecType.NetCodecType{})
 
 func Test_gateway(t *testing.T) {
 	DEBUG("消息通信测试")

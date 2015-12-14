@@ -9,7 +9,8 @@ import (
 	"protos/gameProto"
 	"protos/systemProto"
 	. "tools"
-	"tools/codetype"
+	"tools/codecType"
+	"proxys"
 )
 
 var (
@@ -81,15 +82,15 @@ func dealGameMsg(msg []byte) {
 		return
 	}
 
-	conn := userSession.Conn().(*WorldProxyConn)
-	conn.recvChan <- msg
+	conn := userSession.Conn().(*proxys.DummyConn)
+	conn.PutMsg(msg)
 }
 
 //在World服务器设置用户登录成功
 func setClientLoginSuccess(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
-	userConn := NewWorldProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
-	userSession := link.NewSessionByID(userConn, codetype.CustomCodecType{}, rev_msg.GetSessionID())
+	userConn := proxys.NewDummyConn(rev_msg.GetSessionID(), rev_msg.GetNetwork(), rev_msg.GetAddr(), session)
+	userSession := link.NewSessionByID(userConn, codecType.DummyCodecType{}, rev_msg.GetSessionID())
 	global.AddSession(userSession)
 	go func() {
 		var msg []byte

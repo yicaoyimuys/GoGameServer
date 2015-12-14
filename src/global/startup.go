@@ -4,13 +4,13 @@ import (
 //	"runtime"
 	. "tools"
 	. "tools/gc"
-	"tools/codetype"
+	"tools/codecType"
 	"github.com/funny/link"
 )
 
 var (
-	PackCodecType 		link.CodecType = link.ThreadSafe(link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codetype.NetCodecType{}))
-	PackCodecType_Gate 	link.CodecType = link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codetype.NetCodecType{})
+	PackCodecType 		link.CodecType = link.ThreadSafe(link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codecType.NetCodecType{}))
+	PackCodecType_Gate 	link.CodecType = link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codecType.NetCodecType{})
 )
 
 //服务器启动

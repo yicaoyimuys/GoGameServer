@@ -10,7 +10,8 @@ import (
 	"protos/systemProto"
 	"proxys/worldProxy"
 	. "tools"
-	"tools/codetype"
+	"tools/codecType"
+	"proxys"
 )
 
 var (
@@ -130,8 +131,8 @@ func SetClientLoginSuccess(userName string, userID uint64, session *link.Session
 //在GameServer设置用户登录成功
 func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
-	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, transferClient)
-	userSession := link.NewSessionByID(userConn, codetype.CustomCodecType{}, rev_msg.GetSessionID())
+	userConn := proxys.NewDummyConn(rev_msg.GetSessionID(), rev_msg.GetNetwork(), rev_msg.GetAddr(), transferClient)
+	userSession := link.NewSessionByID(userConn, codecType.DummyCodecType{}, rev_msg.GetSessionID())
 	global.AddSession(userSession)
 	go func() {
 		var msg []byte
@@ -151,8 +152,8 @@ func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 //在LoginServer创建虚拟用户
 func setSessionOnline(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOnlineC2S)
-	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, transferClient)
-	userSession := link.NewSessionByID(userConn, codetype.CustomCodecType{}, rev_msg.GetSessionID())
+	userConn := proxys.NewDummyConn(rev_msg.GetSessionID(), rev_msg.GetNetwork(), rev_msg.GetAddr(), transferClient)
+	userSession := link.NewSessionByID(userConn, codecType.DummyCodecType{}, rev_msg.GetSessionID())
 	global.AddSession(userSession)
 	go func() {
 		var msg []byte
@@ -186,6 +187,6 @@ func dealGameMsg(msg []byte) {
 		return
 	}
 
-	conn := userSession.Conn().(*TransferProxyConn)
-	conn.recvChan <- msg
+	conn := userSession.Conn().(*proxys.DummyConn)
+	conn.PutMsg(msg)
 }

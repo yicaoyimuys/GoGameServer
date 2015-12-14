@@ -1,4 +1,4 @@
-package codetype
+package codecType
 
 import (
 	"io"
