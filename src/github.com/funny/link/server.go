@@ -1,73 +1,81 @@
 package link
 
 import (
+	"net"
 	"sync"
-	"sync/atomic"
+	"time"
 )
 
 type Server struct {
-	listener Listener
+	listener  net.Listener
+	codecType CodecType
 
 	// About sessions
 	maxSessionId uint64
 	sessions     map[uint64]*Session
-	sessionMutex sync.Mutex
+	sessionMutex sync.RWMutex
 
 	// About server start and stop
-	stopFlag int32
-	stopChan chan int
+	stopOnce sync.Once
 	stopWait sync.WaitGroup
 
-	// server state.
+	// Server state
 	State interface{}
 }
 
-func NewServer(listener Listener) *Server {
-	server := &Server{
-		listener: listener,
-		sessions: make(map[uint64]*Session),
-		stopChan: make(chan int),
+func NewServer(listener net.Listener, codecType CodecType) *Server {
+	return &Server{
+		listener:  listener,
+		codecType: codecType,
+		sessions:  make(map[uint64]*Session),
 	}
-	return server
 }
 
-func (server *Server) Listener() Listener {
+func (server *Server) Listener() net.Listener {
 	return server.listener
 }
 
-func (server *Server) Serve(handler func(*Session)) error {
+func (server *Server) Accept() (*Session, error) {
+	var tempDelay time.Duration
 	for {
 		conn, err := server.listener.Accept()
 		if err != nil {
-			if server.Stop() {
-				return err
+			if ne, ok := err.(net.Error); ok && ne.Temporary() {
+				if tempDelay == 0 {
+					tempDelay = 5 * time.Millisecond
+				} else {
+					tempDelay *= 2
+				}
+				if max := 1 * time.Second; tempDelay > max {
+					tempDelay = max
+				}
+				time.Sleep(tempDelay)
+				continue
 			}
-			return nil
+			return nil, err
 		}
-		go func() {
-			if server.listener.Handshake(conn) != nil {
-				return
-			}
-			handler(server.newSession(conn))
-		}()
+		tempDelay = 0
+		return server.newSession(conn), nil
 	}
-	return nil
 }
 
-func (server *Server) Stop() bool {
-	if atomic.CompareAndSwapInt32(&server.stopFlag, 0, 1) {
+func (server *Server) Stop() {
+	server.stopOnce.Do(func() {
 		server.listener.Close()
-		close(server.stopChan)
 		server.closeSessions()
 		server.stopWait.Wait()
-		return true
-	}
-	return false
+	})
 }
 
-func (server *Server) newSession(conn Conn) *Session {
-	id := atomic.AddUint64(&server.maxSessionId, 1)
-	session := NewSession(id, conn)
+func (server *Server) GetSession(sessionId uint64) *Session {
+	server.sessionMutex.RLock()
+	defer server.sessionMutex.RUnlock()
+	session, _ := server.sessions[sessionId]
+	return session
+}
+
+func (server *Server) newSession(conn net.Conn) *Session {
+	session := NewSession(conn, server.codecType)
 	server.putSession(session)
 	return session
 }

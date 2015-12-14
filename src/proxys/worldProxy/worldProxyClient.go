@@ -1,9 +1,8 @@
 package worldProxy
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
+	"github.com/funny/binary"
 	"global"
 	"protos"
 	"protos/gameProto"
@@ -18,7 +17,7 @@ var (
 //初始化
 func InitClient(ip string, port string) error {
 	addr := ip + ":" + port
-	client, err := link.Connect("tcp", addr, packet.New(binary.SplitByUint32BE, 1024, 1024, 1024))
+	client, err := link.Connect("tcp", addr, global.PackCodecType)
 	if err != nil {
 		return err
 	}
@@ -36,7 +35,7 @@ func InitClient(ip string, port string) error {
 //处理从TransferServer发回的消息
 func dealReceiveMsg() {
 	for {
-		var msg packet.RAW
+		var msg []byte
 		if err := worldClient.Receive(&msg); err != nil {
 			break
 		}
@@ -45,7 +44,7 @@ func dealReceiveMsg() {
 }
 
 //处理接收到的系统消息
-func dealReceiveSystemMsgS2C(msg packet.RAW) {
+func dealReceiveSystemMsgS2C(msg []byte) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
 	if protoMsg == systemProto.NullProtoMsg {
 		return
@@ -58,7 +57,7 @@ func dealReceiveSystemMsgS2C(msg packet.RAW) {
 }
 
 //处理接收到的消息
-func dealReceiveMsgS2C(msg packet.RAW) {
+func dealReceiveMsgS2C(msg []byte) {
 	if len(msg) < 2 {
 		return
 	}

@@ -1,49 +1,44 @@
 package worldProxy
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
+	"github.com/funny/binary"
 	"global"
 	"module"
 	"protos"
 	"protos/gameProto"
 	"protos/systemProto"
 	. "tools"
+	"tools/codetype"
 )
 
 var (
-	servers map[uint32]*link.Session
+	servers 		map[uint32]*link.Session
 )
 
 //初始化
 func InitServer(port string) error {
 	servers = make(map[uint32]*link.Session)
 
-	listener, err := link.Serve("tcp", "0.0.0.0:"+port, packet.New(
-		binary.SplitByUint32BE, 1024, 1024, 1024,
-	))
+	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType, func(session *link.Session) {
+		var msg []byte
+		for {
+			if err := session.Receive(&msg); err != nil {
+				break
+			}
+			dealReceiveMsgC2S(session, msg)
+		}
+	})
+
 	if err != nil {
 		return err
 	}
-
-	go func() {
-		listener.Serve(func(session *link.Session) {
-			var msg packet.RAW
-			for {
-				if err := session.Receive(&msg); err != nil {
-					break
-				}
-				dealReceiveMsgC2S(session, msg)
-			}
-		})
-	}()
 
 	return nil
 }
 
 //处理接收到的系统消息
-func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveSystemMsgC2S(session *link.Session, msg []byte) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
 	if protoMsg == systemProto.NullProtoMsg {
 		return
@@ -60,7 +55,7 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 }
 
 //处理接收到的消息
-func dealReceiveMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveMsgC2S(session *link.Session, msg []byte) {
 	if len(msg) < 2 {
 		return
 	}
@@ -78,7 +73,7 @@ func dealReceiveMsgC2S(session *link.Session, msg packet.RAW) {
 }
 
 //处理游戏逻辑
-func dealGameMsg(msg packet.RAW) {
+func dealGameMsg(msg []byte) {
 	msgIdentification := binary.GetUint64LE(msg[2:10])
 
 	userSession := global.GetSession(msgIdentification)
@@ -94,9 +89,10 @@ func dealGameMsg(msg packet.RAW) {
 func setClientLoginSuccess(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
 	userConn := NewWorldProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, session)
-	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
+	userSession := link.NewSessionByID(userConn, codetype.CustomCodecType{}, rev_msg.GetSessionID())
+	global.AddSession(userSession)
 	go func() {
-		var msg packet.RAW
+		var msg []byte
 		for {
 			if err := userSession.Receive(&msg); err != nil {
 				break
@@ -104,7 +100,6 @@ func setClientLoginSuccess(session *link.Session, protoMsg systemProto.ProtoMsg)
 			module.ReceiveMessage(userSession, msg)
 		}
 	}()
-	module.User.Online(userSession)
 	module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID(), rev_msg.GetGameServerID())
 }
 
@@ -113,7 +108,7 @@ func setSessionOffline(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOfflineC2S)
 	userSession := global.GetSession(rev_msg.GetSessionID())
 	if userSession != nil {
-		module.User.Offline(userSession)
+		userSession.Close()
 	}
 }
 

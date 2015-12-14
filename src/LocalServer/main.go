@@ -5,9 +5,7 @@ import (
 )
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"global"
 	"module"
 	"proxys/redisProxy"
@@ -63,18 +61,14 @@ func startLocalServer() {
 	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"), cfg.GetValue("redis_pwd"))
 	checkError(redisProxyErr)
 
-	listener, err := link.Serve("tcp", "0.0.0.0:"+local_port, packet.New(
-		binary.SplitByUint32BE, 1024, 1024, 1024,
-	))
-	checkError(err)
-
-	listener.Serve(func(session *link.Session) {
+	//开启客户端监听
+	err := global.Listener("tcp", "0.0.0.0:"+local_port, global.PackCodecType_Gate, func(session *link.Session) {
 		session.AddCloseCallback(session, func() {
 			session.Close()
 		})
 		global.AddSession(session)
 
-		var msg packet.RAW
+		var msg []byte
 		for {
 			if err := session.Receive(&msg); err != nil {
 				break
@@ -82,6 +76,7 @@ func startLocalServer() {
 			module.ReceiveMessage(session, msg)
 		}
 	})
+	checkError(err)
 }
 
 func checkError(err error) {

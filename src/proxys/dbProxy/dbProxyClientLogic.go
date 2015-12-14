@@ -2,7 +2,6 @@ package dbProxy
 
 import (
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"global"
 	"module"
 	"protos"
@@ -10,7 +9,7 @@ import (
 )
 
 //处理接收到纯DB的消息
-func dealReceiveDBMsgS2C(msg packet.RAW) {
+func dealReceiveDBMsgS2C(msg []byte) {
 	protoMsg := dbProto.UnmarshalProtoMsg(msg)
 	if protoMsg == dbProto.NullProtoMsg {
 		return

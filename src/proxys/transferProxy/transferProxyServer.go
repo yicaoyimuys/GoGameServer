@@ -1,9 +1,8 @@
 package transferProxy
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
+	"github.com/funny/binary"
 	"global"
 	"protos"
 	"protos/gameProto"
@@ -32,30 +31,25 @@ func InitServer(port string) error {
 	gameConsistent = hashs.NewConsistent()
 	gameUserSessions = make(map[uint64]int)
 
-	listener, err := link.Serve("tcp", "0.0.0.0:"+port, packet.New(
-		binary.SplitByUint32BE, 1024, 1024, 1024,
-	))
+	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType, func(session *link.Session) {
+		var msg []byte
+		for {
+			if err := session.Receive(&msg); err != nil {
+				break
+			}
+			dealReceiveMsgC2S(session, msg)
+		}
+	})
+
 	if err != nil {
 		return err
 	}
-
-	go func() {
-		listener.Serve(func(session *link.Session) {
-			var msg packet.RAW
-			for {
-				if err := session.Receive(&msg); err != nil {
-					break
-				}
-				dealReceiveMsgC2S(session, msg)
-			}
-		})
-	}()
 
 	return nil
 }
 
 //处理接收到的系统消息
-func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveSystemMsgC2S(session *link.Session, msg []byte) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
 	if protoMsg == systemProto.NullProtoMsg {
 		return
@@ -70,7 +64,7 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 }
 
 //处理接收到的消息
-func dealReceiveMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveMsgC2S(session *link.Session, msg []byte) {
 	if len(msg) < 2 {
 		return
 	}
@@ -112,7 +106,7 @@ func getUserGameServerID(sessionID uint64) uint32 {
 }
 
 //发送系统消息到不同服务器
-func sendSystemMsg(serverName string, msg packet.RAW) {
+func sendSystemMsg(serverName string, msg []byte) {
 	//系统消息发送到所有服务器
 	if sessions, exists := servers[serverName]; exists {
 		for _, s := range sessions {
@@ -122,7 +116,7 @@ func sendSystemMsg(serverName string, msg packet.RAW) {
 }
 
 //发送系统消息到指定服务器
-func sendSystemMsg2(serverName string, gameServerID uint32, msg packet.RAW) {
+func sendSystemMsg2(serverName string, gameServerID uint32, msg []byte) {
 	if serverList, exists := servers[serverName]; exists {
 		for _, s := range serverList {
 			if s.serverID == 0 || s.serverID == gameServerID {
@@ -133,7 +127,7 @@ func sendSystemMsg2(serverName string, gameServerID uint32, msg packet.RAW) {
 }
 
 //发送游戏消息到不同服务器
-func sendGameMsg(serverName string, msg packet.RAW) {
+func sendGameMsg(serverName string, msg []byte) {
 	if serverList, exists := servers[serverName]; exists {
 		if serverName == "GameServer" {
 			//游戏消息发送到用户对应的GameServer
@@ -227,7 +221,7 @@ func clientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 
 	//通知GameServer用户登录成功
 	send_msg := systemProto.MarshalProtoMsg(rev_msg)
-	sendSystemMsg2("GameServer", gameServerID, packet.RAW(send_msg))
+	sendSystemMsg2("GameServer", gameServerID, send_msg)
 }
 
 //LoginServer用户上线
@@ -239,7 +233,7 @@ func SetClientSessionOnline(userSession *link.Session) {
 		Addr:         protos.String(userSession.Conn().RemoteAddr().String()),
 	}
 	send_msg := systemProto.MarshalProtoMsg(protoMsg)
-	sendSystemMsg2("LoginServer", 0, packet.RAW(send_msg))
+	sendSystemMsg2("LoginServer", 0, send_msg)
 }
 
 //通知GameServer、LoginServer用户下线, 网关调用
@@ -253,15 +247,15 @@ func SetClientSessionOffline(sessionID uint64) {
 	}
 	send_msg := systemProto.MarshalProtoMsg(protoMsg)
 
-	sendSystemMsg2("GameServer", gameServerID, packet.RAW(send_msg))
-	sendSystemMsg2("LoginServer", 0, packet.RAW(send_msg))
+	sendSystemMsg2("GameServer", gameServerID, send_msg)
+	sendSystemMsg2("LoginServer", 0, send_msg)
 
 	//给该用户不再分配游戏服务器
 	noAllotGameServer(sessionID)
 }
 
 //发送消息到TransferServer, 网关调用
-func SendToGameServer(msg packet.RAW, userSession *link.Session) {
+func SendToGameServer(msg []byte, userSession *link.Session) {
 	send_msg := make([]byte, 8+len(msg))
 	copy(send_msg[:2], msg[:2])
 	binary.PutUint64LE(send_msg[2:10], userSession.Id())
@@ -277,7 +271,7 @@ func SendToGameServer(msg packet.RAW, userSession *link.Session) {
 }
 
 //发送消息到用户客户端
-func SendToGateServer(msg packet.RAW) {
+func SendToGateServer(msg []byte) {
 	if len(msg) < 10 {
 		return
 	}
@@ -294,5 +288,5 @@ func SendToGateServer(msg packet.RAW) {
 	result := make([]byte, len(msg)-8)
 	binary.PutUint16LE(result[:2], msgID)
 	copy(result[2:], msgBody)
-	userSession.Send(packet.RAW(result))
+	userSession.Send(result)
 }

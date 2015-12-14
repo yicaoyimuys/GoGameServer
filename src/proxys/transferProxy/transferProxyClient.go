@@ -1,9 +1,8 @@
 package transferProxy
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
+	"github.com/funny/binary"
 	"global"
 	"module"
 	"protos"
@@ -11,6 +10,7 @@ import (
 	"protos/systemProto"
 	"proxys/worldProxy"
 	. "tools"
+	"tools/codetype"
 )
 
 var (
@@ -20,7 +20,7 @@ var (
 //初始化
 func InitClient(ip string, port string) error {
 	addr := ip + ":" + port
-	client, err := link.Connect("tcp", addr, packet.New(binary.SplitByUint32BE, 1024, 1024, 1024))
+	client, err := link.Connect("tcp", addr, global.PackCodecType)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func InitClient(ip string, port string) error {
 //处理从TransferServer发回的消息
 func dealReceiveMsg() {
 	for {
-		var msg packet.RAW
+		var msg []byte
 		if err := transferClient.Receive(&msg); err != nil {
 			break
 		}
@@ -47,7 +47,7 @@ func dealReceiveMsg() {
 }
 
 //处理接收到的系统消息
-func dealReceiveSystemMsgS2C(msg packet.RAW) {
+func dealReceiveSystemMsgS2C(msg []byte) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
 	if protoMsg == systemProto.NullProtoMsg {
 		return
@@ -66,7 +66,7 @@ func dealReceiveSystemMsgS2C(msg packet.RAW) {
 }
 
 //处理接收到的消息
-func dealReceiveMsgS2C(msg packet.RAW) {
+func dealReceiveMsgS2C(msg []byte) {
 	if len(msg) < 2 {
 		return
 	}
@@ -131,9 +131,10 @@ func SetClientLoginSuccess(userName string, userID uint64, session *link.Session
 func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
 	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, transferClient)
-	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
+	userSession := link.NewSessionByID(userConn, codetype.CustomCodecType{}, rev_msg.GetSessionID())
+	global.AddSession(userSession)
 	go func() {
-		var msg packet.RAW
+		var msg []byte
 		for {
 			if err := userSession.Receive(&msg); err != nil {
 				break
@@ -141,7 +142,6 @@ func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 			module.ReceiveMessage(userSession, msg)
 		}
 	}()
-	module.User.Online(userSession)
 	module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID(), rev_msg.GetGameServerID())
 
 	//通知WorldServer用户登录成功
@@ -152,9 +152,10 @@ func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 func setSessionOnline(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOnlineC2S)
 	userConn := NewTransferProxyConn(rev_msg.GetSessionID(), clientAddr{[]byte(rev_msg.GetNetwork()), []byte(rev_msg.GetAddr())}, transferClient)
-	userSession := link.NewSession(rev_msg.GetSessionID(), userConn)
+	userSession := link.NewSessionByID(userConn, codetype.CustomCodecType{}, rev_msg.GetSessionID())
+	global.AddSession(userSession)
 	go func() {
-		var msg packet.RAW
+		var msg []byte
 		for {
 			if err := userSession.Receive(&msg); err != nil {
 				break
@@ -162,7 +163,6 @@ func setSessionOnline(protoMsg systemProto.ProtoMsg) {
 			module.ReceiveMessage(userSession, msg)
 		}
 	}()
-	module.User.Online(userSession)
 }
 
 //在游戏服务端删除虚拟用户
@@ -170,7 +170,7 @@ func setSessionOffline(protoMsg systemProto.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOfflineC2S)
 	userSession := global.GetSession(rev_msg.GetSessionID())
 	if userSession != nil {
-		module.User.Offline(userSession)
+		userSession.Close()
 	}
 
 	//通知WorldServer用户下线
@@ -178,7 +178,7 @@ func setSessionOffline(protoMsg systemProto.ProtoMsg) {
 }
 
 //处理游戏逻辑
-func dealGameMsg(msg packet.RAW) {
+func dealGameMsg(msg []byte) {
 	msgIdentification := binary.GetUint64LE(msg[2:10])
 
 	userSession := global.GetSession(msgIdentification)

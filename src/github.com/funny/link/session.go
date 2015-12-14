@@ -3,115 +3,89 @@ package link
 import (
 	"container/list"
 	"errors"
+	"net"
 	"sync"
 	"sync/atomic"
 )
 
-var (
-	ErrClosed   = errors.New("Session closed")
-	ErrBlocking = errors.New("Operation blocking")
-)
-
-var DefaultConfig = SessionConfig{
-	SendChanSize: 1000,
-}
-
-type SessionConfig struct {
-	SendChanSize int
-}
+var ErrClosed = errors.New("link.Session closed")
 
 type Session struct {
-	id   uint64
-	conn Conn
-
-	// About send and receive
-	recvMutex    sync.Mutex
-	sendMutex    sync.Mutex
-	sendLoopFlag int32
-	sendChan     chan interface{}
-
-	// About session close
+	id              uint64
+	conn            net.Conn
+	encoder         Encoder
+	decoder         Decoder
 	closeChan       chan int
 	closeFlag       int32
 	closeEventMutex sync.Mutex
 	closeCallbacks  *list.List
-
-	// Session state
-	State interface{}
+	State           interface{}
 }
 
-func NewSession(id uint64, conn Conn) *Session {
-	return &Session{
-		id:             id,
+var globalSessionId uint64
+
+func NewSession(conn net.Conn, codecType CodecType) *Session {
+	session := &Session{
+		id:             atomic.AddUint64(&globalSessionId, 1),
 		conn:           conn,
-		sendChan:       make(chan interface{}, conn.Config().SendChanSize),
-		closeChan:      make(chan int),
+		encoder:        codecType.NewEncoder(conn),
+		decoder:        codecType.NewDecoder(conn),
 		closeCallbacks: list.New(),
 	}
+	return session
+}
+
+func NewSessionByID(conn net.Conn, codecType CodecType, sessionID uint64) *Session {
+	session := &Session{
+		id:             sessionID,
+		conn:           conn,
+		encoder:        codecType.NewEncoder(conn),
+		decoder:        codecType.NewDecoder(conn),
+		closeCallbacks: list.New(),
+	}
+	return session
 }
 
 func (session *Session) Id() uint64     { return session.id }
-func (session *Session) Conn() Conn     { return session.conn }
-func (session *Session) IsClosed() bool { return atomic.LoadInt32(&session.closeFlag) != 0 }
+func (session *Session) Conn() net.Conn { return session.conn }
+func (session *Session) IsClosed() bool { return atomic.LoadInt32(&session.closeFlag) == 1 }
 
 func (session *Session) Close() {
 	if atomic.CompareAndSwapInt32(&session.closeFlag, 0, 1) {
 		session.invokeCloseCallbacks()
-		close(session.closeChan)
+		if session.closeChan != nil {
+			close(session.closeChan)
+		}
 		session.conn.Close()
+		if d, ok := session.encoder.(Disposeable); ok {
+			d.Dispose()
+		}
+		if d, ok := session.decoder.(Disposeable); ok {
+			d.Dispose()
+		}
 	}
 }
 
-func (session *Session) Receive(msg interface{}) error {
-	session.recvMutex.Lock()
-	defer session.recvMutex.Unlock()
-
-	if err := session.conn.Receive(msg); err != nil {
-		session.Close()
-		return err
-	}
-	return nil
-}
-
-func (session *Session) Send(msg interface{}) error {
-	session.sendMutex.Lock()
-	defer session.sendMutex.Unlock()
-
-	if err := session.conn.Send(msg); err != nil {
-		session.Close()
-		return err
-	}
-	return nil
-}
-
-func (session *Session) AsyncSend(msg interface{}) error {
+func (session *Session) Receive(msg interface{}) (err error) {
 	if session.IsClosed() {
 		return ErrClosed
 	}
-
-	if atomic.CompareAndSwapInt32(&session.sendLoopFlag, 0, 1) {
-		go func() {
-			for {
-				select {
-				case msg := <-session.sendChan:
-					if err := session.Send(msg); err != nil {
-						return
-					}
-				case <-session.closeChan:
-					return
-				}
-			}
-		}()
-	}
-
-	select {
-	case session.sendChan <- msg:
-	default:
+	err = session.decoder.Decode(msg)
+	if err != nil {
 		session.Close()
-		return ErrBlocking
 	}
+	return
+}
 
-	return nil
+func (session *Session) Send(msg interface{}) (err error) {
+	if session.IsClosed() {
+		return ErrClosed
+	}
+	err = session.encoder.Encode(msg)
+	if err != nil {
+		session.Close()
+	}
+	return
 }
 
 type closeCallback struct {

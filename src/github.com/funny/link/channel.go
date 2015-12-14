@@ -1,3 +1,10 @@
+// +build generate
+
+//go:generate go run channel_gen.go Int32Channel int32 channel_int32.go
+//go:generate go run channel_gen.go Uint32Channel uint32 channel_uint32.go
+//go:generate go run channel_gen.go Int64Channel int64 channel_int64.go
+//go:generate go run channel_gen.go Uint64Channel uint64 channel_uint64.go
+//go:generate go run channel_gen.go StringChannel string channel_string.go
 package link
 
 import (
@@ -5,24 +12,17 @@ import (
 )
 
 type Channel struct {
-	protocol BroadcastProtocol
 	mutex    sync.RWMutex
-	sessions map[uint64]*Session
+	sessions map[KEY]*Session
 
 	// channel state
 	State interface{}
 }
 
-func NewChannel(protocol BroadcastProtocol) *Channel {
-	channel := &Channel{
-		protocol: protocol,
-		sessions: make(map[uint64]*Session),
+func NewChannel() *Channel {
+	return &Channel{
+		sessions: make(map[KEY]*Session),
 	}
-	return channel
-}
-
-func (channel *Channel) Broadcast(msg interface{}) error {
-	return channel.protocol.Broadcast(msg, channel.Fetch)
 }
 
 func (channel *Channel) Len() int {
@@ -35,37 +35,49 @@ func (channel *Channel) Len() int {
 func (channel *Channel) Fetch(callback func(*Session)) {
 	channel.mutex.RLock()
 	defer channel.mutex.RUnlock()
-	for _, sesssion := range channel.sessions {
-		callback(sesssion)
+	for _, session := range channel.sessions {
+		callback(session)
 	}
 }
 
-func (channel *Channel) Join(session *Session) {
-	channel.mutex.Lock()
-	defer channel.mutex.Unlock()
-	session.AddCloseCallback(channel, func() { channel.Exit(session) })
-	channel.sessions[session.Id()] = session
+func (channel *Channel) Get(key KEY) *Session {
+	channel.mutex.RLock()
+	defer channel.mutex.RUnlock()
+	session, _ := channel.sessions[key]
+	return session
 }
 
-func (channel *Channel) delSession(session *Session) bool {
-	_, exists := channel.sessions[session.Id()]
+func (channel *Channel) Put(key KEY, session *Session) {
+	channel.mutex.Lock()
+	defer channel.mutex.Unlock()
+	if session, exists := channel.sessions[key]; exists {
+		channel.remove(key, session)
+	}
+	session.AddCloseCallback(channel, func() {
+		channel.Remove(key)
+	})
+	channel.sessions[key] = session
+}
+
+func (channel *Channel) remove(key KEY, session *Session) {
+	session.RemoveCloseCallback(channel)
+	delete(channel.sessions, key)
+}
+
+func (channel *Channel) Remove(key KEY) bool {
+	channel.mutex.Lock()
+	defer channel.mutex.Unlock()
+	session, exists := channel.sessions[key]
 	if exists {
-		session.RemoveCloseCallback(channel)
-		delete(channel.sessions, session.Id())
+		channel.remove(key, session)
 	}
 	return exists
-}
-
-func (channel *Channel) Exit(session *Session) bool {
-	channel.mutex.Lock()
-	defer channel.mutex.Unlock()
-	return channel.delSession(session)
 }
 
 func (channel *Channel) Close() {
 	channel.mutex.Lock()
 	defer channel.mutex.Unlock()
-	for _, session := range channel.sessions {
-		channel.delSession(session)
+	for key, session := range channel.sessions {
+		channel.remove(key, session)
 	}
 }

@@ -3,7 +3,6 @@ package protos
 import (
 	"code.google.com/p/goprotobuf/proto"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"reflect"
 	. "tools"
 )
@@ -44,7 +43,7 @@ func GetMsgID(msg interface{}) uint16 {
 
 //发送消息
 func Send(msgBody []byte, session *link.Session) {
-	session.Send(packet.RAW(msgBody))
+	session.Send(msgBody)
 }
 
 //封装消息String类型字段

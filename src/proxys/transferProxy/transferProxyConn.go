@@ -1,14 +1,12 @@
 package transferProxy
 
 import (
-	"bytes"
 	"io"
 	"net"
-
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
-	//	. "tools"
+	"github.com/funny/binary"
+//	. "tools"
+	"time"
 )
 
 type clientAddr struct {
@@ -27,7 +25,7 @@ func (addr clientAddr) String() string {
 type TransferProxyConn struct {
 	id           uint64
 	proxySession *link.Session
-	recvChan     chan packet.RAW
+	recvChan     chan []byte
 	addr         clientAddr
 }
 
@@ -35,14 +33,8 @@ func NewTransferProxyConn(id uint64, addr clientAddr, proxySession *link.Session
 	return &TransferProxyConn{
 		id:           id,
 		proxySession: proxySession,
-		recvChan:     make(chan packet.RAW, 1024),
+		recvChan:     make(chan []byte, 1024),
 		addr:         addr,
-	}
-}
-
-func (c *TransferProxyConn) Config() link.SessionConfig {
-	return link.SessionConfig{
-		1024,
 	}
 }
 
@@ -54,7 +46,11 @@ func (c *TransferProxyConn) RemoteAddr() net.Addr {
 	return c.addr
 }
 
-func (c *TransferProxyConn) Receive(msg interface{}) error {
+func (c *TransferProxyConn) Read(msg []byte) (int, error) {
+	return 0, nil
+}
+
+func (c *TransferProxyConn) ReadOne(msg *[]byte) error {
 	data, ok := <-c.recvChan
 	if !ok {
 		return io.EOF
@@ -63,31 +59,43 @@ func (c *TransferProxyConn) Receive(msg interface{}) error {
 	msgID := binary.GetUint16LE(data[:2])
 	msgBody := data[10:]
 
-	result := make([]byte, len(data)-8)
+	msgLen := len(data)-8
+	result := make([]byte, msgLen)
 	binary.PutUint16LE(result[:2], msgID)
 	copy(result[2:], msgBody)
 
-	if fast, ok := msg.(packet.FastInMessage); ok {
-		return fast.Unmarshal(
-			&io.LimitedReader{bytes.NewReader(result), int64(len(result))},
-		)
+	if int64(cap(*msg)) >= int64(msgLen) {
+		*msg = (*msg)[0:msgLen]
+	} else {
+		*msg = make([]byte, msgLen)
 	}
+	copy(*msg, result)
 
-	msg.(packet.InMessage).Unmarshal(result)
 	return nil
 }
 
-func (c *TransferProxyConn) Send(data interface{}) error {
-	msg := data.(packet.RAW)
+func (c *TransferProxyConn) Write(msg []byte) (int, error) {
 	result := make([]byte, 8+len(msg))
 	copy(result[:2], msg[:2])
 	binary.PutUint64LE(result[2:10], c.id)
 	copy(result[10:], msg[2:])
-	c.proxySession.Send(packet.RAW(result))
-	return nil
+	c.proxySession.Send(result)
+	return 0, nil
 }
 
 func (c *TransferProxyConn) Close() error {
 	close(c.recvChan)
+	return nil
+}
+
+func (c *TransferProxyConn) SetDeadline(t time.Time) error {
+	return nil
+}
+
+func (c *TransferProxyConn) SetReadDeadline(t time.Time) error {
+	return nil
+}
+
+func (c *TransferProxyConn) SetWriteDeadline(t time.Time) error {
 	return nil
 }

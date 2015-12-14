@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
@@ -13,10 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
-	_ "github.com/funny/unitest"
+	_ "github.com/funny/utest"
 )
 
 var (
@@ -49,6 +48,40 @@ func (conn *CountConn) Write(p []byte) (n int, err error) {
 	return
 }
 
+type TestCodec struct {
+}
+
+func (codec TestCodec) NewEncoder(w io.Writer) link.Encoder {
+	return &TestEncoder{w}
+}
+
+func (codec TestCodec) NewDecoder(r io.Reader) link.Decoder {
+	return &TestDecoder{r}
+}
+
+type TestEncoder struct {
+	w io.Writer
+}
+
+func (encoder *TestEncoder) Encode(msg interface{}) error {
+	_, err := encoder.w.Write(msg.([]byte))
+	return err
+}
+
+type TestDecoder struct {
+	r io.Reader
+}
+
+func (decoder *TestDecoder) Decode(msg interface{}) error {
+	d := make([]byte, decoder.r.(*io.LimitedReader).N)
+	_, err := io.ReadFull(decoder.r, d)
+	if err != nil {
+		return err
+	}
+	*(msg.(*[]byte)) = d
+	return nil
+}
+
 const OutputFormat = "Send Count: %d, Recv Count: %d, Read Count: %d, Write Count: %d\n"
 
 // This is an benchmark tool work with the echo_server.
@@ -70,7 +103,7 @@ func main() {
 	}
 
 	var (
-		msg       = packet.RAW(make([]byte, *messageSize))
+		msg       = make([]byte, *messageSize)
 		timeout   = time.Now().Add(time.Second * time.Duration(*runTime))
 		initWait  = new(sync.WaitGroup)
 		startChan = make(chan int)
@@ -105,10 +138,8 @@ func main() {
 	fmt.Printf(OutputFormat, sum.SendCount, sum.RecvCount, sum.ReadCount, sum.WriteCount)
 }
 
-func client(initWait *sync.WaitGroup, conn *CountConn, startChan chan int, timeout time.Time, msg packet.RAW) {
-	client := link.NewSession(0, packet.NewConn(conn, packet.New(
-		binary.SplitByUint16BE, 1024, 1024, 1024,
-	)))
+func client(initWait *sync.WaitGroup, conn *CountConn, startChan chan int, timeout time.Time, msg []byte) {
+	client := link.NewSession(conn, link.Packet(2, *messageSize, 4096, binary.LittleEndian, TestCodec{}))
 
 	var wg sync.WaitGroup
 
@@ -121,7 +152,7 @@ func client(initWait *sync.WaitGroup, conn *CountConn, startChan chan int, timeo
 		for {
 			outMsg := msg
 			if *randsize {
-				outMsg = packet.RAW(make([]byte, rand.Intn(*messageSize)))
+				outMsg = msg[:rand.Intn(*messageSize)]
 			}
 			if err := client.Send(outMsg); err != nil {
 				if timeout.After(time.Now()) {
@@ -139,7 +170,7 @@ func client(initWait *sync.WaitGroup, conn *CountConn, startChan chan int, timeo
 		initWait.Done()
 		<-startChan
 
-		var inMsg packet.RAW
+		var inMsg []byte
 		for {
 			if err := client.Receive(&inMsg); err != nil {
 				if timeout.After(time.Now()) {

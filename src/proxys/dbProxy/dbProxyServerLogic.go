@@ -2,7 +2,6 @@ package dbProxy
 
 import (
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"dao"
 	"protos"
 	"protos/dbProto"
@@ -12,7 +11,7 @@ import (
 )
 
 //处理接收到的同步DB消息
-func dealReceiveDBMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveDBMsgC2S(session *link.Session, msg []byte) {
 	protoMsg := dbProto.UnmarshalProtoMsg(msg)
 	if protoMsg == dbProto.NullProtoMsg {
 		return

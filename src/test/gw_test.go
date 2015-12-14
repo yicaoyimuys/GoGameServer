@@ -3,12 +3,12 @@ package test
 import (
 	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"math/rand"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+	"tools/codetype"
 )
 
 import (
@@ -19,9 +19,7 @@ import (
 	"tools/unitest"
 )
 
-var protocol = packet.New(
-	binary.SplitByUint32BE, 1024, 1024, 1024,
-)
+var protocol = link.Packet(4, 1024 * 1024, 4096, link.LittleEndian, codetype.NetCodecType{})
 
 func Test_gateway(t *testing.T) {
 	DEBUG("消息通信测试")
@@ -54,7 +52,7 @@ func Test_gateway(t *testing.T) {
 			count += 1
 
 			//接收服务器连接成功消息
-			var revMsg packet.RAW
+			var revMsg []byte
 			//			err = client.Receive(&revMsg)
 			//			if !unitest.NotError(t, err) {
 			//				return
@@ -130,7 +128,7 @@ func Test_gateway(t *testing.T) {
 	wg.Wait()
 }
 
-func createLoginBytes(userName string) packet.RAW {
+func createLoginBytes(userName string) []byte {
 	sendMsg := &gameProto.UserLoginC2S{
 		UserName: proto.String(userName),
 	}
@@ -139,10 +137,10 @@ func createLoginBytes(userName string) packet.RAW {
 	msg1 := make([]byte, 2+len(msgBody))
 	binary.PutUint16LE(msg1, gameProto.ID_UserLoginC2S)
 	copy(msg1[2:], msgBody)
-	return packet.RAW(msg1)
+	return msg1
 }
 
-func createGetUserInfoBytes(userId uint64) packet.RAW {
+func createGetUserInfoBytes(userId uint64) []byte {
 	sendMsg := &gameProto.GetUserInfoC2S{
 		UserID: proto.Uint64(userId),
 	}
@@ -151,7 +149,7 @@ func createGetUserInfoBytes(userId uint64) packet.RAW {
 	msg1 := make([]byte, 2+len(msgBody))
 	binary.PutUint16LE(msg1, gameProto.ID_GetUserInfoC2S)
 	copy(msg1[2:], msgBody)
-	return packet.RAW(msg1)
+	return msg1
 }
 
 func RandBytes(n int) []byte {

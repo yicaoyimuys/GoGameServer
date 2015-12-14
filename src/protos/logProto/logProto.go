@@ -2,9 +2,9 @@ package logProto
 
 import (
 	"code.google.com/p/goprotobuf/proto"
+	"github.com/funny/binary"
 )
 import (
-	"github.com/funny/binary"
 	"protos"
 )
 

@@ -5,9 +5,7 @@ import (
 )
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"global"
 	"proxys/transferProxy"
 	. "tools"
@@ -57,12 +55,7 @@ func getPort() {
 }
 
 func startGateway() {
-	listener, err := link.Serve("tcp", "0.0.0.0:"+gateway_port, packet.New(
-		binary.SplitByUint32BE, 1024, 1024, 1024,
-	))
-	checkError(err)
-
-	listener.Serve(func(session *link.Session) {
+	err := global.Listener("tcp", "0.0.0.0:"+gateway_port, global.PackCodecType_Gate, func(session *link.Session) {
 		//将此Session记录在缓存内，消息回传时使用
 		global.AddSession(session)
 		//通知LoginServer用户上线
@@ -73,7 +66,7 @@ func startGateway() {
 			transferProxy.SetClientSessionOffline(session.Id())
 		})
 
-		var msg packet.RAW
+		var msg []byte
 		for {
 			if err := session.Receive(&msg); err != nil {
 				break
@@ -81,6 +74,8 @@ func startGateway() {
 			transferProxy.SendToGameServer(msg, session)
 		}
 	})
+
+	checkError(err)
 }
 
 func checkError(err error) {

@@ -1,13 +1,12 @@
 package dbProxy
 
 import (
-	"github.com/funny/link/packet"
 	"dao"
 	"protos/dbProto"
 )
 
 //处理接收到的异步的DB消息
-func dealReceiveAsyncDBMsgC2S(msg packet.RAW) {
+func dealReceiveAsyncDBMsgC2S(msg []byte) {
 	protoMsg := dbProto.UnmarshalProtoMsg(msg)
 	if protoMsg == dbProto.NullProtoMsg {
 		return

@@ -92,19 +92,9 @@ func (this UserModule) LoginSuccess(session *link.Session, userName string, user
 		DEBUG("用户上线：当前在线人数", module.Cache.GetOnlineUsersNum())
 		return true
 	} else {
-		ERR("what????")
+		ERR("what????", userName)
 		return false
 	}
-}
-
-//用户上线
-func (this UserModule) Online(session *link.Session) {
-	global.AddSession(session)
-}
-
-//用户下线
-func (this UserModule) Offline(session *link.Session) {
-	session.Close()
 }
 
 //重新连接

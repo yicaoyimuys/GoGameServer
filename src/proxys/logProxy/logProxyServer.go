@@ -1,9 +1,8 @@
 package logProxy
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
+	"github.com/funny/binary"
 	"protos"
 	"protos/logProto"
 	"protos/systemProto"
@@ -16,7 +15,7 @@ import (
 
 type receiveMsg struct {
 	session *link.Session
-	msg     packet.RAW
+	msg     []byte
 }
 
 var (
@@ -29,27 +28,22 @@ func InitServer(port string) error {
 	servers = make(map[string]*link.Session)
 	receiveMsgs = make(chan receiveMsg, 2048)
 
-	listener, err := link.Serve("tcp", "0.0.0.0:" + port, packet.New(
-		binary.SplitByUint32BE, 1024, 1024, 1024,
-	))
+	err := global.Listener("tcp", "0.0.0.0:" + port, global.PackCodecType, func(session *link.Session) {
+		for {
+			var msg []byte
+			if err := session.Receive(&msg); err != nil {
+				break
+			}
+			receiveMsgs <- receiveMsg{
+				session:session,
+				msg:msg,
+			}
+		}
+	})
+
 	if err != nil {
 		return err
 	}
-
-	go func() {
-		listener.Serve(func(session *link.Session) {
-			for {
-				var msg packet.RAW
-				if err := session.Receive(&msg); err != nil {
-					break
-				}
-				receiveMsgs <- receiveMsg{
-					session:session,
-					msg:msg,
-				}
-			}
-		})
-	}()
 
 	go dealReceiveMsgs()
 
@@ -67,7 +61,7 @@ func dealReceiveMsgs() {
 }
 
 //处理接收到的消息
-func dealReceiveMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveMsgC2S(session *link.Session, msg []byte) {
 	if len(msg) < 2 {
 		return
 	}
@@ -83,7 +77,7 @@ func dealReceiveMsgC2S(session *link.Session, msg packet.RAW) {
 }
 
 //处理接收到的系统消息
-func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveSystemMsgC2S(session *link.Session, msg []byte) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
 	if protoMsg == systemProto.NullProtoMsg {
 		return
@@ -96,7 +90,7 @@ func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
 }
 
 //处理Log消息
-func dealLogMsgC2S(msg packet.RAW) {
+func dealLogMsgC2S(msg []byte) {
 	protoMsg := logProto.UnmarshalProtoMsg(msg)
 	if protoMsg == logProto.NullProtoMsg {
 		return

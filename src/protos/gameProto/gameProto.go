@@ -1,7 +1,7 @@
 package gameProto
 
-import "code.google.com/p/goprotobuf/proto"
 import (
+	"code.google.com/p/goprotobuf/proto"
 	"github.com/funny/binary"
 	"protos"
 	//	. "tools"

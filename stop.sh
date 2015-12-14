@@ -12,11 +12,17 @@ function func(){
 if [ $# -eq 0 ]
 	then
 		func GateServer
-		func GameServer
-		func WorldServer
+		sleep 1
 		func LoginServer
+		sleep 1
+		func GameServer
+		sleep 1
+		func WorldServer
+		sleep 1
 		func DBServer
+		sleep 1
 		func LogServer
+		sleep 1
 	else
 		func $1
 fi

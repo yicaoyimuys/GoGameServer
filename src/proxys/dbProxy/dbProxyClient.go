@@ -1,9 +1,7 @@
 package dbProxy
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"global"
 	"protos"
 	"protos/systemProto"
@@ -18,7 +16,7 @@ var (
 func InitClient(ip string, port string) error {
 	//连接DB服务器
 	addr := ip + ":" + port
-	client, err := link.Connect("tcp", addr, packet.New(binary.SplitByUint32BE, 1024, 1024, 1024))
+	client, err := link.Connect("tcp", addr, global.PackCodecType)
 	if err != nil {
 		return err
 	}
@@ -45,7 +43,7 @@ func sendDBMsgToServer(msg []byte) {
 
 //处理从DBServer发回的消息
 func dealReceiveMsgS2C() {
-	var msg packet.RAW
+	var msg []byte
 	for {
 		if err := logClient.Receive(&msg); err != nil {
 			break
@@ -56,7 +54,7 @@ func dealReceiveMsgS2C() {
 }
 
 //处理接收到的系统消息
-func dealReceiveSystemMsgS2C(msg packet.RAW) {
+func dealReceiveSystemMsgS2C(msg []byte) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
 	if protoMsg == systemProto.NullProtoMsg {
 		return

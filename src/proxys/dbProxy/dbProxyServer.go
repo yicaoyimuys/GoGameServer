@@ -1,9 +1,8 @@
 package dbProxy
 
 import (
-	"github.com/funny/binary"
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
+	"github.com/funny/binary"
 	"protos"
 	"protos/systemProto"
 	"strings"
@@ -16,7 +15,7 @@ import (
 )
 
 type goroutineMsg struct {
-	msg     packet.RAW
+	msg     []byte
 	session *link.Session
 }
 
@@ -47,16 +46,9 @@ func InitServer(port string) error {
 
 	createRevGoroutines()
 
-	listener, err := link.Serve("tcp", "0.0.0.0:"+port, packet.New(
-		binary.SplitByUint32BE, 1024, 1024, 1024,
-	))
-	if err != nil {
-		return err
-	}
-
-	listener.Serve(func(session *link.Session) {
+	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType, func(session *link.Session) {
 		for {
-			var msg packet.RAW
+			var msg []byte
 			if err := session.Receive(&msg); err != nil {
 				break
 			}
@@ -77,11 +69,15 @@ func InitServer(port string) error {
 		}
 	})
 
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 //处理接收到的系统消息
-func dealReceiveSystemMsgC2S(session *link.Session, msg packet.RAW) {
+func dealReceiveSystemMsgC2S(session *link.Session, msg []byte) {
 	protoMsg := systemProto.UnmarshalProtoMsg(msg)
 	if protoMsg == systemProto.NullProtoMsg {
 		return
@@ -135,7 +131,7 @@ func onSyncDBTimer() {
 	INFO("SyncDB Num: ", dlen)
 	for i := 0; i < dlen; i++ {
 		msg := datas[i]
-		dealReceiveAsyncDBMsgC2S(packet.RAW(msg))
+		dealReceiveAsyncDBMsgC2S(msg)
 	}
 }
 

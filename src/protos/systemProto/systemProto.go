@@ -2,10 +2,10 @@ package systemProto
 
 import (
 	"code.google.com/p/goprotobuf/proto"
+	"github.com/funny/binary"
 	//	"strconv"
 )
 import (
-	"github.com/funny/binary"
 	"protos"
 )
 

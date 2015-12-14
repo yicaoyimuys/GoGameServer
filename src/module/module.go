@@ -26,8 +26,6 @@ type UserModule interface {
 
 	Login(userName string, session *link.Session)
 	LoginSuccess(session *link.Session, userName string, userID uint64, gameServerID uint32) bool
-	Online(session *link.Session)
-	Offline(session *link.Session)
 	AgainConnect(oldSessionID uint64, session *link.Session) uint64
 	GetUserInfo(userID uint64, session *link.Session)
 }

@@ -2,22 +2,20 @@ package module
 
 import (
 	"github.com/funny/link"
-	"github.com/funny/link/packet"
 	"protos"
 	. "protos/gameProto"
-	//	. "tools"
 	. "model"
 )
 
 //接收消息处理
-func ReceiveMessage(session *link.Session, msg packet.RAW) {
+func ReceiveMessage(session *link.Session, msg []byte) {
 	protoMsg := UnmarshalProtoMsg(msg)
 	if protoMsg == NullProtoMsg {
 		SendErrorMsg(Message_Error, session)
 		return
 	}
 
-	//	DEBUG("收到消息ID: " + strconv.Itoa(int(msgID)))
+//	DEBUG("收到消息ID: ", protoMsg.ID)
 
 	switch protoMsg.ID {
 	case ID_UserLoginC2S:
