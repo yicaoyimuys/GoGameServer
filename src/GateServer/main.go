@@ -10,6 +10,7 @@ import (
 	"proxys/transferProxy"
 	. "tools"
 	"tools/cfg"
+	"tools/dispatch"
 )
 
 var (
@@ -55,25 +56,27 @@ func getPort() {
 }
 
 func startGateway() {
-	err := global.Listener("tcp", "0.0.0.0:"+gateway_port, global.PackCodecType_UnSafe, func(session *link.Session) {
-		//将此Session记录在缓存内，消息回传时使用
-		global.AddSession(session)
-		//通知LoginServer用户上线
-		transferProxy.SetClientSessionOnline(session)
-		//添加session关闭时回调
-		session.AddCloseCallback(session, func() {
-			//通知LoginServer、GameServer用户下线
-			transferProxy.SetClientSessionOffline(session.Id())
-		})
+	msgDispatch := dispatch.NewDispatch(
+		dispatch.HandleFunc{
+			H: transferProxy.SendToGameServer,
+		},
+	)
 
-		var msg []byte
-		for {
-			if err := session.Receive(&msg); err != nil {
-				break
-			}
-			transferProxy.SendToGameServer(msg, session)
-		}
-	})
+	addr := "0.0.0.0:" + gateway_port
+	err := global.Listener("tcp", addr, global.PackCodecType_UnSafe,
+		func(session *link.Session) {
+			//将此Session记录在缓存内，消息回传时使用
+			global.AddSession(session)
+			//通知LoginServer用户上线
+			transferProxy.SetClientSessionOnline(session)
+			//添加session关闭时回调
+			session.AddCloseCallback(session, func() {
+				//通知LoginServer、GameServer用户下线
+				transferProxy.SetClientSessionOffline(session.Id())
+			})
+		},
+		msgDispatch,
+	)
 
 	checkError(err)
 }

@@ -11,84 +11,66 @@ import (
 	"proxys/worldProxy"
 	. "tools"
 	"tools/codecType"
+	"tools/dispatch"
 	"proxys"
 )
 
 var (
-	transferClient *link.Session
+	transferClient 			 *link.Session
+	clientMsgDispatchAsync   dispatch.DispatchInterface
 )
+
+func init() {
+	handle := dispatch.NewHandleConditions()
+	//系统消息处理
+	handle.Add(dispatch.HandleCondition{
+		Condition: systemProto.IsValidID,
+		H: dispatch.Handle{
+			systemProto.ID_System_ConnectTransferServerS2C:		connectTransferServerCallBack,
+			systemProto.ID_System_ClientSessionOnlineC2S:		setSessionOnline,
+			systemProto.ID_System_ClientSessionOfflineC2S:		setSessionOffline,
+			systemProto.ID_System_ClientLoginSuccessC2S:		setClientLoginSuccess,
+		},
+	})
+	//LoginServer消息
+	handle.Add(dispatch.HandleFuncCondition{
+		Condition: gameProto.IsValidLoginID,
+		H: func(session *link.Session, msg []byte) {
+			dealGameMsg(msg)
+		},
+	})
+	//GameServer消息
+	handle.Add(dispatch.HandleFuncCondition{
+		Condition: gameProto.IsValidGameID,
+		H: func(session *link.Session, msg []byte) {
+			dealGameMsg(msg)
+		},
+	})
+	//WorldServer消息
+	handle.Add(dispatch.HandleFuncCondition{
+		Condition: gameProto.IsValidWorldID,
+		H: func(session *link.Session, msg []byte) {
+			worldProxy.SendGameMsgToServer(msg)
+		},
+	})
+
+	//创建消息分派
+	clientMsgDispatchAsync = dispatch.NewDispatch(handle)
+}
 
 //初始化
 func InitClient(ip string, port string) error {
+	//连接TransferServer
 	addr := ip + ":" + port
-	client, err := link.Connect("tcp", addr, global.PackCodecType_Safe)
+	client, err := global.Connect("TransferServer", "tcp", addr, global.PackCodecType_Safe, clientMsgDispatchAsync)
 	if err != nil {
 		return err
 	}
-	client.AddCloseCallback(client, func(){
-		ERR("TransferServer Disconnect At " + global.ServerName)
-	})
 
 	transferClient = client
-	go dealReceiveMsg()
-	ConnectTransferServer()
+	sendConnectTransferServer()
 
 	return nil
-}
-
-//处理从TransferServer发回的消息
-func dealReceiveMsg() {
-	for {
-		var msg []byte
-		if err := transferClient.Receive(&msg); err != nil {
-			break
-		}
-		dealReceiveMsgS2C(msg)
-	}
-}
-
-//处理接收到的系统消息
-func dealReceiveSystemMsgS2C(msg []byte) {
-	protoMsg := systemProto.UnmarshalProtoMsg(msg)
-	if protoMsg == systemProto.NullProtoMsg {
-		return
-	}
-
-	switch protoMsg.ID {
-	case systemProto.ID_System_ConnectTransferServerS2C:
-		connectTransferServerCallBack(protoMsg)
-	case systemProto.ID_System_ClientSessionOnlineC2S:
-		setSessionOnline(protoMsg)
-	case systemProto.ID_System_ClientSessionOfflineC2S:
-		setSessionOffline(protoMsg)
-	case systemProto.ID_System_ClientLoginSuccessC2S:
-		setClientLoginSuccess(protoMsg)
-	}
-}
-
-//处理接收到的消息
-func dealReceiveMsgS2C(msg []byte) {
-	if len(msg) < 2 {
-		return
-	}
-
-	msgID := binary.GetUint16LE(msg[:2])
-	//	DEBUG(global.ServerName, msgID)
-	if systemProto.IsValidID(msgID) {
-		dealReceiveSystemMsgS2C(msg)
-	} else if gameProto.IsValidWorldID(msgID) {
-		if msgID%2 == 1 {
-			//C2S消息，由WorldServer处理
-			worldProxy.SendGameMsgToServer(msg)
-		}
-	} else if gameProto.IsValidID(msgID) {
-		if msgID%2 == 1 {
-			//C2S消息，由GameServer处理
-			dealGameMsg(msg)
-		}
-	} else {
-		ERR(global.ServerName, "收到未处理消息")
-	}
 }
 
 //发送系统消息到TransferServer
@@ -96,11 +78,11 @@ func sendSystemMsgToServer(msg []byte) {
 	if transferClient == nil {
 		return
 	}
-	protos.Send(msg, transferClient)
+	protos.Send(transferClient, msg)
 }
 
 //发送连接TransferServer
-func ConnectTransferServer() {
+func sendConnectTransferServer() {
 	INFO(global.ServerName + " Connect TransferServer ...")
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectTransferServerC2S{
 		ServerName: protos.String(global.ServerName),
@@ -110,7 +92,7 @@ func ConnectTransferServer() {
 }
 
 //连接TransferServer返回
-func connectTransferServerCallBack(protoMsg systemProto.ProtoMsg) {
+func connectTransferServerCallBack(session *link.Session, protoMsg protos.ProtoMsg) {
 	//	rev_msg := protoMsg.Body.(*systemProto.System_ConnectTransferServerS2C)
 	INFO(global.ServerName + " Connect TransferServer Success")
 }
@@ -129,7 +111,7 @@ func SetClientLoginSuccess(userName string, userID uint64, session *link.Session
 }
 
 //在GameServer设置用户登录成功
-func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
+func setClientLoginSuccess(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
 	userConn := proxys.NewDummyConn(rev_msg.GetSessionID(), rev_msg.GetNetwork(), rev_msg.GetAddr(), transferClient)
 	userSession := link.NewSessionByID(userConn, codecType.DummyCodecType{}, rev_msg.GetSessionID())
@@ -150,7 +132,7 @@ func setClientLoginSuccess(protoMsg systemProto.ProtoMsg) {
 }
 
 //在LoginServer创建虚拟用户
-func setSessionOnline(protoMsg systemProto.ProtoMsg) {
+func setSessionOnline(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOnlineC2S)
 	userConn := proxys.NewDummyConn(rev_msg.GetSessionID(), rev_msg.GetNetwork(), rev_msg.GetAddr(), transferClient)
 	userSession := link.NewSessionByID(userConn, codecType.DummyCodecType{}, rev_msg.GetSessionID())
@@ -167,7 +149,7 @@ func setSessionOnline(protoMsg systemProto.ProtoMsg) {
 }
 
 //在游戏服务端删除虚拟用户
-func setSessionOffline(protoMsg systemProto.ProtoMsg) {
+func setSessionOffline(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOfflineC2S)
 	userSession := global.GetSession(rev_msg.GetSessionID())
 	if userSession != nil {

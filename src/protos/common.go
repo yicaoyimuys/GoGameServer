@@ -7,7 +7,14 @@ import (
 	. "tools"
 )
 
+type ProtoMsg struct {
+	ID             uint16
+	Body           interface{}
+	Identification uint64
+}
+
 var (
+	NullProtoMsg ProtoMsg = ProtoMsg{0, nil, 0}
 	MsgObjectMap map[uint16]reflect.Type = make(map[uint16]reflect.Type)
 	MsgIDMap     map[reflect.Type]uint16 = make(map[reflect.Type]uint16)
 )
@@ -42,7 +49,7 @@ func GetMsgID(msg interface{}) uint16 {
 }
 
 //发送消息
-func Send(msgBody []byte, session *link.Session) {
+func Send(session *link.Session, msgBody []byte) {
 	session.Send(msgBody)
 }
 

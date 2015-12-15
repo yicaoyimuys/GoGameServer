@@ -11,12 +11,14 @@ import (
 	"strings"
 	. "tools"
 	"tools/hashs"
+	"tools/dispatch"
 )
 
 var (
-	servers          map[string][]Server
-	gameConsistent   *hashs.Consistent
-	gameUserSessions map[uint64]int
+	servers          	map[string][]Server
+	gameConsistent   	*hashs.Consistent
+	gameUserSessions 	map[uint64]int
+	serverMsgDispatch 	dispatch.DispatchInterface
 )
 
 type Server struct {
@@ -25,60 +27,42 @@ type Server struct {
 	serverIndex int
 }
 
+func init()  {
+	handle := dispatch.NewHandleConditions()
+	//系统消息处理
+	handle.Add(dispatch.HandleCondition{
+		Condition: systemProto.IsValidID,
+		H: dispatch.Handle{
+			systemProto.ID_System_ConnectTransferServerC2S:		connectTransferServer,
+			systemProto.ID_System_ClientLoginSuccessC2S:		clientLoginSuccess,
+		},
+	})
+	//游戏消息处理
+	handle.Add(dispatch.HandleFuncCondition{
+		Condition: gameProto.IsValidID,
+		H: func(session *link.Session, msg []byte) {
+			sendToGateServer(msg)
+		},
+	})
+
+	//创建消息分派
+	serverMsgDispatch = dispatch.NewDispatch(handle)
+}
+
 //初始化
 func InitServer(port string) error {
 	servers = make(map[string][]Server)
 	gameConsistent = hashs.NewConsistent()
 	gameUserSessions = make(map[uint64]int)
 
-	err := global.Listener("tcp", "0.0.0.0:"+port, global.PackCodecType_Safe, func(session *link.Session) {
-		var msg []byte
-		for {
-			if err := session.Receive(&msg); err != nil {
-				break
-			}
-			dealReceiveMsgC2S(session, msg)
-		}
-	})
+	//监听tcp
+	addr := "0.0.0.0:" + port
+	err := global.Listener("tcp", addr, global.PackCodecType_Safe,
+		func(session *link.Session) {},
+		serverMsgDispatch,
+	)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//处理接收到的系统消息
-func dealReceiveSystemMsgC2S(session *link.Session, msg []byte) {
-	protoMsg := systemProto.UnmarshalProtoMsg(msg)
-	if protoMsg == systemProto.NullProtoMsg {
-		return
-	}
-
-	switch protoMsg.ID {
-	case systemProto.ID_System_ConnectTransferServerC2S:
-		connectTransferServer(session, protoMsg)
-	case systemProto.ID_System_ClientLoginSuccessC2S:
-		clientLoginSuccess(protoMsg)
-	}
-}
-
-//处理接收到的消息
-func dealReceiveMsgC2S(session *link.Session, msg []byte) {
-	if len(msg) < 2 {
-		return
-	}
-
-	msgID := binary.GetUint16LE(msg[:2])
-	if systemProto.IsValidID(msgID) {
-		//系统消息
-		dealReceiveSystemMsgC2S(session, msg)
-	} else if gameProto.IsValidID(msgID) {
-		if msgID%2 == 0 {
-			//S2C消息，发送到GateServer
-			SendToGateServer(msg)
-		}
-	}
+	return err
 }
 
 //不再分配游戏服务器
@@ -145,7 +129,7 @@ func sendGameMsg(serverName string, msg []byte) {
 }
 
 //其他客户端连接TransferServer处理
-func connectTransferServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
+func connectTransferServer(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ConnectTransferServerC2S)
 
 	serverName := rev_msg.GetServerName()
@@ -197,11 +181,11 @@ func connectTransferServer(session *link.Session, protoMsg systemProto.ProtoMsg)
 
 	//发送连接成功消息
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectTransferServerS2C{})
-	protos.Send(send_msg, session)
+	protos.Send(session, send_msg)
 }
 
 //处理玩家登录成功，分配服务器
-func clientLoginSuccess(protoMsg systemProto.ProtoMsg) {
+func clientLoginSuccess(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientLoginSuccessC2S)
 
 	//用户SessionID
@@ -255,7 +239,7 @@ func SetClientSessionOffline(sessionID uint64) {
 }
 
 //发送消息到TransferServer, 网关调用
-func SendToGameServer(msg []byte, userSession *link.Session) {
+func SendToGameServer(userSession *link.Session, msg []byte) {
 	send_msg := make([]byte, 8+len(msg))
 	copy(send_msg[:2], msg[:2])
 	binary.PutUint64LE(send_msg[2:10], userSession.Id())
@@ -271,7 +255,7 @@ func SendToGameServer(msg []byte, userSession *link.Session) {
 }
 
 //发送消息到用户客户端
-func SendToGateServer(msg []byte) {
+func sendToGateServer(msg []byte) {
 	if len(msg) < 10 {
 		return
 	}

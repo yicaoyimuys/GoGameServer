@@ -8,15 +8,6 @@ import (
 	"protos"
 )
 
-type ProtoMsg struct {
-	ID   uint16
-	Body interface{}
-}
-
-var (
-	NullProtoMsg ProtoMsg = ProtoMsg{0, nil}
-)
-
 //初始化消息ID和消息类型的对应关系
 func init() {
 	protos.SetMsg(ID_Log_CommonLogC2S, Log_CommonLogC2S{})
@@ -40,27 +31,27 @@ func MarshalProtoMsg(args proto.Message) []byte {
 }
 
 //反序列化
-func UnmarshalProtoMsg(msg []byte) ProtoMsg {
+func UnmarshalProtoMsg(msg []byte) protos.ProtoMsg {
 	if len(msg) < 2 {
-		return NullProtoMsg
+		return protos.NullProtoMsg
 	}
 
 	msgID := binary.GetUint16LE(msg[:2])
 	if !IsValidID(msgID) {
-		return NullProtoMsg
+		return protos.NullProtoMsg
 	}
 
 	msgBody := protos.GetMsgObject(msgID)
 	if msgBody == nil {
-		return NullProtoMsg
+		return protos.NullProtoMsg
 	}
 
 	err := proto.Unmarshal(msg[2:], msgBody)
 	if err != nil {
-		return NullProtoMsg
+		return protos.NullProtoMsg
 	}
 
-	return ProtoMsg{
+	return protos.ProtoMsg{
 		ID:   msgID,
 		Body: msgBody,
 	}

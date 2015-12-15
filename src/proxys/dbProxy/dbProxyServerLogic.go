@@ -10,21 +10,12 @@ import (
 	"time"
 )
 
-//处理接收到的同步DB消息
-func dealReceiveDBMsgC2S(session *link.Session, msg []byte) {
-	protoMsg := dbProto.UnmarshalProtoMsg(msg)
-	if protoMsg == dbProto.NullProtoMsg {
-		return
-	}
-
-	switch protoMsg.ID {
-	case dbProto.ID_DB_User_LoginC2S:
-		userLogin(session, protoMsg)
-	}
-}
+/**
+此文件处理接收到的同步的DB消息
+*/
 
 //用户登录
-func userLogin(session *link.Session, protoMsg dbProto.ProtoMsg) {
+func userLogin(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*dbProto.DB_User_LoginC2S)
 	userName := rev_msg.GetName()
 

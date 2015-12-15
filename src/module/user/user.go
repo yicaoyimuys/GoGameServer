@@ -24,7 +24,7 @@ func init() {
 //用户DB登录返回
 func (this UserModule) UserLoginHandle(session *link.Session, userName string, userID uint64) {
 	if userID == 0 {
-		module.SendLoginResult(0, session)
+		module.SendLoginResult(session, 0)
 	} else {
 		//登录成功处理
 		success := this.LoginSuccess(session, userName, userID, 0)
@@ -32,7 +32,7 @@ func (this UserModule) UserLoginHandle(session *link.Session, userName string, u
 			//登录成功后处理
 			this.dealLoginSuccess(session, userName, userID)
 		} else {
-			module.SendLoginResult(0, session)
+			module.SendLoginResult(session, 0)
 		}
 	}
 }
@@ -52,7 +52,7 @@ func (this UserModule) Login(userName string, session *link.Session) {
 				//登录成功后处理
 				this.dealLoginSuccess(session, userName, onlineUser.UserID)
 			} else {
-				module.SendLoginResult(0, session)
+				module.SendLoginResult(session, 0)
 			}
 		}
 	} else {
@@ -65,7 +65,7 @@ func (this UserModule) dealLoginSuccess(session *link.Session, userName string, 
 	//通知GameServer登录成功
 	transferProxy.SetClientLoginSuccess(userName, userID, session)
 	//发送登录成功消息
-	module.SendLoginResult(userID, session)
+	module.SendLoginResult(session, userID)
 	//如果用户在下线列表中，则移除
 	module.Cache.RemoveOfflineUser(userID)
 	//用户下线时处理
@@ -124,11 +124,11 @@ func (this UserModule) GetUserInfo(userID uint64, session *link.Session) {
 		dbUser := redisProxy.GetDBUser(userID)
 		if dbUser != nil {
 			userModel := NewUserModel(dbUser)
-			module.SendGetUserInfoResult(0, userModel, session)
+			module.SendGetUserInfoResult(session, 0, userModel)
 		} else {
-			module.SendGetUserInfoResult(gameProto.User_Not_Exists, nil, session)
+			module.SendGetUserInfoResult(session, gameProto.User_Not_Exists, nil)
 		}
 	} else {
-		module.SendGetUserInfoResult(gameProto.User_Login_Fail, nil, session)
+		module.SendGetUserInfoResult(session, gameProto.User_Login_Fail, nil)
 	}
 }

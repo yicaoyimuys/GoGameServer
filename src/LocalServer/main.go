@@ -54,7 +54,7 @@ func getPort() {
 }
 
 func startLocalServer() {
-	//连接DB
+	//开启DB
 	db.Init()
 
 	//连接Redis
@@ -62,20 +62,13 @@ func startLocalServer() {
 	checkError(redisProxyErr)
 
 	//开启客户端监听
-	err := global.Listener("tcp", "0.0.0.0:"+local_port, global.PackCodecType_UnSafe, func(session *link.Session) {
-		session.AddCloseCallback(session, func() {
-			session.Close()
-		})
-		global.AddSession(session)
-
-		var msg []byte
-		for {
-			if err := session.Receive(&msg); err != nil {
-				break
-			}
-			module.ReceiveMessage(session, msg)
-		}
-	})
+	addr := "0.0.0.0:" + local_port
+	err := global.Listener("tcp", addr, global.PackCodecType_UnSafe,
+		func(session *link.Session) {
+			global.AddSession(session)
+		},
+		module.MsgDispatch,
+	)
 	checkError(err)
 }
 

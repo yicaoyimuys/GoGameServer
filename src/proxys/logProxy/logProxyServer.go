@@ -2,7 +2,6 @@ package logProxy
 
 import (
 	"github.com/funny/link"
-	"github.com/funny/binary"
 	"protos"
 	"protos/logProto"
 	"protos/systemProto"
@@ -11,107 +10,53 @@ import (
 	. "tools"
 	"tools/file"
 	"global"
+	"tools/dispatch"
 )
-
-type receiveMsg struct {
-	session *link.Session
-	msg     []byte
-}
 
 var (
 	servers map[string]*link.Session
-	receiveMsgs chan receiveMsg
+	serverMsgReceiveChan dispatch.ReceiveMsgChan
+	serverMsgDispatch dispatch.DispatchInterface
 )
+
+func init() {
+	//创建异步接收消息的Chan
+	serverMsgReceiveChan = make(chan dispatch.ReceiveMsg, 4096)
+
+	//创建消息分派
+	serverMsgDispatch = dispatch.NewDispatchAsync([]dispatch.ReceiveMsgChan{serverMsgReceiveChan},
+		dispatch.Handle{
+			systemProto.ID_System_ConnectLogServerC2S:	connectLogServer,
+			logProto.ID_Log_CommonLogC2S:				writeLogFile,
+		},
+	)
+}
 
 //初始化
 func InitServer(port string) error {
 	servers = make(map[string]*link.Session)
-	receiveMsgs = make(chan receiveMsg, 4096)
 
-	err := global.Listener("tcp", "0.0.0.0:" + port, global.PackCodecType_Safe, func(session *link.Session) {
-		for {
-			var msg []byte
-			if err := session.Receive(&msg); err != nil {
-				break
-			}
-			receiveMsgs <- receiveMsg{
-				session:session,
-				msg:msg,
-			}
-		}
-	})
+	//监听tcp连接
+	addr := "0.0.0.0:" + port
+	err := global.Listener("tcp", addr, global.PackCodecType_Safe,
+		func(session *link.Session) {},
+		serverMsgDispatch,
+	)
 
-	if err != nil {
-		return err
-	}
-
-	go dealReceiveMsgs()
-
-	return nil
-}
-
-func dealReceiveMsgs() {
-	for {
-		data, ok := <-receiveMsgs
-		if !ok {
-			return
-		}
-		dealReceiveMsgC2S(data.session, data.msg)
-	}
-}
-
-//处理接收到的消息
-func dealReceiveMsgC2S(session *link.Session, msg []byte) {
-	if len(msg) < 2 {
-		return
-	}
-
-	msgID := binary.GetUint16LE(msg[:2])
-	if systemProto.IsValidID(msgID) {
-		//系统消息
-		dealReceiveSystemMsgC2S(session, msg)
-	} else if logProto.IsValidID(msgID) {
-		//Log消息
-		dealLogMsgC2S(msg)
-	}
-}
-
-//处理接收到的系统消息
-func dealReceiveSystemMsgC2S(session *link.Session, msg []byte) {
-	protoMsg := systemProto.UnmarshalProtoMsg(msg)
-	if protoMsg == systemProto.NullProtoMsg {
-		return
-	}
-
-	switch protoMsg.ID {
-	case systemProto.ID_System_ConnectLogServerC2S:
-		connectLogServer(session, protoMsg)
-	}
-}
-
-//处理Log消息
-func dealLogMsgC2S(msg []byte) {
-	protoMsg := logProto.UnmarshalProtoMsg(msg)
-	if protoMsg == logProto.NullProtoMsg {
-		return
-	}
-
-	switch protoMsg.ID {
-	case logProto.ID_Log_CommonLogC2S:
-		writeLogFile(protoMsg)
-	}
+	return err
 }
 
 //等待所有log写入文件
 func SyncLog() {
-	INFO("SyncLog Num: ", len(receiveMsgs))
-	for len(receiveMsgs) > 0 {
+	INFO("SyncLog Num: ", len(serverMsgReceiveChan))
+	for len(serverMsgReceiveChan) > 0 {
 		
 	}
+	close(serverMsgReceiveChan)
 }
 
 //写入log
-func writeLogFile(msg logProto.ProtoMsg)  {
+func writeLogFile(session *link.Session, msg protos.ProtoMsg)  {
 	data := msg.Body.(*logProto.Log_CommonLogC2S)
 
 	t := time.Unix(data.GetTime(), 0)
@@ -144,7 +89,7 @@ func writeLogFile(msg logProto.ProtoMsg)  {
 }
 
 //其他客户端连接LogServer处理
-func connectLogServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
+func connectLogServer(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ConnectLogServerC2S)
 
 	serverName := rev_msg.GetServerName()
@@ -156,5 +101,5 @@ func connectLogServer(session *link.Session, protoMsg systemProto.ProtoMsg) {
 	})
 
 	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectLogServerS2C{})
-	protos.Send(send_msg, session)
+	protos.Send(session, send_msg)
 }

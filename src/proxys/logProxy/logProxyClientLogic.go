@@ -20,7 +20,7 @@ func sendCommonLog(dir string, logType uint32, content string) {
 		Content: protos.String(content),
 		Time: protos.Int64(time.Now().Unix()),
 	})
-	SendLogMsgToServer(send_msg)
+	sendLogMsgToServer(send_msg)
 }
 
 func sendLoginLog(logType uint32, contents []string) {
