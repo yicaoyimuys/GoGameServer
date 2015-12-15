@@ -9,6 +9,7 @@ import (
 	"global"
 	"module"
 	"proxys/redisProxy"
+	"proxys/dbProxy"
 	. "tools"
 	"tools/cfg"
 	"tools/db"
@@ -37,7 +38,7 @@ func main() {
 	getPort()
 
 	//启动
-	global.Startup(global.ServerName, "local_log", nil)
+	global.Startup(global.ServerName, "local_log", stopLocalServer)
 
 	//开启LocalServer监听
 	startLocalServer()
@@ -54,12 +55,15 @@ func getPort() {
 }
 
 func startLocalServer() {
-	//开启DB
-	db.Init()
-
 	//连接Redis
 	redisProxyErr := redisProxy.InitClient(cfg.GetValue("redis_ip"), cfg.GetValue("redis_port"), cfg.GetValue("redis_pwd"))
 	checkError(redisProxyErr)
+
+	//开启DB
+	db.Init()
+
+	//开启同步DB数据到数据库
+	dbProxy.StartSysDB()
 
 	//开启客户端监听
 	addr := "0.0.0.0:" + local_port
@@ -70,6 +74,12 @@ func startLocalServer() {
 		module.MsgDispatch,
 	)
 	checkError(err)
+}
+
+func stopLocalServer() {
+	INFO("Waiting SyncDB...")
+	dbProxy.SyncDB()
+	INFO("SyncDB Success")
 }
 
 func checkError(err error) {

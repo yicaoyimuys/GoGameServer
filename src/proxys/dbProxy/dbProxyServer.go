@@ -28,7 +28,7 @@ var (
 	serverMsgDispatchAsync   dispatch.DispatchInterface
 )
 
-func init()  {
+func init() {
 	//创建异步接收消息的Chans
 	serverMsgReceiveChans = make([]dispatch.ReceiveMsgChan, 10)
 	for i := 0; i < len(serverMsgReceiveChans); i++ {
@@ -37,16 +37,22 @@ func init()  {
 
 	//创建DB同步数据消息分派
 	serverMsgDispatch = dispatch.NewDispatchAsync(serverMsgReceiveChans,
-		dispatch.Handle{
-			systemProto.ID_System_ConnectDBServerC2S:	connectDBServer,
-			dbProto.ID_DB_User_LoginC2S:				userLogin,
+		dispatch.HandleCondition{
+			Condition: dbProto.IsValidSyncID,
+			H: dispatch.Handle{
+				systemProto.ID_System_ConnectDBServerC2S:	connectDBServer,
+				dbProto.ID_DB_User_LoginC2S:				userLogin,
+			},
 		},
 	)
 
 	//创建DB异步数据消息分派
 	serverMsgDispatchAsync = dispatch.NewDispatch(
-		dispatch.Handle{
-			dbProto.ID_DB_User_UpdateLastLoginTimeC2S:		updateUserLastLoginTime,
+		dispatch.HandleCondition{
+			Condition: dbProto.IsValidAsyncID,
+			H: dispatch.Handle{
+				dbProto.ID_DB_User_UpdateLastLoginTimeC2S:		updateUserLastLoginTime,
+			},
 		},
 	)
 }
@@ -59,7 +65,7 @@ func InitServer(port string) error {
 	db.Init()
 
 	//开启同步写入DB
-	startSysDB()
+	StartSysDB()
 
 	//监听tcp连接
 	addr := "0.0.0.0:" + port
@@ -89,7 +95,7 @@ func connectDBServer(session *link.Session, protoMsg protos.ProtoMsg) {
 }
 
 //开启定时同步DB数据
-func startSysDB() {
+func StartSysDB() {
 	syncDbTimerID = timer.DoTimer(int64(SYSDB_INTERVAL), onSyncDBTimer)
 	onSyncDBTimer()
 }

@@ -27,6 +27,11 @@ func IsValidAsyncID(msgID uint16) bool {
 	return msgID >= 12000 && msgID <= 14999
 }
 
+//是否是有效的同步DB消息
+func IsValidSyncID(msgID uint16) bool {
+	return msgID >= 11000 && msgID <= 11999
+}
+
 //序列化
 func MarshalProtoMsg(identification uint64, args proto.Message) []byte {
 	msgID := protos.GetMsgID(args)

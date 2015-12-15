@@ -2,7 +2,6 @@ package user
 
 import (
 	"github.com/funny/link"
-	"global"
 	. "model"
 	"module"
 	"protos/gameProto"
@@ -72,6 +71,8 @@ func (this UserModule) dealLoginSuccess(session *link.Session, userName string, 
 	session.AddCloseCallback(session, func() {
 		//记录用户下线时间
 		module.Cache.AddOfflineUser(userID)
+		//记录用户下线Log
+		logProxy.UserOffLine(userID)
 	})
 	//记录用户登录Log
 	logProxy.UserLogin(userID)
@@ -84,10 +85,6 @@ func (this UserModule) LoginSuccess(session *link.Session, userName string, user
 		session.AddCloseCallback(session, func() {
 			module.Cache.RemoveOnlineUser(session.Id())
 			DEBUG("用户下线：当前在线人数", module.Cache.GetOnlineUsersNum())
-			//记录用户下线Log
-			if global.IsWorldServer() {
-				logProxy.UserOffLine(userID)
-			}
 		})
 		DEBUG("用户上线：当前在线人数", module.Cache.GetOnlineUsersNum())
 		return true
