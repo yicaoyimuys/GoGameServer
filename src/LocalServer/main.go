@@ -20,6 +20,7 @@ import (
 	_ "module/cache"
 	_ "module/config"
 	_ "module/user"
+	"proxys/gameProxy"
 )
 
 var (
@@ -71,7 +72,7 @@ func startLocalServer() {
 		func(session *link.Session) {
 			global.AddSession(session)
 		},
-		module.MsgDispatch,
+		gameProxy.MsgDispatch,
 	)
 	checkError(err)
 }

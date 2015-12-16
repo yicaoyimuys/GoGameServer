@@ -12,6 +12,7 @@ import (
 	"tools/codecType"
 	"tools/dispatch"
 	"proxys"
+	"proxys/gameProxy"
 )
 
 var (
@@ -82,7 +83,7 @@ func setClientLoginSuccess(session *link.Session, protoMsg protos.ProtoMsg) {
 			if err := userSession.Receive(&msg); err != nil {
 				break
 			}
-			module.ReceiveMessage(userSession, msg)
+			gameProxy.MsgDispatch.Process(userSession, msg)
 		}
 	}()
 	module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID(), rev_msg.GetGameServerID())
