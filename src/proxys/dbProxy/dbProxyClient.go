@@ -71,7 +71,7 @@ func sendDBMsgToServer(msg []byte) {
 //发送连接DB服务器
 func sendConnectDBServer() {
 	INFO(global.ServerName + " Connect DBServer ...")
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectDBServerC2S{
+	send_msg := protos.MarshalProtoMsg(&systemProto.System_ConnectDBServerC2S{
 		ServerName: protos.String(global.ServerName),
 	})
 	protos.Send(dbClient, send_msg)

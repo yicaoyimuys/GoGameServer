@@ -86,7 +86,7 @@ func sendSystemMsgToServer(msg []byte) {
 //发送连接TransferServer
 func sendConnectTransferServer() {
 	INFO(global.ServerName + " Connect TransferServer ...")
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectTransferServerC2S{
+	send_msg := protos.MarshalProtoMsg(&systemProto.System_ConnectTransferServerC2S{
 		ServerName: protos.String(global.ServerName),
 		ServerID:   protos.Uint32(global.ServerID),
 	})
@@ -101,7 +101,7 @@ func connectTransferServerCallBack(session *link.Session, protoMsg protos.ProtoM
 
 //通知GameServer用户登录成功
 func SetClientLoginSuccess(userName string, userID uint64, session *link.Session) {
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ClientLoginSuccessC2S{
+	send_msg := protos.MarshalProtoMsg(&systemProto.System_ClientLoginSuccessC2S{
 		UserID:    		protos.Uint64(userID),
 		UserName:  		protos.String(userName),
 		SessionID: 		protos.Uint64(session.Id()),
@@ -131,7 +131,7 @@ func setClientLoginSuccess(session *link.Session, protoMsg protos.ProtoMsg) {
 	module.User.LoginSuccess(userSession, rev_msg.GetUserName(), rev_msg.GetUserID(), rev_msg.GetGameServerID())
 
 	//通知WorldServer用户登录成功
-	worldProxy.SendSystemMsgToServer(systemProto.MarshalProtoMsg(rev_msg))
+	worldProxy.SendSystemMsgToServer(protos.MarshalProtoMsg(rev_msg))
 }
 
 //在LoginServer创建虚拟用户
@@ -174,7 +174,7 @@ func setSessionOffline(session *link.Session, protoMsg protos.ProtoMsg) {
 	}
 
 	//通知WorldServer用户下线
-	worldProxy.SendSystemMsgToServer(systemProto.MarshalProtoMsg(rev_msg))
+	worldProxy.SendSystemMsgToServer(protos.MarshalProtoMsg(rev_msg))
 }
 
 //处理游戏逻辑

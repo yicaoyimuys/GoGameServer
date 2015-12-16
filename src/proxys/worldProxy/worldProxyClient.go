@@ -77,7 +77,7 @@ func SendGameMsgToServer(msg []byte) {
 //发送连接WorldServer
 func sendConnectWorldServer() {
 	INFO(global.ServerName + " Connect WorldServer ...")
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectWorldServerC2S{
+	send_msg := protos.MarshalProtoMsg(&systemProto.System_ConnectWorldServerC2S{
 		ServerName: protos.String(global.ServerName),
 		ServerID:   protos.Uint32(global.ServerID),
 	})

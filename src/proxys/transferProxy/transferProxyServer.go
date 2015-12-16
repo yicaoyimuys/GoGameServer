@@ -180,7 +180,7 @@ func connectTransferServer(session *link.Session, protoMsg protos.ProtoMsg) {
 	}
 
 	//发送连接成功消息
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectTransferServerS2C{})
+	send_msg := protos.MarshalProtoMsg(&systemProto.System_ConnectTransferServerS2C{})
 	protos.Send(session, send_msg)
 }
 
@@ -204,7 +204,7 @@ func clientLoginSuccess(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg.GameServerID = protos.Uint32(gameServerID)
 
 	//通知GameServer用户登录成功
-	send_msg := systemProto.MarshalProtoMsg(rev_msg)
+	send_msg := protos.MarshalProtoMsg(rev_msg)
 	sendSystemMsg2("GameServer", gameServerID, send_msg)
 }
 
@@ -216,7 +216,7 @@ func SetClientSessionOnline(userSession *link.Session) {
 		Network:      protos.String(userSession.Conn().RemoteAddr().Network()),
 		Addr:         protos.String(userSession.Conn().RemoteAddr().String()),
 	}
-	send_msg := systemProto.MarshalProtoMsg(protoMsg)
+	send_msg := protos.MarshalProtoMsg(protoMsg)
 	sendSystemMsg2("LoginServer", 0, send_msg)
 }
 
@@ -229,7 +229,7 @@ func SetClientSessionOffline(sessionID uint64) {
 	protoMsg := &systemProto.System_ClientSessionOfflineC2S{
 		SessionID: protos.Uint64(sessionID),
 	}
-	send_msg := systemProto.MarshalProtoMsg(protoMsg)
+	send_msg := protos.MarshalProtoMsg(protoMsg)
 
 	sendSystemMsg2("GameServer", gameServerID, send_msg)
 	sendSystemMsg2("LoginServer", 0, send_msg)

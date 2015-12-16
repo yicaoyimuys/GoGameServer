@@ -22,14 +22,10 @@ type Handle map[uint16]func(*link.Session, protos.ProtoMsg)
 func (this Handle) DealMsg(session *link.Session, msg []byte) {
 	msgID := binary.GetUint16LE(msg[:2])
 	var protoMsg protos.ProtoMsg
-	if systemProto.IsValidID(msgID) {
-		protoMsg = systemProto.UnmarshalProtoMsg(msg)
-	} else if logProto.IsValidID(msgID) {
-		protoMsg = logProto.UnmarshalProtoMsg(msg)
+	if systemProto.IsValidID(msgID) || logProto.IsValidID(msgID) || gameProto.IsValidID(msgID) {
+		protoMsg = protos.UnmarshalProtoMsg(msg)
 	} else if dbProto.IsValidID(msgID) {
 		protoMsg = dbProto.UnmarshalProtoMsg(msg)
-	} else if gameProto.IsValidID(msgID) {
-		protoMsg = gameProto.UnmarshalProtoMsg(msg)
 	}
 
 	if protoMsg == protos.NullProtoMsg {

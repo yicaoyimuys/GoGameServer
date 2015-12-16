@@ -58,7 +58,7 @@ func sendLogMsgToServer(msg []byte) {
 //发送连接LogServer
 func sendConnectLogServer() {
 	INFO(global.ServerName + " Connect LogServer ...")
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectLogServerC2S{
+	send_msg := protos.MarshalProtoMsg(&systemProto.System_ConnectLogServerC2S{
 		ServerName: protos.String(global.ServerName),
 	})
 	sendSystemMsgToServer(send_msg)

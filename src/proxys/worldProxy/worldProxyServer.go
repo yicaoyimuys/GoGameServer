@@ -112,6 +112,6 @@ func connectWorldServer(session *link.Session, protoMsg protos.ProtoMsg) {
 		ERR(serverName + " Disconnect At " + global.ServerName)
 	})
 
-	send_msg := systemProto.MarshalProtoMsg(&systemProto.System_ConnectWorldServerS2C{})
+	send_msg := protos.MarshalProtoMsg(&systemProto.System_ConnectWorldServerS2C{})
 	protos.Send(session, send_msg)
 }

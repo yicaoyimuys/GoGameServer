@@ -14,7 +14,7 @@ const (
 )
 
 func sendCommonLog(dir string, logType uint32, content string) {
-	send_msg := logProto.MarshalProtoMsg(&logProto.Log_CommonLogC2S{
+	send_msg := protos.MarshalProtoMsg(&logProto.Log_CommonLogC2S{
 		Dir: protos.String(dir),
 		Type: protos.Uint32(logType),
 		Content: protos.String(content),

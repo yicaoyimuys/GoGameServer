@@ -3,6 +3,7 @@ package protos
 import (
 	"code.google.com/p/goprotobuf/proto"
 	"github.com/funny/link"
+	"github.com/funny/binary"
 	"reflect"
 	. "tools"
 )
@@ -46,6 +47,41 @@ func GetMsgID(msg interface{}) uint16 {
 		ERR("No MsgType:", msgType)
 	}
 	return 0
+}
+
+//序列化
+func MarshalProtoMsg(args proto.Message) []byte {
+	msgID := GetMsgID(args)
+	msgBody, _ := proto.Marshal(args)
+
+	result := make([]byte, 2+len(msgBody))
+	binary.PutUint16LE(result[:2], msgID)
+	copy(result[2:], msgBody)
+
+	return result
+}
+
+//反序列化
+func UnmarshalProtoMsg(msg []byte) ProtoMsg {
+	if len(msg) < 2 {
+		return NullProtoMsg
+	}
+
+	msgID := binary.GetUint16LE(msg[:2])
+	msgBody := GetMsgObject(msgID)
+	if msgBody == nil {
+		return NullProtoMsg
+	}
+
+	err := proto.Unmarshal(msg[2:], msgBody)
+	if err != nil {
+		return NullProtoMsg
+	}
+
+	return ProtoMsg{
+		ID:   msgID,
+		Body: msgBody,
+	}
 }
 
 //发送消息
