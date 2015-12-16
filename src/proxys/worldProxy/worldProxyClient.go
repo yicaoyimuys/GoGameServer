@@ -13,7 +13,7 @@ import (
 
 var (
 	worldClient 			 *link.Session
-	clientMsgDispatchAsync   dispatch.DispatchInterface
+	clientMsgDispatch 	     dispatch.DispatchInterface
 )
 
 func init() {
@@ -40,14 +40,14 @@ func init() {
 	})
 
 	//创建消息分派
-	clientMsgDispatchAsync = dispatch.NewDispatch(handle)
+	clientMsgDispatch = dispatch.NewDispatch(handle)
 }
 
 //初始化
 func InitClient(ip string, port string) error {
 	//连接WorldServer
 	addr := ip + ":" + port
-	client, err := global.Connect("WorldServer", "tcp", addr, global.PackCodecType_Safe, clientMsgDispatchAsync)
+	client, err := global.Connect("WorldServer", "tcp", addr, global.PackCodecType_Safe, clientMsgDispatch)
 	if err != nil {
 		return err
 	}

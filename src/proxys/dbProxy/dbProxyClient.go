@@ -2,6 +2,7 @@ package dbProxy
 
 import (
 	"github.com/funny/link"
+	"github.com/funny/binary"
 	"global"
 	"protos"
 	"protos/systemProto"
@@ -12,28 +13,41 @@ import (
 
 var (
 	dbClient 				 *link.Session
-	clientMsgReceiveChan 	 dispatch.ReceiveMsgChan
-	clientMsgDispatchAsync   dispatch.DispatchInterface
+	clientMsgDispatch   	 dispatch.DispatchInterface
 )
 
 func init()  {
-	//创建异步接收消息的Chan
-	clientMsgReceiveChan = make(chan dispatch.ReceiveMsg, 4096)
+	handle := dispatch.NewHandleConditions()
+	//系统消息
+	handle.Add(dispatch.HandleCondition{
+		Condition: systemProto.IsValidID,
+		H: dispatch.Handle{
+			systemProto.ID_System_ConnectDBServerS2C:		connectDBServerCallBack,
+		},
+	})
+	//DB消息
+	handle.Add(dispatch.HandleFuncCondition{
+		Condition: dbProto.IsValidID,
+		H: func(session *link.Session, msg []byte) {
+			identification := binary.GetUint64LE(msg[2:10])
+			var userSession *link.Session = global.GetSession(identification)
+			if userSession == nil {
+				return
+			}
+			dbMsgChan := userSession.State.(chan []byte)
+			dbMsgChan <- msg
+		},
+	})
 
 	//创建消息分派
-	clientMsgDispatchAsync = dispatch.NewDispatchAsync([]dispatch.ReceiveMsgChan{clientMsgReceiveChan},
-		dispatch.Handle{
-			systemProto.ID_System_ConnectDBServerS2C:		connectDBServerCallBack,
-			dbProto.ID_DB_User_LoginS2C:					userLoginCallBack,
-		},
-	)
+	clientMsgDispatch = dispatch.NewDispatch(handle)
 }
 
 //初始化
 func InitClient(ip string, port string) error {
 	//连接DB服务器
 	addr := ip + ":" + port
-	client, err := global.Connect("DBServer", "tcp", addr, global.PackCodecType_Safe, clientMsgDispatchAsync)
+	client, err := global.Connect("DBServer", "tcp", addr, global.PackCodecType_Safe, clientMsgDispatch)
 	if err != nil {
 		return err
 	}

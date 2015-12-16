@@ -13,13 +13,13 @@ import (
 )
 
 type HandleInterface interface {
-	dealMsg(session *link.Session, msg []byte)
+	DealMsg(session *link.Session, msg []byte)
 }
 
 //通用Handle
 type Handle map[uint16]func(*link.Session, protos.ProtoMsg)
 
-func (this Handle) dealMsg(session *link.Session, msg []byte) {
+func (this Handle) DealMsg(session *link.Session, msg []byte) {
 	msgID := binary.GetUint16LE(msg[:2])
 	var protoMsg protos.ProtoMsg
 	if systemProto.IsValidID(msgID) {
@@ -50,10 +50,10 @@ type HandleCondition struct {
 	H Handle
 }
 
-func (this HandleCondition) dealMsg(session *link.Session, msg []byte) {
+func (this HandleCondition) DealMsg(session *link.Session, msg []byte) {
 	msgID := binary.GetUint16LE(msg[:2])
 	if this.Condition(msgID) {
-		this.H.dealMsg(session, msg)
+		this.H.DealMsg(session, msg)
 	}
 }
 
@@ -63,7 +63,7 @@ type HandleFuncCondition struct {
 	H func(*link.Session, []byte)
 }
 
-func (this HandleFuncCondition) dealMsg(session *link.Session, msg []byte) {
+func (this HandleFuncCondition) DealMsg(session *link.Session, msg []byte) {
 	msgID := binary.GetUint16LE(msg[:2])
 	if this.Condition(msgID) {
 		this.H(session, msg)
@@ -75,7 +75,7 @@ type HandleFunc struct {
 	H func(*link.Session, []byte)
 }
 
-func (this HandleFunc) dealMsg(session *link.Session, msg []byte) {
+func (this HandleFunc) DealMsg(session *link.Session, msg []byte) {
 	this.H(session, msg)
 }
 
@@ -94,8 +94,8 @@ func (this HandleConditions) Add(handle HandleInterface) {
 	this.hList.PushBack(handle)
 }
 
-func (this HandleConditions) dealMsg(session *link.Session, msg []byte) {
+func (this HandleConditions) DealMsg(session *link.Session, msg []byte) {
 	for e := this.hList.Front(); e != nil; e = e.Next() {
-		e.Value.(HandleInterface).dealMsg(session, msg)
+		e.Value.(HandleInterface).DealMsg(session, msg)
 	}
 }

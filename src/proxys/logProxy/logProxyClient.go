@@ -11,12 +11,12 @@ import (
 
 var (
 	logClient 				 *link.Session
-	clientMsgDispatchAsync   dispatch.DispatchInterface
+	clientMsgDispatch 		 dispatch.DispatchInterface
 )
 
 func init()  {
 	//创建消息分派
-	clientMsgDispatchAsync = dispatch.NewDispatch(
+	clientMsgDispatch = dispatch.NewDispatch(
 		dispatch.Handle{
 			systemProto.ID_System_ConnectLogServerS2C:		connectLogServerCallBack,
 		},
@@ -27,7 +27,7 @@ func init()  {
 func InitClient(ip string, port string) error {
 	//连接LogServer
 	addr := ip + ":" + port
-	client, err := global.Connect("LogServer", "tcp", addr, global.PackCodecType_Async, clientMsgDispatchAsync)
+	client, err := global.Connect("LogServer", "tcp", addr, global.PackCodecType_Async, clientMsgDispatch)
 	if err != nil {
 		return err
 	}

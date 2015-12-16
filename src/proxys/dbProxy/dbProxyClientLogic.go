@@ -2,11 +2,21 @@ package dbProxy
 
 import (
 	"github.com/funny/link"
-	"global"
 	"module"
 	"protos"
 	"protos/dbProto"
+	"tools/dispatch"
 )
+
+var (
+	ClientDbMsgDispatchHandle   dispatch.HandleInterface
+)
+
+func init()  {
+	ClientDbMsgDispatchHandle = dispatch.Handle{
+		dbProto.ID_DB_User_LoginS2C:					userLoginCallBack,
+	}
+}
 
 //用户登录使用
 func UserLogin(identification uint64, userName string) {
@@ -17,12 +27,7 @@ func UserLogin(identification uint64, userName string) {
 }
 
 //用户登录返回
-func userLoginCallBack(session *link.Session, protoMsg protos.ProtoMsg) {
-	var userSession *link.Session = global.GetSession(protoMsg.Identification)
-	if userSession == nil {
-		return
-	}
-
+func userLoginCallBack(userSession *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*dbProto.DB_User_LoginS2C)
 	module.User.UserLoginHandle(userSession, rev_msg.GetName(), rev_msg.GetID())
 }

@@ -13,11 +13,12 @@ import (
 	"tools/codecType"
 	"tools/dispatch"
 	"proxys"
+	"proxys/dbProxy"
 )
 
 var (
 	transferClient 			 *link.Session
-	clientMsgDispatchAsync   dispatch.DispatchInterface
+	clientMsgDispatch 		 dispatch.DispatchInterface
 )
 
 func init() {
@@ -55,14 +56,14 @@ func init() {
 	})
 
 	//创建消息分派
-	clientMsgDispatchAsync = dispatch.NewDispatch(handle)
+	clientMsgDispatch = dispatch.NewDispatch(handle)
 }
 
 //初始化
 func InitClient(ip string, port string) error {
 	//连接TransferServer
 	addr := ip + ":" + port
-	client, err := global.Connect("TransferServer", "tcp", addr, global.PackCodecType_Safe, clientMsgDispatchAsync)
+	client, err := global.Connect("TransferServer", "tcp", addr, global.PackCodecType_Safe, clientMsgDispatch)
 	if err != nil {
 		return err
 	}
@@ -116,6 +117,7 @@ func setClientLoginSuccess(session *link.Session, protoMsg protos.ProtoMsg) {
 	userConn := proxys.NewDummyConn(rev_msg.GetSessionID(), rev_msg.GetNetwork(), rev_msg.GetAddr(), transferClient)
 	userSession := link.NewSessionByID(userConn, codecType.DummyCodecType{}, rev_msg.GetSessionID())
 	global.AddSession(userSession)
+	//接收游戏消息
 	go func() {
 		var msg []byte
 		for {
@@ -136,7 +138,10 @@ func setSessionOnline(session *link.Session, protoMsg protos.ProtoMsg) {
 	rev_msg := protoMsg.Body.(*systemProto.System_ClientSessionOnlineC2S)
 	userConn := proxys.NewDummyConn(rev_msg.GetSessionID(), rev_msg.GetNetwork(), rev_msg.GetAddr(), transferClient)
 	userSession := link.NewSessionByID(userConn, codecType.DummyCodecType{}, rev_msg.GetSessionID())
+	userSession.State = make(chan []byte, 100)
+	userSession.AddCloseCallback(userSession, func(){ close(userSession.State.(chan []byte)) })
 	global.AddSession(userSession)
+	//接收游戏消息
 	go func() {
 		var msg []byte
 		for {
@@ -144,6 +149,17 @@ func setSessionOnline(session *link.Session, protoMsg protos.ProtoMsg) {
 				break
 			}
 			module.ReceiveMessage(userSession, msg)
+		}
+	}()
+	//接收DB消息
+	go func() {
+		dbMsgChan := userSession.State.(chan []byte)
+		for {
+			data, ok := <-dbMsgChan
+			if !ok {
+				return
+			}
+			dbProxy.ClientDbMsgDispatchHandle.DealMsg(userSession, data)
 		}
 	}()
 }

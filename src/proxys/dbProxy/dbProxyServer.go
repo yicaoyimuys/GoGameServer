@@ -125,7 +125,7 @@ func onSyncDBTimer() {
 //发送DB消息到客户端
 func sendDBMsgToClient(session *link.Session, msg []byte) {
 	if session == nil {
-		clientMsgDispatchAsync.Process(session, msg)
+		clientMsgDispatch.Process(session, msg)
 	} else {
 		protos.Send(session, msg)
 	}

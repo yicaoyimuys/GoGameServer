@@ -27,7 +27,7 @@ func NewDispatch(h HandleInterface) Dispatch {
 }
 
 func (this Dispatch) Process(session *link.Session, msg []byte) {
-	this.handle.dealMsg(session, msg)
+	this.handle.DealMsg(session, msg)
 }
 
 //异步Dispatch
@@ -70,7 +70,7 @@ func (this DispatchAsync) dealReceiveMsgs() {
 				if !ok {
 					return
 				}
-				this.handle.dealMsg(data.Session, data.Msg)
+				this.handle.DealMsg(data.Session, data.Msg)
 			}
 		}(receiveMsgChan)
 	}
