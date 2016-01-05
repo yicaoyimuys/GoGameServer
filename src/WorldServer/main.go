@@ -18,6 +18,7 @@ import (
 	_ "module/config"
 	_ "module/user"
 	"proxys/logProxy"
+	"module"
 )
 
 var (
@@ -49,6 +50,9 @@ func main() {
 	//启动WorldServer
 	worldProxyErr := worldProxy.InitServer(world_port)
 	checkError(worldProxyErr)
+
+	//开启下线用户处理
+	module.User.StartDealOfflineUser()
 
 	//保持进程
 	global.Run()

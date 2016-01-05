@@ -12,9 +12,6 @@ type CacheModule interface {
 	GetOnlineUserBySession(sessionID uint64) *OnlineUserModel
 	RemoveOnlineUser(sessionID uint64)
 	GetOnlineUsersNum() int32
-	AddOfflineUser(userID uint64)
-	RemoveOfflineUser(userID uint64)
-	StartDealOfflineUser()
 }
 
 type ConfigModule interface {
@@ -22,6 +19,8 @@ type ConfigModule interface {
 }
 
 type UserModule interface {
+	StartDealOfflineUser()
+
 	UserLoginHandle(session *link.Session, userName string, userID uint64)
 
 	Login(userName string, session *link.Session)

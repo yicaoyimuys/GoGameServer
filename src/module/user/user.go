@@ -11,6 +11,18 @@ import (
 	. "tools"
 	"proxys/logProxy"
 	"proxys/gameProxy"
+	"tools/timer"
+	"tools/debug"
+	"time"
+	"container/list"
+	"strconv"
+)
+
+const (
+	//处理下线用户数据间隔(20分钟)
+	DEAL_OFFLINEUSER_INTERVAL = 20 * 60
+	//用户下线后数据存在时长(5小时)
+	OFFLINEUSER_TIME = 5 * 60 * 60
 )
 
 type UserModule struct {
@@ -66,12 +78,8 @@ func (this UserModule) dealLoginSuccess(session *link.Session, userName string, 
 	transferProxy.SetClientLoginSuccess(userName, userID, session)
 	//发送登录成功消息
 	gameProxy.SendLoginResult(session, userID)
-	//如果用户在下线列表中，则移除
-	module.Cache.RemoveOfflineUser(userID)
 	//用户下线时处理
 	session.AddCloseCallback(session, func() {
-		//记录用户下线时间
-		module.Cache.AddOfflineUser(userID)
 		//记录用户下线Log
 		logProxy.UserOffLine(userID)
 	})
@@ -129,4 +137,36 @@ func (this UserModule) GetUserInfo(userID uint64, session *link.Session) {
 	} else {
 		gameProxy.SendGetUserInfoResult(session, gameProto.User_Login_Fail, nil)
 	}
+}
+
+//开启处理用户下线
+func (this UserModule) StartDealOfflineUser() {
+	this.onDealOfflineUserTimer()
+	timer.DoTimer(int64(DEAL_OFFLINEUSER_INTERVAL), this.onDealOfflineUserTimer)
+}
+
+//定时处理用户下线
+func (this UserModule) onDealOfflineUserTimer() {
+	debug.Start("DealOfflineUserTimer")
+	defer debug.Stop("DealOfflineUserTimer")
+
+	users := redisProxy.GetAllUserLastLoginTime()
+	INFO("Deal Remove User Redis Cache Data Num：", len(users))
+
+	nowTime := time.Now().Unix()
+	delUsers := list.New()
+	for userID, lastLoginTime := range users {
+		if nowTime >= lastLoginTime + OFFLINEUSER_TIME {
+			delUsers.PushBack(userID)
+		}
+	}
+
+	for tmp := delUsers.Front(); tmp != nil; tmp = tmp.Next() {
+		userID, _ := strconv.ParseUint(tmp.Value.(string), 10, 64)
+		//超时并且不在线
+		if module.Cache.GetOnlineUserByUserID(userID) == nil {
+			redisProxy.RemoveDBUser(userID)
+		}
+	}
+	INFO("Remove User Redis Cache Data Num：", delUsers.Len())
 }

@@ -5,12 +5,6 @@ import (
 	. "model"
 	"module"
 	"sync"
-	. "tools"
-	"time"
-	"tools/timer"
-	"container/list"
-	"proxys/redisProxy"
-	"tools/debug"
 )
 
 type CacheModule struct {
@@ -19,17 +13,7 @@ type CacheModule struct {
 	onlineUsersSession map[uint64]string
 	onlineUsersNum     int32
 	onlineUsersMutex   sync.RWMutex
-	offlineUsers       map[uint64]int64
-	offlineUsersNum    int32
-	offlineUsersMutex  sync.RWMutex
 }
-
-const (
-	//处理下线用户数据间隔(5分钟)
-	DEAL_OFFLINEUSER_INTERVAL = 5 * 60
-	//用户下线后数据存在时长(3小时)
-	OFFLINEUSER_TIME = 3 * 60 * 60
-)
 
 // 在初始化的时候将模块注册到module包
 func init() {
@@ -38,7 +22,6 @@ func init() {
 		onlineUsersID:      make(map[uint64]string),
 		onlineUsersSession: make(map[uint64]string),
 		onlineUsersNum:     0,
-		offlineUsers:       make(map[uint64]int64),
 	}
 }
 
@@ -123,54 +106,4 @@ func (this *CacheModule) RemoveOnlineUser(sessionID uint64) {
 //获取在线用户数量
 func (this *CacheModule) GetOnlineUsersNum() int32 {
 	return this.onlineUsersNum
-}
-
-//添加下线用户
-func (this *CacheModule) AddOfflineUser(userID uint64) {
-	this.offlineUsersMutex.Lock()
-	defer this.offlineUsersMutex.Unlock()
-
-	this.offlineUsers[userID] = time.Now().Unix()
-	this.offlineUsersNum += 1
-}
-
-//移除下线用户
-func (this *CacheModule) RemoveOfflineUser(userID uint64) {
-	this.offlineUsersMutex.Lock()
-	defer this.offlineUsersMutex.Unlock()
-
-	if _, exists := this.offlineUsers[userID]; exists {
-		delete(this.offlineUsers, userID)
-		this.offlineUsersNum -= 1
-	}
-}
-
-//开启处理用户下线
-func (this *CacheModule) StartDealOfflineUser() {
-	timer.DoTimer(int64(DEAL_OFFLINEUSER_INTERVAL), this.onDealOfflineUserTimer)
-}
-
-//定时处理用户下线
-func (this *CacheModule) onDealOfflineUserTimer() {
-	debug.Start("DealOfflineUserTimer")
-	defer debug.Stop("DealOfflineUserTimer")
-
-	this.offlineUsersMutex.Lock()
-	defer this.offlineUsersMutex.Unlock()
-
-	nowTime := time.Now().Unix()
-	delUsers := list.New()
-	for userID, offlineTime := range this.offlineUsers {
-		if nowTime >= offlineTime + OFFLINEUSER_TIME {
-			delUsers.PushBack(userID)
-		}
-	}
-
-	for tmp := delUsers.Front(); tmp != nil; tmp = tmp.Next() {
-		userID := tmp.Value.(uint64)
-		delete(this.offlineUsers, userID)
-		this.offlineUsersNum -= 1
-		redisProxy.RemoveDBUser(userID)
-	}
-	INFO("Remove User Redis Cache Data Num：", delUsers.Len())
 }

@@ -17,7 +17,6 @@ import (
 	_ "module/cache"
 	_ "module/config"
 	_ "module/user"
-	"module"
 	"proxys/logProxy"
 )
 
@@ -50,9 +49,6 @@ func main() {
 	//连接LogServer
 	logProxyErr := logProxy.InitClient(cfg.GetValue("log_ip"), cfg.GetValue("log_port"))
 	checkError(logProxyErr)
-
-	//开启下线用户处理
-	module.Cache.StartDealOfflineUser()
 
 	//保持进程
 	global.Run()
