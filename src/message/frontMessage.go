@@ -2,8 +2,8 @@ package message
 
 import (
 	. "core/libs"
+	"core/sessions"
 	"encoding/binary"
-	"sessions"
 )
 
 func FontReceive(session *sessions.FrontSession, msgBody []byte) {

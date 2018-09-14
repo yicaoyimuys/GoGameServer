@@ -3,8 +3,8 @@ package message
 import (
 	. "core/libs"
 	"core/libs/grpc/ipc"
+	"core/sessions"
 	"encoding/binary"
-	"sessions"
 )
 
 func BackReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
