@@ -1,2 +1,0 @@
-#server启动
-pm2 start consul --name consul -- agent -server -data-dir=/tmp/consul -bootstrap -ui -client 0.0.0.0
