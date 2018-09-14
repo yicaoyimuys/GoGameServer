@@ -11,12 +11,7 @@ function func(){
 
 if [ $# -eq 0 ]
 	then
-		func GateServer
-		func LoginServer
-		func GameServer
-		func WorldServer
-		func DBServer
-		func LogServer
+		func connectorServer
 	else
 		func $1
 fi

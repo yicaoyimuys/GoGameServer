@@ -1,0 +1,128 @@
+{
+    "client_ping_c2s": {
+        "msgId": "1001"
+    },
+
+
+    "client_network_c2s": {
+        "msgId": "3901",
+        "time": "uint32"
+    },
+    "client_network_s2c": {
+        "msgId": "3902",
+        "time": "uint32"
+    },
+    "error_notice_s2c": {
+        "msgId": "3999",
+        "errorCode": "uint32"
+    },
+
+
+    "userInfo": {
+        "uuid": "string",
+        "userId": "string",
+        "userName": "string",
+        "userPic": "string",
+        "userSex": "byte",
+        "userProgress": "ushort"
+    },
+    "platform_login_c2s": {
+        "msgId": "3101",
+        "gameId": "ushort",
+        "platformId": "ushort",
+        "platformData": "string"
+    },
+    "platform_login_s2c": {
+        "msgId": "3102"
+    },
+    "game_join_c2s":{
+        "msgId": "3103",
+        "roomId": "string"
+    },
+    "game_join_s2c":{
+        "msgId": "3104",
+        "myUser": "userInfo",
+        "otherUser": "userInfo",
+        "isAi": "ushort",
+        "aiLevel": "ushort"
+    },
+    "game_otherUserJoin_notice_s2c":{
+        "msgId": "3106",
+        "otherUser": "userInfo"
+    },
+    "game_loadProgress_c2s": {
+        "msgId": "3001",
+        "roomId": "string",
+        "progress": "ushort"
+    },
+    "game_loadProgress_notice_s2c": {
+        "msgId": "3002",
+        "userId": "string",
+        "progress": "ushort"
+    },
+    "game_start_notice_s2c": {
+        "msgId": "3004"
+    },
+    "game_exit_c2s": {
+        "msgId": "3005",
+        "roomId": "string"
+    },
+    "game_result_c2s": {
+        "msgId": "3007",
+        "roomId": "string",
+        "result": "byte"
+    },
+    "game_result_notice_s2c": {
+        "msgId": "3008",
+        "winUserId": "string",
+        "userExitFlag": "byte"
+    },
+    "game_event_c2s": {
+        "msgId": "3009",
+        "roomId": "string",
+        "sendType": "byte",
+        "event": "string"
+    },
+    "game_event_notice_s2c": {
+        "msgId": "3010",
+        "userId": "string",
+        "event": "string",
+        "trunNum": "uint32"
+    },
+    "game_trunNumNotice_s2c":{
+        "msgId": "3012",
+        "trunNum": "uint32"
+    },
+
+
+
+    "game_matching_c2s":{
+        "msgId": "4001",
+        "gameId": "ushort",
+        "userId": "string",
+        "userName": "string",
+        "userPic": "string",
+        "userSex": "byte"
+    },
+    "game_matching_s2c":{
+        "msgId": "4002"
+    },
+    "game_matching_notice_s2c":{
+        "msgId": "4004",
+        "gameId": "ushort",
+        "otherUserId": "string",
+        "otherUserName": "string",
+        "otherUserPic": "string",
+        "otherUserSex": "byte",
+        "isAi": "byte",
+        "aiLevel": "ushort",
+        "roomId": "string"
+    },
+    "game_cancelMatching_c2s":{
+        "msgId": "4005",
+        "userId": "string"
+    },
+    "game_cancelMatching_s2c":{
+        "msgId": "4006"
+    }
+}

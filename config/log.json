@@ -1,0 +1,54 @@
+{
+  "development": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "egret": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "baiwan": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "facebook": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "wanba": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "xiaoMiGame": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "wxGame": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "gameSLL": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "channel": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "liaoZhan": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "liaoZhanAbroad": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "meitu": {
+    "debug": true,
+    "output": "both&file"
+  },
+  "iqiyi": {
+    "debug": true,
+    "output": "both&file"
+  }
+}

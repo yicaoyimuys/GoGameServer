@@ -1,0 +1,11 @@
+package msg
+
+import $2
+
+const (
+$0
+)
+
+func init() {
+$1
+}

@@ -1,6 +1,0 @@
-message Log_CommonLogC2S{
-    required string Dir = 1;
-    required uint32 Type = 2;
-    required string Content = 3;
-    required int64 Time = 4;
-}

@@ -1,2 +1,2 @@
 #!/bin/sh 
-redis-cli -p 6379 -a yangsong shutdown
+redis-cli -p 20036 -a yangsong shutdown

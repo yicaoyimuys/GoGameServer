@@ -1,55 +1,33 @@
 .PHONY: .FORCE
 GO=go
-DOT=dot
-GOYACC=$(GO) tool yacc
 
 SRC_DIR = ./src
-PROTO_INSTALL_FILE_DIR = ./src/code.google.com/p/goprotobuf/
+
+NEW_GOPATH = $(GOPATH):$(shell pwd)
+GOPATH := $(NEW_GOPATH)
 
 all:
-	$(GO) install GateServer
-	$(GO) install WorldServer
-	$(GO) install GameServer
-	$(GO) install DBServer
-	$(GO) install LoginServer
-	$(GO) install LogServer
-	
-local:
-	$(GO) install LocalServer
+	$(GO) install connectorServer/servers/connectorServer
 
 clean:
-	rm -rf bin pkg
-	rm -rf logs/db.log logs/game.log logs/gateway.log logs/local.log logs/login.log logs/log.log logs/redis.log
- 
+	rm -rf bin pkg release
+	rm -rf logs/*
+
 fmt:
 	$(GO) fmt $(SRC_DIR)/...
 
+vendor_init:
+	cd $(SRC_DIR)/connectorServer && govendor init
 
-#安装proto
-install_proto:
-	make -C $(PROTO_INSTALL_FILE_DIR)
-	
-#需要先install_proto，然后将bin目录加入到环境变量，protoc才可使用
-create_proto:
-	cd $(SRC_DIR)/protos/systemProto && protoc --go_out=. systemProto.proto
-	cd $(SRC_DIR)/protos/dbProto && protoc --go_out=. dbProto.proto
-	cd $(SRC_DIR)/protos/gameProto && protoc --go_out=. gameProto.proto
-	cd $(SRC_DIR)/protos/logProto && protoc --go_out=. logProto.proto
-	
-#交叉编译：
-#首先进入go源码目录
-#cd /usr/local/go/src/
-#执行sudo GOOS=linux GOARCH=amd64 ./make.bash  生成linux下的编译文件pkg
-#以上步骤在go1.5中应该已不再需要，但还未测试
+vendor_addExternal:
+	cd $(SRC_DIR)/connectorServer && govendor add +external
+
 publish_linux:
-	GOOS=linux GOARCH=amd64 $(GO) build -o GateServer_linux GateServer
-	GOOS=linux GOARCH=amd64 $(GO) build -o GameServer_linux GameServer
+	GOOS=linux GOARCH=amd64 $(GO) build -o release/connectorServer connectorServer/servers/connectorServer
 	
 publish_windows:
-	GOOS=windows GOARCH=amd64 $(GO) build -o GateServer_windows.exe GateServer
-	GOOS=windows GOARCH=amd64 $(GO) build -o GameServer_windows.exe GameServer
+	GOOS=windows GOARCH=amd64 $(GO) build -o release/connectorServer.exe connectorServer
 	
 publish_mac:
-	GOOS=darwin GOARCH=amd64 $(GO) build -o GateServer_darwin GateServer
-	GOOS=darwin GOARCH=amd64 $(GO) build -o GameServer_darwin GameServer
+	GOOS=darwin GOARCH=amd64 $(GO) build -o release/connectorServer connectorServer
 	

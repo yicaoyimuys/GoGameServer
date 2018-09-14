@@ -1,0 +1,118 @@
+{
+    "development": {
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 19881, "useSSL": false },
+            "2": { "id": "ConnectorServer-2", "clientPort": 19882, "useSSL": false }
+        }
+    },
+    "egret": {
+        "tslCrt": "/usr/local/nginx/cert-new/egret-labs.org.crt",
+        "tslKey": "/usr/local/nginx/cert-new/egret-labs.org.key",
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": true },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": true },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": true },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": true }
+        }
+    },
+    "baiwan": {
+        "tslCrt": "/usr/local/cert/chufengnet.comkey.crt",
+        "tslKey": "/usr/local/cert/chufengnet.comkey.key",
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": true },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": true },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": true },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": true }
+        }
+    },
+    "facebook": {
+        "tslCrt": "/usr/local/nginx/cert-new/egret-labs.org.crt",
+        "tslKey": "/usr/local/nginx/cert-new/egret-labs.org.key",
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": true },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": true },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": true },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": true }
+        }
+    },
+    "wanba": {
+        "tslCrt": "/usr/local/cert/egret.com.crt",
+        "tslKey": "/usr/local/cert/egret.com.key",
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": true },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": true },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": true },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": true }
+        }
+    },
+    "xiaoMiGame": {
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": false },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": false },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": false },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": false }
+        }
+    },
+    "wxGame": {
+        "tslCrt": "/usr/local/nginx/cert-new/egret-labs.org.crt",
+        "tslKey": "/usr/local/nginx/cert-new/egret-labs.org.key",
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": true },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": true },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": true },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": true }
+        }
+    },
+    "gameSLL": {
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": false },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": false },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": false },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": false }
+        }
+    },
+    "channel": {
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": false },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": false },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": false },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": false }
+        }
+    },
+    "liaoZhan": {
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": false },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": false },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": false },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": false }
+        }
+    },
+    "liaoZhanAbroad": {
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": false },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": false },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": false },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": false }
+        }
+    },
+    "meitu": {
+        "tslCrt": "/usr/local/nginx/cert-new/egret.com.crt",
+        "tslKey": "/usr/local/nginx/cert-new/egret.com.key",
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": true },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": true },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": true },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": true }
+        }
+    },
+    "iqiyi": {
+        "tslCrt": "/usr/local/nginx/cert-new/egret-labs.org.crt",
+        "tslKey": "/usr/local/nginx/cert-new/egret-labs.org.key",
+        "connector": {
+            "1": { "id": "ConnectorServer-1", "clientPort": 26011, "useSSL": true },
+            "2": { "id": "ConnectorServer-2", "clientPort": 26012, "useSSL": true },
+            "3": { "id": "ConnectorServer-3", "clientPort": 26013, "useSSL": true },
+            "4": { "id": "ConnectorServer-4", "clientPort": 26014, "useSSL": true }
+        }
+    }
+}

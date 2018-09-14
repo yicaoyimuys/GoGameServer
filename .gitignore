@@ -1,9 +1,15 @@
 .idea/
-
 bin/
-
+config/redis.conf
+config/dump.rdb
+/logs/
 pkg/
+release/
+redis_clear.sh
+redis_run.sh
+redis_stop.sh
+setMac.sh
+consul_run.sh
+.DS_Store
+dump.rdb
 
-*.rdb
-
-*.log
