@@ -1,8 +1,8 @@
 package global
 
 import (
-	"tools/grpc/ipc"
-	"tools/guid"
+	"core/libs/grpc/ipc"
+	"core/libs/guid"
 )
 
 type services struct {

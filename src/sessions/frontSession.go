@@ -1,12 +1,12 @@
 package sessions
 
 import (
+	"core/libs/stack"
 	"errors"
 	"global"
 	"sync"
 	"sync/atomic"
 	"time"
-	"tools/stack"
 )
 
 type Codec interface {

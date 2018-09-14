@@ -1,9 +1,9 @@
 package sessions
 
 import (
+	"core/libs/timer"
 	"sync"
 	"time"
-	"tools/timer"
 )
 
 var (

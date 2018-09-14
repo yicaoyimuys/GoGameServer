@@ -1,6 +1,8 @@
 package message
 
 import (
+	. "core/libs"
+	"core/libs/grpc/ipc"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -9,8 +11,6 @@ import (
 	"proto"
 	"proto/msg"
 	"sessions"
-	. "tools"
-	"tools/grpc/ipc"
 )
 
 //func isConnectorMsg(msgId uint16) bool {

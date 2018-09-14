@@ -1,8 +1,8 @@
 package stack
 
 import (
+	. "core/libs"
 	"runtime"
-	. "tools"
 )
 
 func PrintPanicStack() {

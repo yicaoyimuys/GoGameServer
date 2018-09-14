@@ -1,12 +1,12 @@
 package module
 
 import (
+	. "core/libs"
+	"core/libs/timer"
 	"game/cache"
 	"global"
 	"runtime"
 	"sessions"
-	. "tools"
-	"tools/timer"
 )
 
 func StartServerTimer() {

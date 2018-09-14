@@ -1,6 +1,7 @@
 package common
 
 import (
+	. "core/libs"
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/hex"
@@ -8,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	. "tools"
 )
 
 func init() {

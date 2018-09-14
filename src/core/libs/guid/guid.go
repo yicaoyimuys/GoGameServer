@@ -1,9 +1,9 @@
 package guid
 
 import (
+	. "core/libs"
 	"sync"
 	"time"
-	. "tools"
 )
 
 type Guid struct {

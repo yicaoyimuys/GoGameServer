@@ -1,6 +1,10 @@
 package rpc
 
 import (
+	. "core/libs"
+	"core/libs/consul"
+	"core/libs/hash"
+	"core/libs/timer"
 	"errors"
 	"io"
 	"net"
@@ -9,10 +13,6 @@ import (
 	"sort"
 	"sync"
 	"time"
-	. "tools"
-	"tools/consul"
-	"tools/hash"
-	"tools/timer"
 )
 
 type RpcClient struct {

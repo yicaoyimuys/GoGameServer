@@ -1,12 +1,12 @@
 package rpc
 
 import (
+	. "core/libs"
+	"core/libs/stack"
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
 	"strconv"
-	. "tools"
-	"tools/stack"
 )
 
 func InitServer() (string, error) {

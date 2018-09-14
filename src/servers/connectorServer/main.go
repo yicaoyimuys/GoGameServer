@@ -10,16 +10,16 @@ import (
 
 import (
 	"config"
+	. "core/libs"
+	"core/libs/consul"
+	"core/libs/grpc/ipc"
+	"core/libs/redis"
+	"core/libs/stack"
+	"core/libs/timer"
 	"game/module"
 	"global"
 	"message"
 	"sessions"
-	. "tools"
-	"tools/consul"
-	"tools/grpc/ipc"
-	"tools/redis"
-	"tools/stack"
-	"tools/timer"
 )
 
 import (

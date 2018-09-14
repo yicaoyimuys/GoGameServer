@@ -1,11 +1,11 @@
 package message
 
 import (
+	. "core/libs"
 	"encoding/binary"
 	"global"
 	"proto/msg"
 	"sessions"
-	. "tools"
 )
 
 func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {

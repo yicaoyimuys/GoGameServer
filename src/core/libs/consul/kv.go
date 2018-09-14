@@ -1,10 +1,10 @@
 package consul
 
 import (
+	. "core/libs"
 	"github.com/hashicorp/consul/api"
 	"sync"
 	"time"
-	. "tools"
 )
 
 var (

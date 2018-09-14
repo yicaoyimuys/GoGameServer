@@ -1,8 +1,8 @@
 package logger
 
 import (
+	"core/libs/cfg"
 	"github.com/astaxie/beego/logs"
-	"tools/cfg"
 )
 
 func init() {

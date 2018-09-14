@@ -1,8 +1,8 @@
 package redis
 
 import (
+	. "core/libs"
 	"github.com/go-redis/redis"
-	. "tools"
 )
 
 var redisClientList = make(map[string]*redis.Client)

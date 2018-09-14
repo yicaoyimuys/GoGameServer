@@ -1,8 +1,8 @@
 package cache
 
 import (
+	"core/libs/redis"
 	"encoding/json"
-	"tools/redis"
 )
 
 const ServerInfo_KEY = "BattleServer_ServerInfo"

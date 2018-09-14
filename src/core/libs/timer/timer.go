@@ -1,9 +1,9 @@
 package timer
 
 import (
+	"core/libs/stack"
 	"sync/atomic"
 	"time"
-	"tools/stack"
 )
 
 type TimerEvent struct {

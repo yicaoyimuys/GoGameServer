@@ -1,6 +1,10 @@
 package grpc
 
 import (
+	. "core/libs"
+	"core/libs/consul"
+	"core/libs/hash"
+	"core/libs/timer"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"io"
@@ -8,10 +12,6 @@ import (
 	"sort"
 	"sync"
 	"time"
-	. "tools"
-	"tools/consul"
-	"tools/hash"
-	"tools/timer"
 )
 
 type GrpcClient struct {

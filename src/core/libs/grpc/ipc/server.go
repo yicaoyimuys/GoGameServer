@@ -1,12 +1,12 @@
 package ipc
 
 import (
+	. "core/libs"
+	"core/libs/consul"
+	myGprc "core/libs/grpc"
+	"core/libs/stack"
 	"google.golang.org/grpc"
 	"io"
-	. "tools"
-	"tools/consul"
-	myGprc "tools/grpc"
-	"tools/stack"
 )
 
 type ServerRecvHandle func(stream *Stream, msg *Req)

@@ -1,12 +1,12 @@
 package config
 
 import (
+	. "core/libs"
+	"core/libs/cfg"
 	"encoding/json"
 	"global"
 	"io/ioutil"
 	"sync"
-	. "tools"
-	"tools/cfg"
 )
 
 var (

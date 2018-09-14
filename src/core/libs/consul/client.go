@@ -1,9 +1,9 @@
 package consul
 
 import (
+	. "core/libs"
 	"github.com/hashicorp/consul/api"
 	"strings"
-	. "tools"
 )
 
 type ConsulClient struct {

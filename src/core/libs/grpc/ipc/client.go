@@ -1,14 +1,14 @@
 package ipc
 
 import (
+	. "core/libs"
+	"core/libs/consul"
+	myGprc "core/libs/grpc"
+	"core/libs/stack"
 	"errors"
 	"google.golang.org/grpc"
 	"io"
 	"sync"
-	. "tools"
-	"tools/consul"
-	myGprc "tools/grpc"
-	"tools/stack"
 )
 
 type ClientRecvHandle func(stream Ipc_TransferClient, msg *Res)

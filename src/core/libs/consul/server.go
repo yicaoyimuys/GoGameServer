@@ -1,12 +1,12 @@
 package consul
 
 import (
+	. "core/libs"
 	"github.com/hashicorp/consul/api"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
-	. "tools"
 )
 
 func InitServer(serverName string, serverPort string) error {
