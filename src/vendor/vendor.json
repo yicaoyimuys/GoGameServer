@@ -134,6 +134,12 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "OH94abBdbmoVqyRqYBfgUT9N494=",
+			"path": "github.com/jessevdk/go-flags",
+			"revision": "1c38ed7ad0cc3d9e66649ac398c30e45f395c4eb",
+			"revisionTime": "2018-03-31T12:42:32Z"
+		},
+		{
 			"checksumSHA1": "V/quM7+em2ByJbWBLOsEwnY3j/Q=",
 			"origin": "github.com/hashicorp/consul/vendor/github.com/mitchellh/go-homedir",
 			"path": "github.com/mitchellh/go-homedir",

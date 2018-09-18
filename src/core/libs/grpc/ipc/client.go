@@ -1,7 +1,7 @@
 package ipc
 
 import (
-	. "core/libs"
+	"core/libs/common"
 	"core/libs/consul"
 	myGprc "core/libs/grpc"
 	"core/libs/stack"
@@ -114,7 +114,7 @@ func (this *Client) Send(serverName string, sessionId uint64, data []byte, servi
 	}
 
 	return stream.Send(&Req{
-		ServerName: GetLocalIp() + "_" + serverName,
+		ServerName: common.GetLocalIp() + "_" + serverName,
 		SessionId:  sessionId,
 		Data:       data,
 	})

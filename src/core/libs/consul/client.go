@@ -2,6 +2,7 @@ package consul
 
 import (
 	. "core/libs"
+	"core/libs/array"
 	"github.com/hashicorp/consul/api"
 	"strings"
 )
@@ -56,7 +57,7 @@ func (this *ConsulClient) GetServices(service string) []string {
 	results := []string{}
 	if services != nil {
 		for _, entry := range services {
-			if InArray(filterServices, entry.Service.Address) {
+			if array.InArray(filterServices, entry.Service.Address) {
 				continue
 			}
 			addr := entry.Service.Address + ":" + NumToString(entry.Service.Port)

@@ -1,15 +1,14 @@
 package main
 
 import (
-	"flag"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"os"
-	"runtime"
 )
 
 import (
-	"config"
+	"core/argv"
+	"core/config"
 	. "core/libs"
 	"core/libs/consul"
 	"core/libs/grpc/ipc"
@@ -23,6 +22,7 @@ import (
 )
 
 import (
+	"core"
 	_ "net/http/pprof"
 )
 
@@ -35,45 +35,22 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
-	defer func() {
-		if x := recover(); x != nil {
-			ERR("caught panic in main()", x)
-		}
-	}()
-
-	//CPU数设置
-	//runtime.GOMAXPROCS(1)
-
-	//初始化命令行参数
-	flag.StringVar(&global.Env, "e", "local", "env")
-	flag.IntVar(&global.ServiceId, "g", 1, "serverId")
-	flag.Parse()
-
-	//配置文件初始化
-	config.Init()
+	//初始化
+	serviceName := "connector"
+	core.NewService(serviceName)
 
 	//Service配置
-	global.ServiceName = "connector-" + NumToString(global.ServiceId)
-
-	//Log配置
-	logConfig := config.GetLog()
-	SetLogDebug(logConfig["debug"].(bool))
-	SetLogFile(global.ServiceName, logConfig["output"].(string))
+	global.ServiceName = argv.Values.ServiceName + "-" + NumToString(argv.Values.ServiceId)
 
 	//Server启动端口设置
-	serviceConfig := config.GetConnectorService(global.ServiceId)
+	serviceConfig := config.GetConnectorService(argv.Values.ServiceId)
 	global.ServerPort = NumToString(serviceConfig["clientPort"])
 
 	//Guid初始化
-	global.InitGuid(uint16(global.ServiceId))
+	global.InitGuid(uint16(argv.Values.ServiceId))
 
 	//Redis配置
 	redis.InitRedis(config.GetRedisList())
-
-	//系统环境
-	INFO("使用CPU数量:" + NumToString(runtime.GOMAXPROCS(-1)))
-	INFO("初始GoroutineNum:" + NumToString(runtime.NumGoroutine()))
-	INFO("服务器平台:" + global.Env)
 
 	//Kv初始化
 	err := consul.InitKV(true)
@@ -87,7 +64,7 @@ func main() {
 	go registService()
 
 	//开启Ping检测
-	overTime := If(global.Env == "facebook", 60, 15).(int)
+	overTime := If(argv.Values.Env == "facebook", 60, 15).(int)
 	sessions.FrontSessionOpenPing(int64(overTime))
 	INFO("Session超时时间设置", overTime)
 

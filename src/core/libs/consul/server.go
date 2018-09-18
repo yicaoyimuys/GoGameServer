@@ -2,6 +2,7 @@ package consul
 
 import (
 	. "core/libs"
+	"core/libs/common"
 	"github.com/hashicorp/consul/api"
 	"os"
 	"os/signal"
@@ -16,7 +17,7 @@ func InitServer(serverName string, serverPort string) error {
 	}
 
 	//服务器配置
-	address := GetLocalIp()
+	address := common.GetLocalIp()
 	port, _ := strconv.Atoi(serverPort)
 	id := address + "_" + serverName
 	name := strings.Split(serverName, "-")[0]

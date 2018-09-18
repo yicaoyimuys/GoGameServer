@@ -16,11 +16,8 @@ type ipcClients struct {
 }
 
 var (
-	Env        string
-	Guid       *guid.Guid
-	ServerPort string
-
-	ServiceId   int
+	Guid        *guid.Guid
+	ServerPort  string
 	ServiceName string
 
 	Services = services{

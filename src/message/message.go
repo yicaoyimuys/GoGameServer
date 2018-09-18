@@ -2,6 +2,7 @@ package message
 
 import (
 	. "core/libs"
+	"core/libs/array"
 	"core/libs/grpc/ipc"
 	"core/sessions"
 	"encoding/binary"
@@ -50,7 +51,7 @@ func isMatchingMsg(msgId uint16) bool {
 		msg.ID_Game_refuseReadyRoom_c2s,
 		msg.ID_Game_againJoinReadyRoom_c2s,
 	}
-	return InArray(ids, msgId)
+	return array.InArray(ids, msgId)
 }
 
 func getGameService(session *sessions.FrontSession, msgBody []byte) string {
