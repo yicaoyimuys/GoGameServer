@@ -148,7 +148,7 @@ func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody [
 		return errors.New("service not exists")
 	}
 
-	err := ipcClient.Send(global.ServerName, session.ID(), msgBody, service)
+	err := ipcClient.Send(global.ServiceName, session.ID(), msgBody, service)
 	if err == nil {
 		session.SetIpcService(serviceName, service)
 	}

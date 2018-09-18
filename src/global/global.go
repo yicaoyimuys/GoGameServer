@@ -19,10 +19,9 @@ var (
 	Env        string
 	Guid       *guid.Guid
 	ServerPort string
-	ServerId   int
-	ServerName string
 
-	GameServerComputer int
+	ServiceId   int
+	ServiceName string
 
 	Services = services{
 		Matching: "MatchingServer",

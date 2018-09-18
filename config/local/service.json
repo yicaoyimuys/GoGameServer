@@ -1,0 +1,10 @@
+{
+  "connector": {
+    "tslCrt": "/usr/local/nginx/cert/xxx.crt",
+    "tslKey": "/usr/local/nginx/cert/xxx.key",
+    "servers":{
+      "1": { "clientPort": 19881, "useSSL": false },
+      "2": { "clientPort": 19882, "useSSL": false }
+    }
+  }
+}

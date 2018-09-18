@@ -45,29 +45,27 @@ func main() {
 	//runtime.GOMAXPROCS(1)
 
 	//初始化命令行参数
-	flag.StringVar(&global.Env, "e", "development", "env")
-	flag.IntVar(&global.ServerId, "g", 1, "serverId")
-	flag.IntVar(&global.GameServerComputer, "s", 0, "serverNumber")
+	flag.StringVar(&global.Env, "e", "local", "env")
+	flag.IntVar(&global.ServiceId, "g", 1, "serverId")
 	flag.Parse()
 
-	//Server配置
-	serverConfig := config.GetConnectorServer(global.ServerId)
-	global.ServerName = serverConfig["id"].(string)
+	//配置文件初始化
+	config.Init()
 
-	//Server启动端口设置
-	if global.GameServerComputer > 0 {
-		global.ServerPort = NumToString(10000 + 100*global.GameServerComputer + global.ServerId)
-	} else {
-		global.ServerPort = NumToString(serverConfig["clientPort"])
-	}
+	//Service配置
+	global.ServiceName = "connector-" + NumToString(global.ServiceId)
 
 	//Log配置
 	logConfig := config.GetLog()
 	SetLogDebug(logConfig["debug"].(bool))
-	SetLogFile(global.ServerName, logConfig["output"].(string))
+	SetLogFile(global.ServiceName, logConfig["output"].(string))
+
+	//Server启动端口设置
+	serviceConfig := config.GetConnectorService(global.ServiceId)
+	global.ServerPort = NumToString(serviceConfig["clientPort"])
 
 	//Guid初始化
-	global.InitGuid(uint16(global.ServerId))
+	global.InitGuid(uint16(global.ServiceId))
 
 	//Redis配置
 	redis.InitRedis(config.GetRedisList())
@@ -82,7 +80,7 @@ func main() {
 	checkError(err)
 
 	//开启WebSocket
-	go startWs(serverConfig["useSSL"].(bool))
+	go startWs(serviceConfig["useSSL"].(bool))
 	//开启Ipc
 	go startIpcClient()
 	//服务注册
@@ -130,8 +128,8 @@ func startWs(useSSL bool) {
 	http.HandleFunc("/", wsHandler)
 	var err error
 	if useSSL {
-		tslCrt := config.GetGameServerTslCrt()
-		tslKey := config.GetGameServerTslKey()
+		tslCrt := config.GetConnectorServiceTslCrt()
+		tslKey := config.GetConnectorServiceTslKey()
 		err = http.ListenAndServeTLS("0.0.0.0:"+gameServerPort, tslCrt, tslKey, nil)
 	} else {
 		err = http.ListenAndServe("0.0.0.0:"+gameServerPort, nil)
@@ -170,7 +168,7 @@ func startIpcClient() {
 }
 
 func registService() {
-	serverName := global.ServerName
+	serverName := global.ServiceName
 	serverPort := global.ServerPort
 
 	INFO("join consul service...." + serverPort)

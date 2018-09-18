@@ -10,19 +10,27 @@ import (
 )
 
 var (
-	serverConfig map[string]interface{}
-	redisConfig  map[string]interface{}
-	logConfig    map[string]interface{}
-	lock         sync.Mutex
+	serviceConfig map[string]interface{}
+	redisConfig   map[string]interface{}
+	logConfig     map[string]interface{}
+	lock          sync.Mutex
 )
 
-func init() {
-	var serverConfigPath = cfg.ROOT + "/config/server.json"
-	var redisConfigPath = cfg.ROOT + "/config/redis.json"
-	var logConfigPath = cfg.ROOT + "/config/log.json"
+func Init() {
+	load()
+}
+
+func getConfigPath(configFile string) string {
+	return cfg.ROOT + "/config/" + global.Env + "/" + configFile
+}
+
+func load() {
+	var serviceConfigPath = getConfigPath("service.json")
+	var redisConfigPath = getConfigPath("redis.json")
+	var logConfigPath = getConfigPath("log.json")
 
 	lock.Lock()
-	loadConfig(&serverConfig, serverConfigPath)
+	loadConfig(&serviceConfig, serviceConfigPath)
 	loadConfig(&redisConfig, redisConfigPath)
 	loadConfig(&logConfig, logConfigPath)
 	lock.Unlock()
@@ -33,26 +41,26 @@ func loadConfig(data *map[string]interface{}, configPath string) {
 	json.Unmarshal(fileData, data)
 }
 
-func GetConnectorServer(serverId int) map[string]interface{} {
-	serverData := serverConfig[global.Env].(map[string]interface{})
-	gameData := serverData["connector"].(map[string]interface{})
-	return gameData[NumToString(serverId)].(map[string]interface{})
+func GetConnectorService(serviceId int) map[string]interface{} {
+	serviceData := serviceConfig["connector"].(map[string]interface{})
+	serverDatas := serviceData["servers"].(map[string]interface{})
+	return serverDatas[NumToString(serviceId)].(map[string]interface{})
 }
 
-func GetGameServerTslCrt() string {
-	serverData := serverConfig[global.Env].(map[string]interface{})
+func GetConnectorServiceTslCrt() string {
+	serverData := serviceConfig["connector"].(map[string]interface{})
 	return serverData["tslCrt"].(string)
 }
 
-func GetGameServerTslKey() string {
-	serverData := serverConfig[global.Env].(map[string]interface{})
+func GetConnectorServiceTslKey() string {
+	serverData := serviceConfig["connector"].(map[string]interface{})
 	return serverData["tslKey"].(string)
 }
 
 func GetRedisList() map[string]interface{} {
-	return redisConfig[global.Env].(map[string]interface{})
+	return redisConfig
 }
 
 func GetLog() map[string]interface{} {
-	return logConfig[global.Env].(map[string]interface{})
+	return logConfig
 }
