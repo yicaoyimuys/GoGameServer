@@ -3,6 +3,7 @@ package libs
 import (
 	"core/libs/common"
 	"core/libs/logger"
+	"core/libs/stack"
 )
 
 func init() {
@@ -39,4 +40,8 @@ func NumToString(num interface{}) string {
 
 func If(condition bool, trueVal, falseVal interface{}) interface{} {
 	return common.If(condition, trueVal, falseVal)
+}
+
+func CheckError(err error) {
+	stack.CheckError(err)
 }

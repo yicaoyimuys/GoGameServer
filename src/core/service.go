@@ -35,7 +35,7 @@ func initMaxProcs() {
 
 func initArgv(serviceName string) {
 	err := argv.Init(serviceName)
-	checkError(err)
+	CheckError(err)
 }
 
 func initConfig() {
@@ -67,10 +67,4 @@ func recoverErr() {
 			ERR("caught panic in main()", x)
 		}
 	}()
-}
-
-func checkError(err error) {
-	if err != nil {
-		ERR("Fatal error: %v", err)
-	}
 }

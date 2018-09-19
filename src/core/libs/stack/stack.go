@@ -1,7 +1,8 @@
 package stack
 
 import (
-	. "core/libs"
+	"core/libs/common"
+	"core/libs/logger"
 	"runtime"
 )
 
@@ -10,14 +11,20 @@ func PrintPanicStack() {
 		funcName, file, line, ok := runtime.Caller(i)
 		if ok {
 			funcName := runtime.FuncForPC(funcName).Name()
-			ERR("frame " + NumToString(i) + ":[func:" + funcName + ", file: " + file + ", line:" + NumToString(line) + "]")
+			logger.Error("frame " + common.NumToString(i) + ":[func:" + funcName + ", file: " + file + ", line:" + common.NumToString(line) + "]")
 		}
 	}
 }
 
 func PrintPanicStackError() {
 	if x := recover(); x != nil {
-		ERR(x)
+		logger.Error(x)
 		PrintPanicStack()
+	}
+}
+
+func CheckError(err error) {
+	if err != nil {
+		logger.Error("Fatal error: %v", err)
 	}
 }

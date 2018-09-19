@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
-	"net/http"
 	"os"
 )
 
@@ -13,9 +11,8 @@ import (
 	"core/libs/consul"
 	"core/libs/grpc/ipc"
 	"core/libs/redis"
-	"core/libs/stack"
 	"core/libs/timer"
-	"core/sessions"
+	"core/libs/websocket"
 	"game/module"
 	"global"
 	"message"
@@ -23,16 +20,9 @@ import (
 
 import (
 	"core"
+	"core/libs/dict"
 	_ "net/http/pprof"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 func main() {
 	//初始化
@@ -57,16 +47,11 @@ func main() {
 	checkError(err)
 
 	//开启WebSocket
-	go startWs(serviceConfig["useSSL"].(bool))
+	startWs()
 	//开启Ipc
 	go startIpcClient()
 	//服务注册
 	go registService()
-
-	//开启Ping检测
-	overTime := If(argv.Values.Env == "facebook", 60, 15).(int)
-	sessions.FrontSessionOpenPing(int64(overTime))
-	INFO("Session超时时间设置", overTime)
 
 	//模块初始化
 	initModule()
@@ -79,53 +64,23 @@ func initModule() {
 	module.StartServerTimer()
 }
 
-func addFontSession(session *sessions.FrontSession) {
-	sessions.AddFrontSession(session)
-	session.SetMsgHandle(message.FontReceive)
-	session.AddCloseCallback(nil, "main.FrontSessionOffline", func() {
-		message.SendMsgToBack_UserOffline(session)
-		//DEBUG("session count: ", sessions.FrontSessionLen())
-	})
-	//DEBUG("session count: ", sessions.FrontSessionLen())
+func startWs() {
+	//WebSocket配置
+	serviceConfig := config.GetConnectorService(argv.Values.ServiceId)
+	port := dict.GetString(serviceConfig, "clientPort")
+	useSSL := dict.GetBool(serviceConfig, "useSSL")
 
-	defer session.Close()
-	for {
-		msg, err := session.Receive()
-		if err != nil || msg == nil {
-			break
-		}
-	}
-}
-
-func startWs(useSSL bool) {
-	gameServerPort := global.ServerPort
-
-	INFO("front start websocket...." + gameServerPort)
-
-	http.HandleFunc("/", wsHandler)
-	var err error
+	//创建WebSocket Server
+	server := websocket.NewServer(port)
 	if useSSL {
 		tslCrt := config.GetConnectorServiceTslCrt()
 		tslKey := config.GetConnectorServiceTslKey()
-		err = http.ListenAndServeTLS("0.0.0.0:"+gameServerPort, tslCrt, tslKey, nil)
-	} else {
-		err = http.ListenAndServe("0.0.0.0:"+gameServerPort, nil)
+		server.SetTLS(tslCrt, tslKey)
 	}
-	checkError(err)
-}
-
-func wsHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		ERR("wsHandler: ", err)
-		return
-	}
-
-	defer stack.PrintPanicStackError()
-
-	//Session创建
-	session := sessions.NewFontSession(sessions.NewFrontCodec(conn))
-	addFontSession(session)
+	server.SetSessionMsgHandle(message.FontReceive)
+	server.SetSessionCloseHandle(message.SendMsgToBack_UserOffline)
+	server.Start()
+	server.StartPing()
 }
 
 func startIpcClient() {
