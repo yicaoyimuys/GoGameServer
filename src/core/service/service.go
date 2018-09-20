@@ -18,6 +18,12 @@ import (
 	"runtime"
 )
 
+const (
+	WS  = "ws"
+	RPC = "rpc"
+	IPC = "ipc"
+)
+
 type Service struct {
 	env  string
 	name string
@@ -102,11 +108,16 @@ func recoverErr() {
 	stack.PrintPanicStackError()
 }
 
-func (this *Service) registerService(servicePort string) {
-	err := consul.InitServer(this.name, this.id, servicePort)
+func packageServiceName(serviceType string, serviceName string) string {
+	return "<" + serviceType + ">" + serviceName
+}
+
+func (this *Service) registerService(serviceType string, servicePort string) {
+	serviceName := packageServiceName(serviceType, this.name)
+	err := consul.NewServive(serviceName, this.id, servicePort)
 	CheckError(err)
 
-	INFO("join consul service...", servicePort)
+	INFO("join consul service...", serviceName, servicePort)
 
 	this.port = servicePort
 }
@@ -136,19 +147,20 @@ func (this *Service) StartWebSocket() {
 	server.StartPing()
 
 	//服务注册
-	this.registerService(port)
+	this.registerService(WS, port)
 }
 
 func (this *Service) StartIpcClient(serviceNames []string) {
 	this.ipcClients = make(map[string]*ipc.Client)
 
 	//初始化consul客户端
-	consulClient, err := consul.InitClient()
+	consulClient, err := consul.NewClient()
 	CheckError(err)
 
 	//初始化Ipc客户端
 	for _, serviceName := range serviceNames {
-		this.ipcClients[serviceName] = ipc.InitClient(consulClient, serviceName, message.IpcClientReceive)
+		serviceName = packageServiceName(IPC, serviceName)
+		this.ipcClients[serviceName] = ipc.NewClient(consulClient, serviceName, message.IpcClientReceive)
 		INFO("ipc client start...", serviceName)
 	}
 }
@@ -160,21 +172,36 @@ func (this *Service) StartIpcServer() {
 	INFO("ipc server start...", port)
 
 	//服务注册
-	this.registerService(port)
+	this.registerService(IPC, port)
 }
 
 func (this *Service) StartRpcClient(serviceNames []string) {
 	this.rpcClients = make(map[string]*rpc.Client)
 
 	//初始化consul客户端
-	consulClient, err := consul.InitClient()
+	consulClient, err := consul.NewClient()
 	CheckError(err)
 
 	//初始化Rpc客户端
 	for _, serviceName := range serviceNames {
-		this.rpcClients[serviceName] = rpc.InitClient(consulClient, serviceName)
+		serviceName = packageServiceName(RPC, serviceName)
+		this.rpcClients[serviceName] = rpc.NewClient(consulClient, serviceName)
 		INFO("rpc client start...", serviceName)
 	}
+}
+
+func (this *Service) StartRpcServer(rcvr interface{}) {
+	//rpc模块注册
+	err := rpc.RegisterModule(this.name, rcvr)
+	CheckError(err)
+
+	//开启rpcServer
+	port, err := rpc.InitServer()
+	CheckError(err)
+	INFO("rpc server start...." + port)
+
+	//服务注册
+	this.registerService(RPC, port)
 }
 
 func (this *Service) StartDebug() {
@@ -203,11 +230,13 @@ func (this *Service) Port() string {
 }
 
 func (this *Service) GetIpcClient(serviceName string) *ipc.Client {
+	serviceName = packageServiceName(IPC, serviceName)
 	client, _ := this.ipcClients[serviceName]
 	return client
 }
 
 func (this *Service) GetRpcClient(serviceName string) *rpc.Client {
+	serviceName = packageServiceName(RPC, serviceName)
 	client, _ := this.rpcClients[serviceName]
 	return client
 }

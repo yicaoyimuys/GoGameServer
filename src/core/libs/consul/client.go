@@ -12,7 +12,7 @@ type Client struct {
 	consulClient *api.Client
 }
 
-func InitClient() (*Client, error) {
+func NewClient() (*Client, error) {
 	//开启consulKV
 	err := InitKV(true)
 	stack.CheckError(err)

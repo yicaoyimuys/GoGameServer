@@ -5,6 +5,7 @@ import (
 	. "core/libs"
 	"core/service"
 	_ "net/http/pprof"
+	"servives/game/module"
 )
 
 func main() {
@@ -14,6 +15,7 @@ func main() {
 	//初始化Service
 	newService := service.NewService(Service.Game)
 	newService.StartIpcServer()
+	newService.StartRpcServer(&module.GameRpcServer{})
 	newService.StartRpcClient([]string{Service.Platform, Service.Log})
 	newService.StartDebug()
 

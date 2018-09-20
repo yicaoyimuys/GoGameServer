@@ -27,7 +27,7 @@ type Client struct {
 	linkMutex sync.Mutex
 }
 
-func InitClient(consulClient *consul.Client, serviceName string) *Client {
+func NewClient(consulClient *consul.Client, serviceName string) *Client {
 	client := &Client{
 		consulClient: consulClient,
 		serviceName:  serviceName,
@@ -52,6 +52,7 @@ func (this *Client) initServices() {
 }
 
 func (this *Client) traceServices() {
+	return
 	this.servicesMutex.Lock()
 	logger.Debug("----------rpc start " + this.serviceName + "----------")
 	for _, value := range this.services {

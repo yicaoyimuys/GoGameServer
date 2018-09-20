@@ -28,7 +28,7 @@ type Client struct {
 	newPbClientFunc func(*grpc.ClientConn) interface{}
 }
 
-func InitClient(consulClient *consul.Client, serviceName string, newPbClientFunc func(*grpc.ClientConn) interface{}) *Client {
+func NewClient(consulClient *consul.Client, serviceName string, newPbClientFunc func(*grpc.ClientConn) interface{}) *Client {
 	client := &Client{
 		consulClient:    consulClient,
 		serviceName:     serviceName,
@@ -54,6 +54,7 @@ func (this *Client) initServices() {
 }
 
 func (this *Client) traceServices() {
+	return
 	this.servicesMutex.Lock()
 	logger.Debug("----------grpc start " + this.serviceName + "----------")
 	for _, value := range this.services {

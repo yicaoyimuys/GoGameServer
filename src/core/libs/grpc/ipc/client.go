@@ -20,8 +20,8 @@ type Client struct {
 	serverStreamMutex sync.Mutex
 }
 
-func InitClient(consulClient *consul.Client, serviceName string, handle ClientRecvHandle) *Client {
-	grpcClient := myGprc.InitClient(consulClient, serviceName, func(conn *grpc.ClientConn) interface{} {
+func NewClient(consulClient *consul.Client, serviceName string, handle ClientRecvHandle) *Client {
+	grpcClient := myGprc.NewClient(consulClient, serviceName, func(conn *grpc.ClientConn) interface{} {
 		return NewIpcClient(conn)
 	})
 

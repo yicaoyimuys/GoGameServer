@@ -16,8 +16,8 @@ var (
 	lock          sync.Mutex
 )
 
-func Init(env string) {
-	env = env
+func Init(_env string) {
+	env = _env
 	load()
 }
 
