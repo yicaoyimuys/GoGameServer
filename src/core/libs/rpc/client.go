@@ -17,7 +17,7 @@ import (
 )
 
 type Client struct {
-	consulClient *consul.ConsulClient
+	consulClient *consul.Client
 	serviceName  string
 
 	services      []string
@@ -27,7 +27,7 @@ type Client struct {
 	linkMutex sync.Mutex
 }
 
-func InitClient(consulClient *consul.ConsulClient, serviceName string) *Client {
+func InitClient(consulClient *consul.Client, serviceName string) *Client {
 	client := &Client{
 		consulClient: consulClient,
 		serviceName:  serviceName,
@@ -53,10 +53,11 @@ func (this *Client) initServices() {
 
 func (this *Client) traceServices() {
 	this.servicesMutex.Lock()
+	logger.Debug("----------rpc start " + this.serviceName + "----------")
 	for _, value := range this.services {
 		logger.Debug(this.serviceName, "Service", value)
 	}
-	logger.Debug("--------------------------------------------")
+	logger.Debug("-----------rpc end " + this.serviceName + "-----------")
 	this.servicesMutex.Unlock()
 }
 

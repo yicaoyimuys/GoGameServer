@@ -1,4 +1,4 @@
-package cfg
+package system
 
 import (
 	"os"

@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-type ConsulClient struct {
+type Client struct {
 	consulClient *api.Client
 }
 
-func InitClient() (*ConsulClient, error) {
+func InitClient() (*Client, error) {
 	//开启consulKV
 	err := InitKV(true)
 	stack.CheckError(err)
@@ -23,13 +23,13 @@ func InitClient() (*ConsulClient, error) {
 		return nil, err
 	}
 
-	consulClient := &ConsulClient{
+	consulClient := &Client{
 		consulClient: client,
 	}
 	return consulClient, nil
 }
 
-//func (this *ConsulClient) GetServices(service string) []string {
+//func (this *Client) GetServices(service string) []string {
 //	services, _ := this.consulClient.Agent().Services()
 //	results := []string{}
 //	if services != nil {
@@ -57,7 +57,7 @@ func getFilterServices() []string {
 	return result
 }
 
-func (this *ConsulClient) GetServices(service string) []string {
+func (this *Client) GetServices(service string) []string {
 	services, _, _ := this.consulClient.Health().Service(service, "", true, &api.QueryOptions{})
 	filterServices := getFilterServices()
 	results := []string{}
@@ -73,6 +73,6 @@ func (this *ConsulClient) GetServices(service string) []string {
 	return results
 }
 
-func (this *ConsulClient) DeregisterService(serviceID string) {
+func (this *Client) DeregisterService(serviceID string) {
 	this.consulClient.Agent().ServiceDeregister(serviceID)
 }

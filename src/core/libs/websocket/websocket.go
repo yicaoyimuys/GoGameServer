@@ -73,7 +73,7 @@ func (this *Server) Start() {
 func (this *Server) StartPing() {
 	overTime := 15
 	sessions.FrontSessionOpenPing(int64(overTime))
-	logger.Info("Session超时时间设置", overTime)
+	logger.Info("session超时时间设置", overTime)
 }
 
 func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {

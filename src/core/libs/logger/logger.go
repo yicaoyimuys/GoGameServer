@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"core/libs/cfg"
+	"core/libs/system"
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"strings"
@@ -30,7 +30,7 @@ func SetLogFile(fileName string, log_output string) {
 }
 
 func startLogger(path string, log_output string) {
-	path = cfg.ROOT + "/logs/" + path
+	path = system.ROOT + "/logs/" + path
 
 	switch log_output {
 	case "both":

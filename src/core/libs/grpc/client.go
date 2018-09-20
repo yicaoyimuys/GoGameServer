@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-type GrpcClient struct {
-	consulClient *consul.ConsulClient
+type Client struct {
+	consulClient *consul.Client
 	serviceName  string
 
 	services      []string
@@ -28,8 +28,8 @@ type GrpcClient struct {
 	newPbClientFunc func(*grpc.ClientConn) interface{}
 }
 
-func InitClient(consulClient *consul.ConsulClient, serviceName string, newPbClientFunc func(*grpc.ClientConn) interface{}) *GrpcClient {
-	client := &GrpcClient{
+func InitClient(consulClient *consul.Client, serviceName string, newPbClientFunc func(*grpc.ClientConn) interface{}) *Client {
+	client := &Client{
 		consulClient:    consulClient,
 		serviceName:     serviceName,
 		links:           make(map[string]*grpc.ClientConn),
@@ -40,11 +40,11 @@ func InitClient(consulClient *consul.ConsulClient, serviceName string, newPbClie
 	return client
 }
 
-func (this *GrpcClient) loop() {
+func (this *Client) loop() {
 	timer.DoTimer(10*1000, this.initServices)
 }
 
-func (this *GrpcClient) initServices() {
+func (this *Client) initServices() {
 	this.servicesMutex.Lock()
 	this.services = this.consulClient.GetServices(this.serviceName)
 	sort.Strings(this.services)
@@ -53,16 +53,17 @@ func (this *GrpcClient) initServices() {
 	this.traceServices()
 }
 
-func (this *GrpcClient) traceServices() {
+func (this *Client) traceServices() {
 	this.servicesMutex.Lock()
+	logger.Debug("----------grpc start " + this.serviceName + "----------")
 	for _, value := range this.services {
 		logger.Debug(this.serviceName, "Service", value)
 	}
-	logger.Debug("--------------------------------------------")
+	logger.Debug("-----------grpc end " + this.serviceName + "-----------")
 	this.servicesMutex.Unlock()
 }
 
-func (this *GrpcClient) removeService(service string) {
+func (this *Client) removeService(service string) {
 	this.servicesMutex.Lock()
 	for index, value := range this.services {
 		if value == service {
@@ -74,7 +75,7 @@ func (this *GrpcClient) removeService(service string) {
 	this.traceServices()
 }
 
-func (this *GrpcClient) GetServiceByFlag(flag string) string {
+func (this *Client) GetServiceByFlag(flag string) string {
 	this.servicesMutex.Lock()
 	service := ""
 	servicesLen := len(this.services)
@@ -88,11 +89,11 @@ func (this *GrpcClient) GetServiceByFlag(flag string) string {
 	return service
 }
 
-func (this *GrpcClient) GetServiceByRandom() string {
+func (this *Client) GetServiceByRandom() string {
 	return this.GetServiceByFlag(common.NumToString(time.Now().Unix()))
 }
 
-func (this *GrpcClient) getLink(service string) *grpc.ClientConn {
+func (this *Client) getLink(service string) *grpc.ClientConn {
 	//监测是否已经存在
 	this.linkMutex.Lock()
 	link, ok := this.links[service]
@@ -124,7 +125,7 @@ func (this *GrpcClient) getLink(service string) *grpc.ClientConn {
 	return link
 }
 
-func (this *GrpcClient) removeLink(service string) {
+func (this *Client) removeLink(service string) {
 	this.linkMutex.Lock()
 	if link, ok := this.links[service]; ok {
 		link.Close()
@@ -135,7 +136,7 @@ func (this *GrpcClient) removeLink(service string) {
 	logger.Error("grpcServer disconnected", service)
 }
 
-func (this *GrpcClient) Call(service string, serviceMethod string, arg interface{}) interface{} {
+func (this *Client) Call(service string, serviceMethod string, arg interface{}) interface{} {
 	////根据Flag分配Service
 	//if flag == "" {
 	//	flag = NumToString(time.Now().Unix())

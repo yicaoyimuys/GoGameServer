@@ -14,7 +14,7 @@ func main() {
 	//初始化Service
 	newService := service.NewService(Service.Game)
 	newService.StartIpcServer()
-	newService.StartRpcClient([]string{Service.Platform, Service.Ai})
+	newService.StartRpcClient([]string{Service.Platform, Service.Log})
 	newService.StartDebug()
 
 	//模块初始化

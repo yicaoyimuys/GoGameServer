@@ -25,7 +25,7 @@ func InitRedis(redisListConfig map[string]interface{}) {
 
 		pong, err := redisClient.Ping().Result()
 		if err == nil {
-			logger.Info("Redis_" + key + "连接成功..." + pong)
+			logger.Info("Redis_"+key+"连接成功...", pong)
 			redisClientList[key] = redisClient
 		} else {
 			logger.Error("Redis_"+key+"连接失败", err)

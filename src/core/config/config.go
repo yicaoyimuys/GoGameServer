@@ -1,22 +1,27 @@
 package config
 
 import (
-	"core/argv"
 	. "core/libs"
-	"core/libs/cfg"
+	"core/libs/system"
 	"encoding/json"
 	"io/ioutil"
 	"sync"
 )
 
 var (
+	env           string
 	serviceConfig map[string]interface{}
 	redisConfig   map[string]interface{}
 	logConfig     map[string]interface{}
 	lock          sync.Mutex
 )
 
-func Init() {
+func Init(env string) {
+	env = env
+	load()
+}
+
+func load() {
 	var serviceConfigPath = getConfigPath("service.json")
 	var redisConfigPath = getConfigPath("redis.json")
 	var logConfigPath = getConfigPath("log.json")
@@ -29,7 +34,7 @@ func Init() {
 }
 
 func getConfigPath(configFile string) string {
-	return cfg.ROOT + "/config/" + argv.Values.Env + "/" + configFile
+	return system.ROOT + "/config/" + env + "/" + configFile
 }
 
 func loadConfig(data *map[string]interface{}, configPath string) {

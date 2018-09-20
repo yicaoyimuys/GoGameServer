@@ -14,13 +14,13 @@ import (
 type ClientRecvHandle func(stream Ipc_TransferClient, msg *Res)
 
 type Client struct {
-	grpcClient        *myGprc.GrpcClient
+	grpcClient        *myGprc.Client
 	recvHandle        ClientRecvHandle
 	serverStreams     map[string]Ipc_TransferClient
 	serverStreamMutex sync.Mutex
 }
 
-func InitClient(consulClient *consul.ConsulClient, serviceName string, handle ClientRecvHandle) *Client {
+func InitClient(consulClient *consul.Client, serviceName string, handle ClientRecvHandle) *Client {
 	grpcClient := myGprc.InitClient(consulClient, serviceName, func(conn *grpc.ClientConn) interface{} {
 		return NewIpcClient(conn)
 	})

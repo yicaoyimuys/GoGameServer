@@ -2,9 +2,9 @@ package service
 
 import (
 	"core"
-	"core/argv"
 	"core/config"
 	. "core/libs"
+	"core/libs/argv"
 	"core/libs/consul"
 	"core/libs/dict"
 	"core/libs/grpc/ipc"
@@ -50,7 +50,7 @@ func (this *Service) init() {
 	initArgv(this)
 
 	//初始化: 配置文件
-	initConfig()
+	initConfig(this)
 
 	//初始化: log
 	initLog(this)
@@ -71,8 +71,8 @@ func initArgv(service *Service) {
 	service.id = argv.Values.ServiceId
 }
 
-func initConfig() {
-	config.Init()
+func initConfig(service *Service) {
+	config.Init(service.env)
 }
 
 func initLog(service *Service) {
@@ -91,11 +91,11 @@ func initRedis() {
 }
 
 func printEnv(service *Service) {
-	INFO("使用CPU数量:" + NumToString(runtime.GOMAXPROCS(-1)))
-	INFO("初始GoroutineNum:" + NumToString(runtime.NumGoroutine()))
-	INFO("服务平台:" + service.env)
-	INFO("服务名称:" + service.name)
-	INFO("服务ID:" + NumToString(service.id))
+	INFO("使用CPU数量:", runtime.GOMAXPROCS(-1))
+	INFO("初始GoroutineNum:", runtime.NumGoroutine())
+	INFO("服务平台:", service.env)
+	INFO("服务名称:", service.name)
+	INFO("服务ID:", service.id)
 }
 
 func recoverErr() {
@@ -106,7 +106,7 @@ func (this *Service) registerService(servicePort string) {
 	err := consul.InitServer(this.name, this.id, servicePort)
 	CheckError(err)
 
-	INFO("join consul service..." + servicePort)
+	INFO("join consul service...", servicePort)
 
 	this.port = servicePort
 }
@@ -157,7 +157,7 @@ func (this *Service) StartIpcServer() {
 	//开启ipcServer
 	port, err := ipc.InitServer(message.IpcServerReceive)
 	CheckError(err)
-	INFO("ipc server start..." + port)
+	INFO("ipc server start...", port)
 
 	//服务注册
 	this.registerService(port)

@@ -9,7 +9,6 @@ import (
 func init() {
 }
 
-//------------------------------------------------ 严重程度由高到低
 func ERR(v ...interface{}) {
 	logger.Error(v)
 }

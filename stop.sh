@@ -12,6 +12,7 @@ function func(){
 if [ $# -eq 0 ]
 	then
 		func connector
+		func game
 	else
 		func $1
 fi

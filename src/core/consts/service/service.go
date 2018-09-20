@@ -2,8 +2,9 @@ package Service
 
 const (
 	Connector = "connector"
+	Login     = "login"
 	Game      = "game"
 	Matching  = "matching"
 	Platform  = "platform"
-	Ai        = "ai"
+	Log       = "log"
 )
