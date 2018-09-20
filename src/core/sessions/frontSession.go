@@ -3,7 +3,6 @@ package sessions
 import (
 	"core/libs/stack"
 	"errors"
-	"global"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -37,9 +36,9 @@ type FrontSession struct {
 
 var ErrClosed = errors.New("session closed")
 
-func NewFontSession(codec Codec) *FrontSession {
+func NewFontSession(id uint64, codec Codec) *FrontSession {
 	session := &FrontSession{
-		id:        global.Guid.NewID(),
+		id:        id,
 		codec:     codec,
 		recvChan:  make(chan []byte, 100),
 		closeChan: make(chan int),

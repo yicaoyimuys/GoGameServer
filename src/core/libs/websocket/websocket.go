@@ -2,6 +2,7 @@ package websocket
 
 import (
 	. "core/libs"
+	"core/libs/guid"
 	"core/libs/stack"
 	"core/sessions"
 	"github.com/gorilla/websocket"
@@ -21,6 +22,7 @@ type SessionCloseHandle func(session *sessions.FrontSession)
 
 type Server struct {
 	port string
+	guid *guid.Guid
 
 	useSSL bool
 	tslCrt string
@@ -30,9 +32,10 @@ type Server struct {
 	sessionCloseHandle SessionCloseHandle
 }
 
-func NewServer(port string) *Server {
+func NewServer(port string, serviceId int) *Server {
 	server := &Server{
 		port:   port,
+		guid:   guid.NewGuid(uint16(serviceId)),
 		useSSL: false,
 	}
 	return server
@@ -84,7 +87,9 @@ func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	defer stack.PrintPanicStackError()
 
 	//Session创建
-	session := sessions.NewFontSession(sessions.NewFrontCodec(conn))
+	sessionId := this.guid.NewID()
+	sessionCodec := sessions.NewFrontCodec(conn)
+	session := sessions.NewFontSession(sessionId, sessionCodec)
 	this.addFontSession(session)
 }
 

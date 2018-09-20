@@ -12,6 +12,11 @@ type ConsulClient struct {
 }
 
 func InitClient() (*ConsulClient, error) {
+	//开启consulKV
+	err := InitKV(true)
+	CheckError(err)
+
+	//开启consul客户端
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
 		return nil, err

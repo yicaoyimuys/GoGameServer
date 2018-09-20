@@ -1,10 +1,10 @@
 package message
 
 import (
+	"core/consts"
 	. "core/libs"
 	"core/sessions"
 	"encoding/binary"
-	"global"
 	"proto/msg"
 )
 
@@ -19,7 +19,7 @@ func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {
 }
 
 func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToBack(global.Services.Game, session, msgBody)
+	err := sendMsgToBack(consts.Service_Game, session, msgBody)
 	if err != nil {
 		ERR("dealGameMsg", err)
 		sendMsgToClient_Error(session)
@@ -27,7 +27,7 @@ func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
 }
 
 func dealMatchingMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToBack(global.Services.Matching, session, msgBody)
+	err := sendMsgToBack(consts.Service_Matching, session, msgBody)
 	if err != nil {
 		ERR("dealMatchingMsg", err)
 		sendMsgToClient_Error(session)

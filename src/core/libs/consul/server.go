@@ -7,10 +7,9 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 )
 
-func InitServer(serverName string, serverPort string) error {
+func InitServer(serviceName string, serviceId int, servicePort string) error {
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
 		return err
@@ -18,12 +17,12 @@ func InitServer(serverName string, serverPort string) error {
 
 	//服务器配置
 	address := common.GetLocalIp()
-	port, _ := strconv.Atoi(serverPort)
-	id := address + "_" + serverName
-	name := strings.Split(serverName, "-")[0]
+	port, _ := strconv.Atoi(servicePort)
+	id := address + ":" + servicePort + "_" + serviceName + ":" + NumToString(serviceId)
+	name := serviceName
 
 	//健康检查配置
-	checkPath := address + ":" + serverPort
+	checkPath := address + ":" + servicePort
 
 	//服务注册
 	service := &api.AgentServiceRegistration{

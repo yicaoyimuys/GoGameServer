@@ -56,8 +56,8 @@ func (this *Server) dealServerRecvHandle(stream *Stream, msg *Req) {
 	this.serverRecvHandle(stream, msg)
 }
 
-func InitServer(serverName string, serverRecvHandle ServerRecvHandle) (string, error) {
-	serverPort, err := myGprc.InitServer(func(server *grpc.Server) {
+func InitServer(serviceName string, serviceId int, serverRecvHandle ServerRecvHandle) (string, error) {
+	servicePort, err := myGprc.InitServer(func(server *grpc.Server) {
 		//注册处理模块
 		RegisterIpcServer(server, &Server{
 			serverRecvHandle: serverRecvHandle,
@@ -65,11 +65,11 @@ func InitServer(serverName string, serverRecvHandle ServerRecvHandle) (string, e
 	})
 
 	//注册到服务
-	err = consul.InitServer(serverName, serverPort)
+	err = consul.InitServer(serviceName, serviceId, servicePort)
 	if err != nil {
 		return "", err
 	}
-	INFO("join consul service...." + serverPort)
+	INFO("join consul service...." + servicePort)
 
-	return serverPort, nil
+	return servicePort, nil
 }

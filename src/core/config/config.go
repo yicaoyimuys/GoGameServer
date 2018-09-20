@@ -39,7 +39,7 @@ func loadConfig(data *map[string]interface{}, configPath string) {
 
 func GetConnectorService(serviceId int) map[string]interface{} {
 	serviceData := serviceConfig["connector"].(map[string]interface{})
-	serverDatas := serviceData["servers"].(map[string]interface{})
+	serverDatas := serviceData["services"].(map[string]interface{})
 	return serverDatas[NumToString(serviceId)].(map[string]interface{})
 }
 

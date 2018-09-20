@@ -1,6 +1,8 @@
 package message
 
 import (
+	"core"
+	"core/consts"
 	. "core/libs"
 	"core/libs/array"
 	"core/libs/grpc/ipc"
@@ -9,7 +11,6 @@ import (
 	"encoding/json"
 	"errors"
 	"game/errCode"
-	"global"
 	"proto"
 	"proto/msg"
 )
@@ -54,7 +55,7 @@ func isMatchingMsg(msgId uint16) bool {
 	return array.InArray(ids, msgId)
 }
 
-func getGameService(session *sessions.FrontSession, msgBody []byte) string {
+func getGameService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
 	msgId := binary.BigEndian.Uint16(msgBody[:2])
 	if msgId == msg.ID_Platform_login_c2s {
 		//平台登录，根据roomId分配
@@ -65,7 +66,7 @@ func getGameService(session *sessions.FrontSession, msgBody []byte) string {
 			var platformDataRequest map[string]interface{}
 			json.Unmarshal([]byte(data.PlatformData), &platformDataRequest)
 			roomId := platformDataRequest["roomId"].(string)
-			return global.IpcClients.Game.GetServiceByFlag(roomId)
+			return ipcClient.GetServiceByFlag(roomId)
 		} else {
 			return ""
 		}
@@ -75,14 +76,14 @@ func getGameService(session *sessions.FrontSession, msgBody []byte) string {
 	}
 }
 
-func getMatchingService(session *sessions.FrontSession, msgBody []byte) string {
+func getMatchingService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
 	msgId := binary.BigEndian.Uint16(msgBody[:2])
 	if msgId == msg.ID_Game_matching_c2s {
 		//匹配，根据gameId分配
 		msgData := proto.DecodeMsg(msgId, msgBody)
 		if msgData != nil {
 			data := msgData.(*msg.Game_matching_c2s)
-			return global.IpcClients.Matching.GetServiceByFlag(NumToString(data.GameId))
+			return ipcClient.GetServiceByFlag(NumToString(data.GameId))
 		} else {
 			return ""
 		}
@@ -92,7 +93,7 @@ func getMatchingService(session *sessions.FrontSession, msgBody []byte) string {
 		if msgData != nil {
 			data := msgData.(*msg.Game_createReadyRoom_c2s)
 			roomId := createReadyRoomId(data.GameId, data.UserId)
-			return global.IpcClients.Matching.GetServiceByFlag(roomId)
+			return ipcClient.GetServiceByFlag(roomId)
 		} else {
 			return ""
 		}
@@ -101,7 +102,7 @@ func getMatchingService(session *sessions.FrontSession, msgBody []byte) string {
 		msgData := proto.DecodeMsg(msgId, msgBody)
 		if msgData != nil {
 			data := msgData.(*msg.Game_joinReadyRoom_c2s)
-			return global.IpcClients.Matching.GetServiceByFlag(data.RoomId)
+			return ipcClient.GetServiceByFlag(data.RoomId)
 		} else {
 			return ""
 		}
@@ -110,7 +111,7 @@ func getMatchingService(session *sessions.FrontSession, msgBody []byte) string {
 		msgData := proto.DecodeMsg(msgId, msgBody)
 		if msgData != nil {
 			data := msgData.(*msg.Game_againJoinReadyRoom_c2s)
-			return global.IpcClients.Matching.GetServiceByFlag(data.RoomId)
+			return ipcClient.GetServiceByFlag(data.RoomId)
 		} else {
 			return ""
 		}
@@ -131,14 +132,16 @@ func sendMsgToClient_Error(session *sessions.FrontSession) {
 }
 
 func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody []byte) error {
-	var ipcClient *ipc.Client
+	ipcClient := core.Service.GetIpcClient(serviceName)
+	if ipcClient == nil {
+		ERR("ipcClient not exists", serviceName)
+	}
+
 	var service string
-	if serviceName == global.Services.Game {
-		ipcClient = global.IpcClients.Game
-		service = getGameService(session, msgBody)
-	} else if serviceName == global.Services.Matching {
-		ipcClient = global.IpcClients.Matching
-		service = getMatchingService(session, msgBody)
+	if serviceName == consts.Service_Game {
+		service = getGameService(session, msgBody, ipcClient)
+	} else if serviceName == consts.Service_Matching {
+		service = getMatchingService(session, msgBody, ipcClient)
 	}
 
 	if ipcClient == nil {
@@ -149,7 +152,7 @@ func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody [
 		return errors.New("service not exists")
 	}
 
-	err := ipcClient.Send(global.ServiceName, session.ID(), msgBody, service)
+	err := ipcClient.Send(core.Service.Name(), session.ID(), msgBody, service)
 	if err == nil {
 		session.SetIpcService(serviceName, service)
 	}

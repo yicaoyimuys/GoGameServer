@@ -20,6 +20,10 @@ type cacheValue struct {
 }
 
 func InitKV(cache bool) error {
+	if kv != nil {
+		return nil
+	}
+
 	useCache = cache
 	if useCache {
 		caches = make(map[string]cacheValue)
