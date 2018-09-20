@@ -1,7 +1,8 @@
 package redis
 
 import (
-	. "core/libs"
+	"core/libs/common"
+	"core/libs/logger"
 	"github.com/go-redis/redis"
 )
 
@@ -17,17 +18,17 @@ func InitRedis(redisListConfig map[string]interface{}) {
 	for key, data := range redisListConfig {
 		redisConfig := data.(map[string]interface{})
 		redisClient := redis.NewClient(&redis.Options{
-			Addr:     redisConfig["host"].(string) + ":" + NumToString(redisConfig["port"]),
+			Addr:     redisConfig["host"].(string) + ":" + common.NumToString(redisConfig["port"]),
 			Password: redisConfig["auth_pass"].(string),
 			DB:       int(redisConfig["db"].(float64)),
 		})
 
 		pong, err := redisClient.Ping().Result()
 		if err == nil {
-			INFO("Redis_" + key + "连接成功..." + pong)
+			logger.Info("Redis_" + key + "连接成功..." + pong)
 			redisClientList[key] = redisClient
 		} else {
-			ERR("Redis_"+key+"连接失败", err)
+			logger.Error("Redis_"+key+"连接失败", err)
 		}
 	}
 }

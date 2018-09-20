@@ -1,19 +1,19 @@
 package main
 
 import (
-	"core/consts"
+	"core/consts/service"
 	. "core/libs"
 	"core/service"
-	"game/module"
 	_ "net/http/pprof"
+	"servives/connector/module"
 )
 
 func main() {
 	//初始化Service
-	newService := service.NewService(consts.Service_Connector)
+	newService := service.NewService(Service.Connector)
 	newService.StartRedis()
 	newService.StartWebSocket()
-	newService.StartIpcClient([]string{consts.Service_Game, consts.Service_Matching})
+	newService.StartIpcClient([]string{Service.Game, Service.Matching})
 
 	//模块初始化
 	initModule()

@@ -1,10 +1,10 @@
 package consul
 
 import (
-	. "core/libs"
 	"github.com/hashicorp/consul/api"
 	"sync"
 	"time"
+	//"core/libs/logger"
 )
 
 var (
@@ -71,11 +71,8 @@ func KV_Get(key string) string {
 			value = string(pair.Value)
 			kv_setCache(key, value)
 		} else {
-			WARN("KV_Get", err, key+"不存在")
+			//logger.Debug("KV_Get", err, key+"不存在")
 		}
-		//DEBUG("cache----no", key, value)
-	} else {
-		//DEBUG("cache", key, value)
 	}
 	return value
 }

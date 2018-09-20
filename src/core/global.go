@@ -2,6 +2,7 @@ package core
 
 import (
 	"core/libs/grpc/ipc"
+	"core/libs/rpc"
 )
 
 type IService interface {
@@ -10,6 +11,7 @@ type IService interface {
 	ID() int
 	Port() string
 	GetIpcClient(serviceName string) *ipc.Client
+	GetRpcClient(serviceName string) *rpc.Client
 }
 
 var (

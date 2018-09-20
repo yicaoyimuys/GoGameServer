@@ -1,31 +1,66 @@
 package ipc
 
 import (
-	. "core/libs"
-	"core/libs/consul"
 	myGprc "core/libs/grpc"
 	"core/libs/stack"
 	"google.golang.org/grpc"
 	"io"
+	"sync"
+	"sync/atomic"
 )
 
 type ServerRecvHandle func(stream *Stream, msg *Req)
-type StreamCloseHandle func()
+type StreamSession interface {
+	Close()
+}
 
 type Stream struct {
 	Ipc_TransferServer
-	closeHandles []StreamCloseHandle
+	sessions      []StreamSession
+	sessionsMutex sync.Mutex
+	closeFlag     int32
 }
 
-func (this *Stream) AddCloseHandle(closeHandle StreamCloseHandle) {
-	this.closeHandles = append(this.closeHandles, closeHandle)
+func (this *Stream) IsClosed() bool {
+	return atomic.LoadInt32(&this.closeFlag) == 1
+}
+
+func (this *Stream) AddSession(session StreamSession) {
+	if this.IsClosed() {
+		return
+	}
+
+	this.sessionsMutex.Lock()
+	defer this.sessionsMutex.Unlock()
+
+	this.sessions = append(this.sessions, session)
+}
+
+func (this *Stream) RemoveSession(session StreamSession) {
+	if this.IsClosed() {
+		return
+	}
+
+	this.sessionsMutex.Lock()
+	defer this.sessionsMutex.Unlock()
+
+	for index, s := range this.sessions {
+		if s == session {
+			this.sessions = append(this.sessions[:index], this.sessions[index+1:]...)
+		}
+	}
 }
 
 func (this *Stream) close() {
-	for _, cb := range this.closeHandles {
-		cb()
+	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
+		this.sessionsMutex.Lock()
+		defer this.sessionsMutex.Unlock()
+
+		for _, session := range this.sessions {
+			session.Close()
+		}
+		this.sessions = nil
 	}
-	this.closeHandles = nil
 }
 
 type Server struct {
@@ -35,7 +70,7 @@ type Server struct {
 func (this *Server) Transfer(stream Ipc_TransferServer) error {
 	defer stack.PrintPanicStackError()
 
-	s := &Stream{stream, []StreamCloseHandle{}}
+	s := &Stream{stream, []StreamSession{}, sync.Mutex{}, 0}
 
 	for {
 		in, err := s.Recv()
@@ -56,20 +91,12 @@ func (this *Server) dealServerRecvHandle(stream *Stream, msg *Req) {
 	this.serverRecvHandle(stream, msg)
 }
 
-func InitServer(serviceName string, serviceId int, serverRecvHandle ServerRecvHandle) (string, error) {
-	servicePort, err := myGprc.InitServer(func(server *grpc.Server) {
+func InitServer(serverRecvHandle ServerRecvHandle) (string, error) {
+	serverPort, err := myGprc.InitServer(func(server *grpc.Server) {
 		//注册处理模块
 		RegisterIpcServer(server, &Server{
 			serverRecvHandle: serverRecvHandle,
 		})
 	})
-
-	//注册到服务
-	err = consul.InitServer(serviceName, serviceId, servicePort)
-	if err != nil {
-		return "", err
-	}
-	INFO("join consul service...." + servicePort)
-
-	return servicePort, nil
+	return serverPort, err
 }

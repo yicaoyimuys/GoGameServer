@@ -1,9 +1,10 @@
 package grpc
 
 import (
-	. "core/libs"
+	"core/libs/common"
 	"core/libs/consul"
 	"core/libs/hash"
+	"core/libs/logger"
 	"core/libs/timer"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -55,9 +56,9 @@ func (this *GrpcClient) initServices() {
 func (this *GrpcClient) traceServices() {
 	this.servicesMutex.Lock()
 	for _, value := range this.services {
-		DEBUG(this.serviceName, "Service", value)
+		logger.Debug(this.serviceName, "Service", value)
 	}
-	DEBUG("--------------------------------------------")
+	logger.Debug("--------------------------------------------")
 	this.servicesMutex.Unlock()
 }
 
@@ -88,7 +89,7 @@ func (this *GrpcClient) GetServiceByFlag(flag string) string {
 }
 
 func (this *GrpcClient) GetServiceByRandom() string {
-	return this.GetServiceByFlag(NumToString(time.Now().Unix()))
+	return this.GetServiceByFlag(common.NumToString(time.Now().Unix()))
 }
 
 func (this *GrpcClient) getLink(service string) *grpc.ClientConn {
@@ -104,10 +105,10 @@ func (this *GrpcClient) getLink(service string) *grpc.ClientConn {
 	//连接Rpc服务器
 	link, err := grpc.Dial(service, grpc.WithInsecure())
 	if err != nil {
-		ERR("grpcServer connect fail", service)
+		logger.Error("grpcServer connect fail", service)
 		return nil
 	} else {
-		INFO("grpcServer connect success", service)
+		logger.Info("grpcServer connect success", service)
 	}
 
 	//防止重复链接
@@ -131,7 +132,7 @@ func (this *GrpcClient) removeLink(service string) {
 	}
 	this.linkMutex.Unlock()
 
-	ERR("grpcServer disconnected", service)
+	logger.Error("grpcServer disconnected", service)
 }
 
 func (this *GrpcClient) Call(service string, serviceMethod string, arg interface{}) interface{} {

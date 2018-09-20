@@ -1,7 +1,7 @@
 package request
 
 import (
-	. "core/libs"
+	"core/libs/logger"
 	"crypto/tls"
 	"io/ioutil"
 	"net/http"
@@ -23,10 +23,10 @@ func HttpGet(url string, retryNum int) (string, uint32) {
 	resp, err := http.Get(url)
 	if err != nil {
 		if retryNum > 0 {
-			ERR("HttpGet 重试", url, err)
+			logger.Error("HttpGet 重试", url, err)
 			return HttpGet(url, retryNum-1)
 		} else {
-			ERR("HttpGet", url, err)
+			logger.Error("HttpGet", url, err)
 			return "error", 1001
 		}
 	}
@@ -34,7 +34,7 @@ func HttpGet(url string, retryNum int) (string, uint32) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		ERR("HttpGet", url, err)
+		logger.Error("HttpGet", url, err)
 		return "error", 1002
 	}
 
@@ -47,10 +47,10 @@ func HttpPost(url string, retryNum int) (string, uint32) {
 	resp, err := http.Post(arr[0], "application/x-www-form-urlencoded", strings.NewReader(arr[1]))
 	if err != nil {
 		if retryNum > 0 {
-			ERR("HttpPost 重试", url, err)
+			logger.Error("HttpPost 重试", url, err)
 			return HttpPost(url, retryNum-1)
 		} else {
-			ERR("HttpPost", url, err)
+			logger.Error("HttpPost", url, err)
 			return "error", 1001
 		}
 	}
@@ -58,7 +58,7 @@ func HttpPost(url string, retryNum int) (string, uint32) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		ERR("HttpPost", url, err)
+		logger.Error("HttpPost", url, err)
 		return "error", 1002
 	}
 

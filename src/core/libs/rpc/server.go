@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	. "core/libs"
+	"core/libs/logger"
 	"core/libs/stack"
 	"net"
 	"net/rpc"
@@ -22,7 +22,7 @@ func InitServer() (string, error) {
 		for {
 			conn, err := listen.Accept()
 			if err != nil {
-				ERR("listen.Accept(): ", err)
+				logger.Error("listen.Accept(): ", err)
 			}
 			go jsonrpc.ServeConn(conn)
 		}

@@ -1,7 +1,7 @@
 package guid
 
 import (
-	. "core/libs"
+	"core/libs/logger"
 	"sync"
 	"time"
 )
@@ -18,13 +18,13 @@ func (this *Guid) NewID() uint64 {
 	defer this.mx.Unlock()
 
 	if this.serverId > 4095 {
-		ERR("server_id超出最大值")
+		logger.Error("server_id超出最大值")
 		return 0
 	}
 
 	timestamp := time.Now().Unix()
 	if timestamp < this.lastTimestamp {
-		ERR("请调整服务器时间!")
+		logger.Error("请调整服务器时间!")
 		return 0
 	}
 

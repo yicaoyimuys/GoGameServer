@@ -7,7 +7,8 @@ NEW_GOPATH = $(GOPATH):$(shell pwd)
 GOPATH := $(NEW_GOPATH)
 
 all:
-	$(GO) install servive/connector
+	$(GO) install servives/connector
+	$(GO) install servives/game
 
 clean:
 	rm -rf bin pkg release
@@ -23,7 +24,7 @@ vendor_addExternal:
 	cd $(SRC_DIR) && govendor add +external
 
 publish_linux:
-	GOOS=linux GOARCH=amd64 $(GO) build -o release/connector servive/connector
+	GOOS=linux GOARCH=amd64 $(GO) build -o release/connector servivess/connector
 	
 publish_windows:
 	GOOS=windows GOARCH=amd64 $(GO) build -o release/connector.exe connector

@@ -1,10 +1,10 @@
 package websocket
 
 import (
-	. "core/libs"
 	"core/libs/guid"
+	"core/libs/logger"
+	"core/libs/sessions"
 	"core/libs/stack"
-	"core/sessions"
 	"github.com/gorilla/websocket"
 	"net/http"
 )
@@ -56,7 +56,7 @@ func (this *Server) SetSessionCloseHandle(handle SessionCloseHandle) {
 }
 
 func (this *Server) Start() {
-	INFO("front start webSocket...", this.port)
+	logger.Info("front start webSocket...", this.port)
 
 	go func() {
 		http.HandleFunc("/", this.wsHandler)
@@ -66,20 +66,20 @@ func (this *Server) Start() {
 		} else {
 			err = http.ListenAndServe("0.0.0.0:"+this.port, nil)
 		}
-		CheckError(err)
+		stack.CheckError(err)
 	}()
 }
 
 func (this *Server) StartPing() {
 	overTime := 15
 	sessions.FrontSessionOpenPing(int64(overTime))
-	INFO("Session超时时间设置", overTime)
+	logger.Info("Session超时时间设置", overTime)
 }
 
 func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		ERR("wsHandler: ", err)
+		logger.Error("wsHandler: ", err)
 		return
 	}
 

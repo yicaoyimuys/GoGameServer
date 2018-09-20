@@ -2,7 +2,6 @@ package sessions
 
 import (
 	"core/libs/stack"
-	"errors"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -33,8 +32,6 @@ type FrontSession struct {
 	ipcServiceName string
 	ipcService     string
 }
-
-var ErrClosed = errors.New("session closed")
 
 func NewFontSession(id uint64, codec Codec) *FrontSession {
 	session := &FrontSession{
@@ -117,13 +114,6 @@ func (this *FrontSession) Send(msg interface{}) (err error) {
 	defer this.sendMutex.Unlock()
 
 	return this.codec.Send(msg)
-}
-
-type closeCallback struct {
-	Handler interface{}
-	Key     interface{}
-	Func    func()
-	Next    *closeCallback
 }
 
 func (this *FrontSession) AddCloseCallback(handler, key interface{}, callback func()) {

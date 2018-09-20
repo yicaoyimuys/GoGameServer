@@ -10,9 +10,11 @@ import (
 	"core/libs/grpc/ipc"
 	"core/libs/logger"
 	"core/libs/redis"
+	"core/libs/rpc"
 	"core/libs/stack"
 	"core/libs/websocket"
 	"core/message"
+	"net/http"
 	"runtime"
 )
 
@@ -24,6 +26,7 @@ type Service struct {
 	port string
 
 	ipcClients map[string]*ipc.Client
+	rpcClients map[string]*rpc.Client
 }
 
 func NewService(name string) *Service {
@@ -103,7 +106,7 @@ func (this *Service) registerService(servicePort string) {
 	err := consul.InitServer(this.name, this.id, servicePort)
 	CheckError(err)
 
-	INFO("join consul service...." + servicePort)
+	INFO("join consul service..." + servicePort)
 
 	this.port = servicePort
 }
@@ -145,9 +148,42 @@ func (this *Service) StartIpcClient(serviceNames []string) {
 
 	//初始化Ipc客户端
 	for _, serviceName := range serviceNames {
-		this.ipcClients[serviceName] = ipc.InitClient(consulClient, serviceName, message.BackReceive)
-		INFO("ipc client start....", serviceName)
+		this.ipcClients[serviceName] = ipc.InitClient(consulClient, serviceName, message.IpcClientReceive)
+		INFO("ipc client start...", serviceName)
 	}
+}
+
+func (this *Service) StartIpcServer() {
+	//开启ipcServer
+	port, err := ipc.InitServer(message.IpcServerReceive)
+	CheckError(err)
+	INFO("ipc server start..." + port)
+
+	//服务注册
+	this.registerService(port)
+}
+
+func (this *Service) StartRpcClient(serviceNames []string) {
+	this.rpcClients = make(map[string]*rpc.Client)
+
+	//初始化consul客户端
+	consulClient, err := consul.InitClient()
+	CheckError(err)
+
+	//初始化Rpc客户端
+	for _, serviceName := range serviceNames {
+		this.rpcClients[serviceName] = rpc.InitClient(consulClient, serviceName)
+		INFO("rpc client start...", serviceName)
+	}
+}
+
+func (this *Service) StartDebug() {
+	port := 6060 + this.id
+	go func() {
+		defer stack.PrintPanicStackError()
+		http.ListenAndServe(":"+NumToString(port), nil)
+	}()
+	INFO("debug start...", port)
 }
 
 func (this *Service) Env() string {
@@ -168,5 +204,10 @@ func (this *Service) Port() string {
 
 func (this *Service) GetIpcClient(serviceName string) *ipc.Client {
 	client, _ := this.ipcClients[serviceName]
+	return client
+}
+
+func (this *Service) GetRpcClient(serviceName string) *rpc.Client {
+	client, _ := this.rpcClients[serviceName]
 	return client
 }

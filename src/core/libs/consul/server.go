@@ -1,8 +1,8 @@
 package consul
 
 import (
-	. "core/libs"
 	"core/libs/common"
+	"core/libs/logger"
 	"github.com/hashicorp/consul/api"
 	"os"
 	"os/signal"
@@ -18,7 +18,7 @@ func InitServer(serviceName string, serviceId int, servicePort string) error {
 	//服务器配置
 	address := common.GetLocalIp()
 	port, _ := strconv.Atoi(servicePort)
-	id := address + ":" + servicePort + "_" + serviceName + ":" + NumToString(serviceId)
+	id := address + ":" + servicePort + "_" + serviceName + ":" + common.NumToString(serviceId)
 	name := serviceName
 
 	//健康检查配置
@@ -62,6 +62,6 @@ func WaitToUnRegistService(client *api.Client, serviceId string) {
 	//从服务中移除
 	err := client.Agent().ServiceDeregister(serviceId)
 	if err != nil {
-		ERR(err)
+		logger.Error(err)
 	}
 }

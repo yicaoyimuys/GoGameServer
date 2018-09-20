@@ -1,9 +1,10 @@
 package rpc
 
 import (
-	. "core/libs"
+	"core/libs/common"
 	"core/libs/consul"
 	"core/libs/hash"
+	"core/libs/logger"
 	"core/libs/timer"
 	"errors"
 	"io"
@@ -15,7 +16,7 @@ import (
 	"time"
 )
 
-type RpcClient struct {
+type Client struct {
 	consulClient *consul.ConsulClient
 	serviceName  string
 
@@ -26,8 +27,8 @@ type RpcClient struct {
 	linkMutex sync.Mutex
 }
 
-func InitClient(consulClient *consul.ConsulClient, serviceName string) *RpcClient {
-	client := &RpcClient{
+func InitClient(consulClient *consul.ConsulClient, serviceName string) *Client {
+	client := &Client{
 		consulClient: consulClient,
 		serviceName:  serviceName,
 		links:        make(map[string]*rpc.Client),
@@ -37,11 +38,11 @@ func InitClient(consulClient *consul.ConsulClient, serviceName string) *RpcClien
 	return client
 }
 
-func (this *RpcClient) loop() {
+func (this *Client) loop() {
 	timer.DoTimer(10*1000, this.initServices)
 }
 
-func (this *RpcClient) initServices() {
+func (this *Client) initServices() {
 	this.servicesMutex.Lock()
 	this.services = this.consulClient.GetServices(this.serviceName)
 	sort.Strings(this.services)
@@ -50,16 +51,16 @@ func (this *RpcClient) initServices() {
 	this.traceServices()
 }
 
-func (this *RpcClient) traceServices() {
+func (this *Client) traceServices() {
 	this.servicesMutex.Lock()
 	for _, value := range this.services {
-		DEBUG(this.serviceName, "Service", value)
+		logger.Debug(this.serviceName, "Service", value)
 	}
-	DEBUG("--------------------------------------------")
+	logger.Debug("--------------------------------------------")
 	this.servicesMutex.Unlock()
 }
 
-func (this *RpcClient) removeService(service string) {
+func (this *Client) removeService(service string) {
 	this.servicesMutex.Lock()
 	for index, value := range this.services {
 		if value == service {
@@ -71,7 +72,7 @@ func (this *RpcClient) removeService(service string) {
 	this.traceServices()
 }
 
-func (this *RpcClient) getServiceByFlag(flag string) string {
+func (this *Client) getServiceByFlag(flag string) string {
 	this.servicesMutex.Lock()
 	service := ""
 	servicesLen := len(this.services)
@@ -85,7 +86,7 @@ func (this *RpcClient) getServiceByFlag(flag string) string {
 	return service
 }
 
-func (this *RpcClient) getLink(service string) *rpc.Client {
+func (this *Client) getLink(service string) *rpc.Client {
 	//监测是否已经存在
 	this.linkMutex.Lock()
 	link, ok := this.links[service]
@@ -98,10 +99,10 @@ func (this *RpcClient) getLink(service string) *rpc.Client {
 	//连接Rpc服务器
 	conn, err := net.DialTimeout("tcp", service, time.Second*3)
 	if err != nil {
-		ERR("rpcServer connect fail", service)
+		logger.Error("rpcServer connect fail", service)
 		return nil
 	} else {
-		INFO("rpcServer connect success", service)
+		logger.Info("rpcServer connect success", service)
 	}
 	link = jsonrpc.NewClient(conn)
 
@@ -118,7 +119,7 @@ func (this *RpcClient) getLink(service string) *rpc.Client {
 	return link
 }
 
-func (this *RpcClient) removeLink(service string) {
+func (this *Client) removeLink(service string) {
 	this.linkMutex.Lock()
 	if link, ok := this.links[service]; ok {
 		link.Close()
@@ -126,12 +127,12 @@ func (this *RpcClient) removeLink(service string) {
 	}
 	this.linkMutex.Unlock()
 
-	ERR("rpcServer disconnected", service)
+	logger.Error("rpcServer disconnected", service)
 }
 
-func (this *RpcClient) Call(serviceMethod string, args interface{}, reply interface{}, flag string) error {
+func (this *Client) Call(serviceMethod string, args interface{}, reply interface{}, flag string) error {
 	if flag == "" {
-		flag = NumToString(time.Now().Unix())
+		flag = common.NumToString(time.Now().Unix())
 	}
 	service := this.getServiceByFlag(flag)
 	if service == "" {

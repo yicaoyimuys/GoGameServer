@@ -3,11 +3,11 @@ package message
 import (
 	. "core/libs"
 	"core/libs/grpc/ipc"
-	"core/sessions"
+	"core/libs/sessions"
 	"encoding/binary"
 )
 
-func BackReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
+func IpcClientReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
 	frontSession := sessions.GetFrontSession(msg.SessionId)
 	msgBody := msg.Data
 	if frontSession != nil {

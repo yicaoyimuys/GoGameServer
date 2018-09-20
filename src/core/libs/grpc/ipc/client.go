@@ -103,7 +103,7 @@ func (this *Client) GetServiceByFlag(flag string) string {
 	return this.grpcClient.GetServiceByFlag(flag)
 }
 
-func (this *Client) Send(serviceName string, sessionId uint64, data []byte, service string) error {
+func (this *Client) Send(serviceName string, serviceId int, sessionId uint64, data []byte, service string) error {
 	if service == "" {
 		return errors.New("service is null")
 	}
@@ -114,8 +114,8 @@ func (this *Client) Send(serviceName string, sessionId uint64, data []byte, serv
 	}
 
 	return stream.Send(&Req{
-		ServerName: common.GetLocalIp() + "_" + serviceName,
-		SessionId:  sessionId,
-		Data:       data,
+		ServiceName: common.GetLocalIp() + "_" + serviceName + "_" + common.NumToString(serviceId),
+		SessionId:   sessionId,
+		Data:        data,
 	})
 }

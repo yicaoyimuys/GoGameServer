@@ -1,8 +1,9 @@
 package consul
 
 import (
-	. "core/libs"
 	"core/libs/array"
+	"core/libs/common"
+	"core/libs/stack"
 	"github.com/hashicorp/consul/api"
 	"strings"
 )
@@ -14,7 +15,7 @@ type ConsulClient struct {
 func InitClient() (*ConsulClient, error) {
 	//开启consulKV
 	err := InitKV(true)
-	CheckError(err)
+	stack.CheckError(err)
 
 	//开启consul客户端
 	client, err := api.NewClient(api.DefaultConfig())
@@ -65,7 +66,7 @@ func (this *ConsulClient) GetServices(service string) []string {
 			if array.InArray(filterServices, entry.Service.Address) {
 				continue
 			}
-			addr := entry.Service.Address + ":" + NumToString(entry.Service.Port)
+			addr := entry.Service.Address + ":" + common.NumToString(entry.Service.Port)
 			results = append(results, addr)
 		}
 	}
