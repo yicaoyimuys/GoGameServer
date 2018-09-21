@@ -18,6 +18,7 @@ func main() {
 	newService.StartRpcServer(&module.GameRpcServer{})
 	newService.StartRpcClient([]string{Service.Platform, Service.Log})
 	newService.StartDebug()
+	newService.StartMysql()
 
 	//模块初始化
 	initModule()

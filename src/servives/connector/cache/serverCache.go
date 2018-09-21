@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"core/libs/redis"
+	"core"
 	"encoding/json"
 )
 
@@ -29,12 +29,14 @@ func SetServerInfo(domainName string, serverPort string, onlineUsersNum int) {
 	}
 
 	byteData, _ := json.Marshal(serverInfo)
-	redis.GetLink("main").HSet(ServerInfo_KEY, serverKey, string(byteData))
+	redisClient := core.Service.GetRedisClient("default")
+	redisClient.HSet(ServerInfo_KEY, serverKey, string(byteData))
 }
 
 func GetServerInfo(domainName string, serverPort string) map[string]int {
 	serverKey := domainName + ":" + serverPort
-	val, err := redis.GetLink("main").HGet(ServerInfo_KEY, serverKey).Result()
+	redisClient := core.Service.GetRedisClient("default")
+	val, err := redisClient.HGet(ServerInfo_KEY, serverKey).Result()
 	if err != nil {
 		return nil
 	}
@@ -43,16 +45,3 @@ func GetServerInfo(domainName string, serverPort string) map[string]int {
 	_ = json.Unmarshal([]byte(val), &serverInfo)
 	return serverInfo
 }
-
-//func GetUserCache(userId int64) map[string]interface{} {
-//	key := USER_KEY + NumToString(userId)
-//	val, err := global.RedisClient.Get(key).Result()
-//
-//	if err != nil {
-//		return nil
-//	}
-//
-//	var dbUser interface{}
-//	err = json.Unmarshal([]byte(val), &dbUser)
-//	return dbUser.(map[string]interface{})
-//}

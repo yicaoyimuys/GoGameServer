@@ -87,3 +87,17 @@ func GetUint8(data interface{}, key interface{}) uint8 {
 	}
 	return result
 }
+
+func GetInt(data interface{}, key interface{}) int {
+	var result int = 0
+	value := getValue(data, key)
+	if value != nil {
+		valueType := reflect.TypeOf(value).Kind()
+		if valueType == reflect.Float64 {
+			result = int(value.(float64))
+		} else if valueType == reflect.Int {
+			result = value.(int)
+		}
+	}
+	return result
+}

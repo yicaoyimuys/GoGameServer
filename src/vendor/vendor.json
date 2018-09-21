@@ -15,6 +15,12 @@
 			"revisionTime": "2017-12-18T11:18:59Z"
 		},
 		{
+			"checksumSHA1": "MoE8R3ctm+nYy6PL5BNqelLtN04=",
+			"path": "github.com/astaxie/beego/orm",
+			"revision": "f16688817aa428d10361394015b40d096b680542",
+			"revisionTime": "2017-12-18T11:18:59Z"
+		},
+		{
 			"checksumSHA1": "GE9y3KX8Fe7oXWPnUJ70BEmX3cg=",
 			"path": "github.com/go-redis/redis",
 			"revision": "877867d2845fbaf86798befe410b6ceb6f5c29a3",

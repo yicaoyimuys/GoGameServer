@@ -1,0 +1,26 @@
+{
+  "default": {
+    "host": "localhost",
+    "port": "3306",
+    "user": "root",
+    "password": "123456",
+    "db": "test_global_1",
+    "charset": "utf8"
+  },
+  "user": {
+    "host": "localhost",
+    "port": "3306",
+    "user": "root",
+    "password": "123456",
+    "db": "test_user_1",
+    "charset": "utf8"
+  },
+  "log": {
+    "host": "localhost",
+    "port": "3306",
+    "user": "root",
+    "password": "123456",
+    "db": "test_log_1",
+    "charset": "utf8"
+  }
+}

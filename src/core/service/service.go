@@ -9,6 +9,7 @@ import (
 	"core/libs/dict"
 	"core/libs/grpc/ipc"
 	"core/libs/logger"
+	"core/libs/mysql"
 	"core/libs/redis"
 	"core/libs/rpc"
 	"core/libs/stack"
@@ -31,8 +32,10 @@ type Service struct {
 
 	port string
 
-	ipcClients map[string]*ipc.Client
-	rpcClients map[string]*rpc.Client
+	ipcClients   map[string]*ipc.Client
+	rpcClients   map[string]*rpc.Client
+	redisClients map[string]*redis.Client
+	dbClients    map[string]*mysql.Client
 }
 
 func NewService(name string) *Service {
@@ -82,7 +85,7 @@ func initConfig(service *Service) {
 }
 
 func initLog(service *Service) {
-	logConfig := config.GetLog()
+	logConfig := config.GetLogConfig()
 
 	logOpenDebug := dict.GetBool(logConfig, "debug")
 	logOutput := dict.GetString(logConfig, "output")
@@ -90,10 +93,6 @@ func initLog(service *Service) {
 
 	logger.SetLogFile(logFileName, logOutput)
 	logger.SetLogDebug(logOpenDebug)
-}
-
-func initRedis() {
-	redis.InitRedis(config.GetRedisList())
 }
 
 func printEnv(service *Service) {
@@ -125,7 +124,29 @@ func (this *Service) registerService(serviceType string, servicePort string) {
 /*********************************====以下为公开函数====*******************************/
 
 func (this *Service) StartRedis() {
-	initRedis()
+	this.redisClients = make(map[string]*redis.Client)
+
+	redisConfigs := config.GetRedisConfig()
+	for aliasName, redisConfig := range redisConfigs {
+		client, err := redis.NewClient(redisConfig.(map[string]interface{}))
+		CheckError(err)
+
+		this.redisClients[aliasName] = client
+		INFO("redis_" + aliasName + "连接成功...")
+	}
+}
+
+func (this *Service) StartMysql() {
+	this.dbClients = make(map[string]*mysql.Client)
+
+	mysqlConfigs := config.GetMysqlConfig()
+	for aliasName, mysqlConfig := range mysqlConfigs {
+		client, err := mysql.NewClient(aliasName, mysqlConfig.(map[string]interface{}))
+		CheckError(err)
+
+		this.dbClients[aliasName] = client
+		INFO("mysql_" + aliasName + "连接成功...")
+	}
 }
 
 func (this *Service) StartWebSocket() {
@@ -238,5 +259,15 @@ func (this *Service) GetIpcClient(serviceName string) *ipc.Client {
 func (this *Service) GetRpcClient(serviceName string) *rpc.Client {
 	serviceName = packageServiceName(RPC, serviceName)
 	client, _ := this.rpcClients[serviceName]
+	return client
+}
+
+func (this *Service) GetRedisClient(redisAliasName string) *redis.Client {
+	client, _ := this.redisClients[redisAliasName]
+	return client
+}
+
+func (this *Service) GetMysqlClient(dbAliasName string) *mysql.Client {
+	client, _ := this.dbClients[dbAliasName]
 	return client
 }

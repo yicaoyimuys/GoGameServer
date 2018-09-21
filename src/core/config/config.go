@@ -13,6 +13,7 @@ var (
 	serviceConfig map[string]interface{}
 	redisConfig   map[string]interface{}
 	logConfig     map[string]interface{}
+	mysqlConfig   map[string]interface{}
 	lock          sync.Mutex
 )
 
@@ -24,11 +25,13 @@ func Init(_env string) {
 func load() {
 	var serviceConfigPath = getConfigPath("service.json")
 	var redisConfigPath = getConfigPath("redis.json")
+	var mysqlConfigPath = getConfigPath("mysql.json")
 	var logConfigPath = getConfigPath("log.json")
 
 	lock.Lock()
 	loadConfig(&serviceConfig, serviceConfigPath)
 	loadConfig(&redisConfig, redisConfigPath)
+	loadConfig(&mysqlConfig, mysqlConfigPath)
 	loadConfig(&logConfig, logConfigPath)
 	lock.Unlock()
 }
@@ -58,10 +61,14 @@ func GetConnectorServiceTslKey() string {
 	return serverData["tslKey"].(string)
 }
 
-func GetRedisList() map[string]interface{} {
+func GetRedisConfig() map[string]interface{} {
 	return redisConfig
 }
 
-func GetLog() map[string]interface{} {
+func GetMysqlConfig() map[string]interface{} {
+	return mysqlConfig
+}
+
+func GetLogConfig() map[string]interface{} {
 	return logConfig
 }
