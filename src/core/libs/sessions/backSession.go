@@ -42,6 +42,10 @@ func NewBackSession(serviceName string, sessionId uint64, stream *ipc.Stream) *B
 	return session
 }
 
+func (this *BackSession) SessionID() uint64 {
+	return this.sessionId
+}
+
 func (this *BackSession) ID() string {
 	return this.id
 }

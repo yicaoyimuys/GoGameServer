@@ -25,6 +25,10 @@ message user_login_s2c {
 	required string token = 1;
 }
 
+//其他客户端登录S2C(2004)
+message user_otherLogin_notice_s2c{
+
+}
 
 
 

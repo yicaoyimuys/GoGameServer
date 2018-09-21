@@ -9,7 +9,7 @@ import (
 
 type ProtoMsg struct {
 	ID   uint16
-	Body interface{}
+	Body proto.Message
 }
 
 var (

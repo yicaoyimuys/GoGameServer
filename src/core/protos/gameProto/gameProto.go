@@ -11,6 +11,7 @@ func init() {
 
 	protos.SetMsg(ID_user_login_c2s, UserLoginC2S{})
 	protos.SetMsg(ID_user_login_s2c, UserLoginS2C{})
+	protos.SetMsg(ID_user_otherLogin_notice_s2c, UserOtherLoginNoticeS2C{})
 
 	protos.SetMsg(ID_user_getInfo_c2s, UserGetInfoC2S{})
 	protos.SetMsg(ID_user_getInfo_s2c, UserGetInfoS2C{})

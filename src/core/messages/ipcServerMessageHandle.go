@@ -2,10 +2,13 @@ package messages
 
 import (
 	"core/libs/sessions"
+	"github.com/golang/protobuf/proto"
 )
 
+type ipcServerMsgHandle func(clientSession *sessions.BackSession, msgData proto.Message)
+
 var (
-	backHandles = make(map[uint16]func(clientSession *sessions.BackSession, msgData interface{}))
+	backHandles = make(map[uint16]ipcServerMsgHandle)
 )
 
 func init() {
@@ -21,11 +24,11 @@ func init() {
 	//backHandles[msg.ID_System_userOffline_c2s] = module.ClientOffline
 }
 
-func RegisterIpcServerHandle(msgId uint16, handle func(clientSession *sessions.BackSession, msgData interface{})) {
+func RegisterIpcServerHandle(msgId uint16, handle ipcServerMsgHandle) {
 	backHandles[msgId] = handle
 }
 
-func GetIpcServerHandle(msgId uint16) func(clientSession *sessions.BackSession, msgData interface{}) {
+func GetIpcServerHandle(msgId uint16) ipcServerMsgHandle {
 	handle, ok := backHandles[msgId]
 	if ok {
 		return handle
