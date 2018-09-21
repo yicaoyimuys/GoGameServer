@@ -1,10 +1,10 @@
-package message
+package messages
 
 import (
 	. "core/libs"
 	"core/libs/grpc/ipc"
 	"core/libs/sessions"
-	"encoding/binary"
+	"core/protos"
 )
 
 func IpcClientReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
@@ -13,7 +13,7 @@ func IpcClientReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
 	if frontSession != nil {
 		frontSession.Send(msgBody)
 	} else {
-		msgId := binary.BigEndian.Uint16(msgBody[:2])
+		msgId := protos.UnmarshalProtoId(msgBody)
 		WARN("frontSession no exists", msgId)
 	}
 }

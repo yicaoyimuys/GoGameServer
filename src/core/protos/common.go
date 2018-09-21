@@ -59,13 +59,17 @@ func MarshalProtoMsg(args proto.Message) []byte {
 	return result
 }
 
+func UnmarshalProtoId(msg []byte) uint16 {
+	return binary.BigEndian.Uint16(msg[:2])
+}
+
 //反序列化
 func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 	if len(msg) < 2 {
 		return NullProtoMsg
 	}
 
-	msgID := binary.BigEndian.Uint16(msg[:2])
+	msgID := UnmarshalProtoId(msg)
 	msgBody := GetMsgObject(msgID)
 	if msgBody == nil {
 		return NullProtoMsg
@@ -82,27 +86,38 @@ func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 	}
 }
 
-//封装消息String类型字段
 func String(param string) *string {
 	return proto.String(param)
 }
 
-//封装消息Uint64类型字段
-func Uint64(param uint64) *uint64 {
-	return proto.Uint64(param)
+func Int(param int) *int32 {
+	return proto.Int(param)
 }
 
-//封装消息Int64类型字段
+func Bool(param bool) *bool {
+	return proto.Bool(param)
+}
+
+func Float64(param float64) *float64 {
+	return proto.Float64(param)
+}
+
+func Float32(param float32) *float32 {
+	return proto.Float32(param)
+}
+
 func Int64(param int64) *int64 {
 	return proto.Int64(param)
 }
 
-//封装消息Int32类型字段
+func Uint64(param uint64) *uint64 {
+	return proto.Uint64(param)
+}
+
 func Int32(param int32) *int32 {
 	return proto.Int32(param)
 }
 
-//封装消息Uint32类型字段
 func Uint32(param uint32) *uint32 {
 	return proto.Uint32(param)
 }

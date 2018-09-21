@@ -1,15 +1,14 @@
-package message
+package messages
 
 import (
 	. "core/libs"
 	"core/libs/sessions"
-	"encoding/binary"
+	"core/protos"
 )
 
 func FontReceive(session *sessions.FrontSession, msgBody []byte) {
-	//DEBUG(msgBody)
 	//消息ID
-	msgId := binary.BigEndian.Uint16(msgBody[:2])
+	msgId := protos.UnmarshalProtoId(msgBody)
 	//DEBUG("FrontMessage收到消息ID：", msgId)
 
 	//消息处理
@@ -26,7 +25,7 @@ func FontReceive(session *sessions.FrontSession, msgBody []byte) {
 		//游戏服务器消息
 		dealGameMsg(session, msgBody)
 	} else {
-		ERR("what???", msgId)
+		ERR("WHAT???", msgId)
 	}
 }
 

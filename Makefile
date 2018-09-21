@@ -25,7 +25,7 @@ vendor_addExternal:
 	cd $(SRC_DIR) && govendor add +external
 
 create_proto:
-	cd $(SRC_DIR)/protos/gameProto && protoc --go_out=. gameProto.proto
+	cd $(SRC_DIR)/core/protos/gameProto && protoc --go_out=. gameProto.proto
 
 publish_linux:
 	GOOS=linux GOARCH=amd64 $(GO) build -o release/connector servivess/connector

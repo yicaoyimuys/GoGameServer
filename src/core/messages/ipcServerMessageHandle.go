@@ -1,4 +1,4 @@
-package message
+package messages
 
 import (
 	"core/libs/sessions"

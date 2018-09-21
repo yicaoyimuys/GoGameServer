@@ -14,7 +14,7 @@ import (
 	"core/libs/rpc"
 	"core/libs/stack"
 	"core/libs/websocket"
-	"core/message"
+	"core/messages"
 	"net/http"
 	"runtime"
 )
@@ -162,8 +162,8 @@ func (this *Service) StartWebSocket() {
 		tslKey := config.GetConnectorServiceTslKey()
 		server.SetTLS(tslCrt, tslKey)
 	}
-	server.SetSessionMsgHandle(message.FontReceive)
-	server.SetSessionCloseHandle(message.SendMsgToBack_UserOffline)
+	server.SetSessionMsgHandle(messages.FontReceive)
+	server.SetSessionCloseHandle(messages.SendMsgToBack_UserOffline)
 	server.Start()
 	server.StartPing()
 
@@ -181,14 +181,14 @@ func (this *Service) StartIpcClient(serviceNames []string) {
 	//初始化Ipc客户端
 	for _, serviceName := range serviceNames {
 		serviceName = packageServiceName(IPC, serviceName)
-		this.ipcClients[serviceName] = ipc.NewClient(consulClient, serviceName, message.IpcClientReceive)
+		this.ipcClients[serviceName] = ipc.NewClient(consulClient, serviceName, messages.IpcClientReceive)
 		INFO("ipc client start...", serviceName)
 	}
 }
 
 func (this *Service) StartIpcServer() {
 	//开启ipcServer
-	port, err := ipc.InitServer(message.IpcServerReceive)
+	port, err := ipc.InitServer(messages.IpcServerReceive)
 	CheckError(err)
 	INFO("ipc server start...", port)
 

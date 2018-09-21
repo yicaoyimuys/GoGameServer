@@ -1,11 +1,10 @@
-package message
+package messages
 
 import (
 	. "core/libs"
 	"core/libs/grpc/ipc"
 	"core/libs/sessions"
-	"encoding/binary"
-	"protos"
+	"core/protos"
 )
 
 func IpcServerReceive(stream *ipc.Stream, msg *ipc.Req) {
@@ -26,7 +25,7 @@ func dealMessage(session *sessions.BackSession, msgBody []byte) {
 	//消息解析
 	protoMsg := protos.UnmarshalProtoMsg(msgBody)
 	if protoMsg == protos.NullProtoMsg {
-		msgId := binary.BigEndian.Uint16(msgBody[:2])
+		msgId := protos.UnmarshalProtoId(msgBody)
 		ERR("收到错误消息ID: " + NumToString(msgId))
 		session.Close()
 		return

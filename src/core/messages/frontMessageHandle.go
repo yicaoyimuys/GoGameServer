@@ -1,4 +1,4 @@
-package message
+package messages
 
 import (
 	"core"
@@ -7,17 +7,19 @@ import (
 	. "core/libs"
 	"core/libs/grpc/ipc"
 	"core/libs/sessions"
-	"encoding/binary"
+	"core/protos"
+	"core/protos/gameProto"
 	"errors"
-	"protos"
-	"protos/gameProto"
 )
 
 func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {
-	msgId := binary.BigEndian.Uint16(msgBody[:2])
+	protoMsg := protos.UnmarshalProtoMsg(msgBody)
+	if protoMsg == protos.NullProtoMsg {
+		return
+	}
 
 	//Ping消息特殊处理
-	if msgId == gameProto.ID_client_ping_c2s {
+	if protoMsg.ID == gameProto.ID_client_ping_c2s {
 		session.UpdatePingTime()
 		return
 	}
@@ -40,30 +42,30 @@ func dealLoginMsg(session *sessions.FrontSession, msgBody []byte) {
 }
 
 func getGameService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
-	protoMsg := protos.UnmarshalProtoMsg(msgBody)
-	if protoMsg == protos.NullProtoMsg {
-		return ""
-	}
-
-	if protoMsg.ID == gameProto.ID_user_getInfo_c2s {
-		//获取用户数据，根据Token分配
-		rev_msg := protoMsg.Body.(*gameProto.UserGetInfoC2S)
-		return ipcClient.GetServiceByFlag(rev_msg.GetToken())
+	//1: 获取用户数据，根据Token分配
+	msgId := protos.UnmarshalProtoId(msgBody)
+	if msgId == gameProto.ID_user_getInfo_c2s {
+		protoMsg := protos.UnmarshalProtoMsg(msgBody)
+		if protoMsg == protos.NullProtoMsg {
+			return ""
+		}
+		protoMsgData := protoMsg.Body.(*gameProto.UserGetInfoC2S)
+		return ipcClient.GetServiceByFlag(protoMsgData.GetToken())
 	} else {
 		return session.IpcService()
 	}
 }
 
 func getLoginService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
-	protoMsg := protos.UnmarshalProtoMsg(msgBody)
-	if protoMsg == protos.NullProtoMsg {
-		return ""
-	}
-
-	if protoMsg.ID == gameProto.ID_user_login_c2s {
-		//登录，根据Account分配
-		rev_msg := protoMsg.Body.(*gameProto.UserLoginC2S)
-		return ipcClient.GetServiceByFlag(rev_msg.GetAccount())
+	//1: 登录，根据Account分配
+	msgId := protos.UnmarshalProtoId(msgBody)
+	if msgId == gameProto.ID_user_login_c2s {
+		protoMsg := protos.UnmarshalProtoMsg(msgBody)
+		if protoMsg == protos.NullProtoMsg {
+			return ""
+		}
+		protoMsgData := protoMsg.Body.(*gameProto.UserLoginC2S)
+		return ipcClient.GetServiceByFlag(protoMsgData.GetAccount())
 	} else {
 		return session.IpcService()
 	}

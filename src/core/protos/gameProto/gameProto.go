@@ -1,7 +1,7 @@
 package gameProto
 
 import (
-	"protos"
+	"core/protos"
 )
 
 //初始化消息ID和消息类型的对应关系
