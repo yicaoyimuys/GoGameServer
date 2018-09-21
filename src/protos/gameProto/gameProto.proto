@@ -1,0 +1,47 @@
+syntax = "proto2";
+
+
+//客户端ping(1)
+message client_ping_c2s{
+
+}
+
+//错误消息(500)
+message error_notice_s2c{
+	required int32 errorCode = 1;
+}
+
+
+
+
+
+//用户登录C2S(2001)
+message user_login_c2s {
+	required string account = 1;
+}
+
+//用户登录S2C(2002)
+message user_login_s2c {
+	required string token = 1;
+}
+
+
+
+
+
+//用户数据
+message userInfo {
+	required uint64 id = 1;
+	required string name = 2;
+	required int32  money = 3;
+}
+
+//获取用户信息C2S(3001)
+message user_getInfo_c2s {
+	required string token = 1;
+}
+
+//获取用户信息S2C(3002)
+message user_getInfo_s2c {
+	required userInfo data = 1;
+}

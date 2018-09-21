@@ -8,17 +8,16 @@ import (
 	"core/libs/grpc/ipc"
 	"core/libs/sessions"
 	"encoding/binary"
-	"encoding/json"
 	"errors"
-	"proto"
-	"proto/msg"
+	"protos"
+	"protos/gameProto"
 )
 
 func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {
 	msgId := binary.BigEndian.Uint16(msgBody[:2])
 
 	//Ping消息特殊处理
-	if msgId == msg.ID_Client_ping_c2s {
+	if msgId == gameProto.ID_client_ping_c2s {
 		session.UpdatePingTime()
 		return
 	}
@@ -32,88 +31,49 @@ func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
 	}
 }
 
-func dealMatchingMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToBack(Service.Matching, session, msgBody)
+func dealLoginMsg(session *sessions.FrontSession, msgBody []byte) {
+	err := sendMsgToBack(Service.Login, session, msgBody)
 	if err != nil {
-		ERR("dealMatchingMsg", err)
+		ERR("dealLoginMsg", err)
 		sendMsgToClient_Error(session)
 	}
 }
 
 func getGameService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
-	msgId := binary.BigEndian.Uint16(msgBody[:2])
-	if msgId == msg.ID_Platform_login_c2s {
-		//平台登录，根据roomId分配
-		msgData := proto.DecodeMsg(msgId, msgBody)
-		if msgData != nil {
-			data := msgData.(*msg.Platform_login_c2s)
+	protoMsg := protos.UnmarshalProtoMsg(msgBody)
+	if protoMsg == protos.NullProtoMsg {
+		return ""
+	}
 
-			var platformDataRequest map[string]interface{}
-			json.Unmarshal([]byte(data.PlatformData), &platformDataRequest)
-			roomId := platformDataRequest["roomId"].(string)
-			return ipcClient.GetServiceByFlag(roomId)
-		} else {
-			return ""
-		}
+	if protoMsg.ID == gameProto.ID_user_getInfo_c2s {
+		//获取用户数据，根据Token分配
+		rev_msg := protoMsg.Body.(*gameProto.UserGetInfoC2S)
+		return ipcClient.GetServiceByFlag(rev_msg.GetToken())
 	} else {
-		//其他
 		return session.IpcService()
 	}
 }
 
-func getMatchingService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
-	msgId := binary.BigEndian.Uint16(msgBody[:2])
-	if msgId == msg.ID_Game_matching_c2s {
-		//匹配，根据gameId分配
-		msgData := proto.DecodeMsg(msgId, msgBody)
-		if msgData != nil {
-			data := msgData.(*msg.Game_matching_c2s)
-			return ipcClient.GetServiceByFlag(NumToString(data.GameId))
-		} else {
-			return ""
-		}
-	} else if msgId == msg.ID_Game_createReadyRoom_c2s {
-		//创建准备房间，根据roomId分配
-		msgData := proto.DecodeMsg(msgId, msgBody)
-		if msgData != nil {
-			data := msgData.(*msg.Game_createReadyRoom_c2s)
-			roomId := createReadyRoomId(data.GameId, data.UserId)
-			return ipcClient.GetServiceByFlag(roomId)
-		} else {
-			return ""
-		}
-	} else if msgId == msg.ID_Game_joinReadyRoom_c2s {
-		//加入准备房间，根据roomId分配
-		msgData := proto.DecodeMsg(msgId, msgBody)
-		if msgData != nil {
-			data := msgData.(*msg.Game_joinReadyRoom_c2s)
-			return ipcClient.GetServiceByFlag(data.RoomId)
-		} else {
-			return ""
-		}
-	} else if msgId == msg.ID_Game_againJoinReadyRoom_c2s {
-		//再来一局，根据roomId分配
-		msgData := proto.DecodeMsg(msgId, msgBody)
-		if msgData != nil {
-			data := msgData.(*msg.Game_againJoinReadyRoom_c2s)
-			return ipcClient.GetServiceByFlag(data.RoomId)
-		} else {
-			return ""
-		}
+func getLoginService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
+	protoMsg := protos.UnmarshalProtoMsg(msgBody)
+	if protoMsg == protos.NullProtoMsg {
+		return ""
+	}
+
+	if protoMsg.ID == gameProto.ID_user_login_c2s {
+		//登录，根据Account分配
+		rev_msg := protoMsg.Body.(*gameProto.UserLoginC2S)
+		return ipcClient.GetServiceByFlag(rev_msg.GetAccount())
 	} else {
-		//其他
 		return session.IpcService()
 	}
-}
-
-func createReadyRoomId(gameId uint16, createUserId string) string {
-	return "readyRoom-" + NumToString(gameId) + "-" + createUserId
 }
 
 func sendMsgToClient_Error(session *sessions.FrontSession) {
-	sendMsg := msg.NewError_notice_s2c()
-	sendMsg.ErrorCode = ErrCode.ERR_SYSTEM
-	session.Send(sendMsg.Encode())
+	sendMsg := protos.MarshalProtoMsg(&gameProto.ErrorNoticeS2C{
+		ErrorCode: protos.Int32(ErrCode.ERR_SYSTEM),
+	})
+	session.Send(sendMsg)
 }
 
 func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody []byte) error {
@@ -123,10 +83,10 @@ func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody [
 	}
 
 	var service string
-	if serviceName == Service.Game {
+	if serviceName == Service.Login {
+		service = getLoginService(session, msgBody, ipcClient)
+	} else if serviceName == Service.Game {
 		service = getGameService(session, msgBody, ipcClient)
-	} else if serviceName == Service.Matching {
-		service = getMatchingService(session, msgBody, ipcClient)
 	}
 
 	if ipcClient == nil {
@@ -145,6 +105,8 @@ func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody [
 }
 
 func SendMsgToBack_UserOffline(session *sessions.FrontSession) {
-	sendMsg := msg.NewSystem_userOffline_c2s()
-	sendMsgToBack(session.IpcServiceName(), session, sendMsg.Encode())
+	//sendMsg := msg.NewSystem_userOffline_c2s()
+	//sendMsgToBack(session.IpcServiceName(), session, sendMsg.Encode())
+
+	//TODO
 }

@@ -2,11 +2,10 @@ package message
 
 import (
 	"core/libs/sessions"
-	"proto"
 )
 
 var (
-	backHandles = make(map[uint16]func(clientSession *sessions.BackSession, msgData proto.Msg))
+	backHandles = make(map[uint16]func(clientSession *sessions.BackSession, msgData interface{}))
 )
 
 func init() {
@@ -22,7 +21,11 @@ func init() {
 	//backHandles[msg.ID_System_userOffline_c2s] = module.ClientOffline
 }
 
-func GetIpcServerHandle(msgId uint16) func(clientSession *sessions.BackSession, msgData proto.Msg) {
+func RegisterIpcServerHandle(msgId uint16, handle func(clientSession *sessions.BackSession, msgData interface{})) {
+	backHandles[msgId] = handle
+}
+
+func GetIpcServerHandle(msgId uint16) func(clientSession *sessions.BackSession, msgData interface{}) {
 	handle, ok := backHandles[msgId]
 	if ok {
 		return handle

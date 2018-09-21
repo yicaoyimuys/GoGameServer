@@ -13,6 +13,7 @@ if [ $# -eq 0 ]
 	then
 		func connector
 		func game
+		func login
 	else
 		func $1
 fi

@@ -9,16 +9,14 @@ import (
 )
 
 func main() {
-	////开启RpcServer
-	//go startRpcServer()
-
 	//初始化Service
 	newService := service.NewService(Service.Game)
 	newService.StartIpcServer()
 	newService.StartRpcServer(&module.GameRpcServer{})
 	newService.StartRpcClient([]string{Service.Platform, Service.Log})
-	newService.StartDebug()
+	newService.StartRedis()
 	newService.StartMysql()
+	newService.StartDebug()
 
 	//模块初始化
 	initModule()

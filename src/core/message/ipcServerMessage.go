@@ -5,7 +5,7 @@ import (
 	"core/libs/grpc/ipc"
 	"core/libs/sessions"
 	"encoding/binary"
-	"proto"
+	"protos"
 )
 
 func IpcServerReceive(stream *ipc.Stream, msg *ipc.Req) {
@@ -23,20 +23,18 @@ func IpcServerReceive(stream *ipc.Stream, msg *ipc.Req) {
 }
 
 func dealMessage(session *sessions.BackSession, msgBody []byte) {
-	//DEBUG(msgBody)
-	//消息ID
-	msgId := binary.BigEndian.Uint16(msgBody[:2])
-	//DEBUG("BackMessage收到消息ID：", msgId)
-
 	//消息解析
-	msgData := proto.DecodeMsg(msgId, msgBody)
-	if msgData == nil {
+	protoMsg := protos.UnmarshalProtoMsg(msgBody)
+	if protoMsg == protos.NullProtoMsg {
+		msgId := binary.BigEndian.Uint16(msgBody[:2])
 		ERR("收到错误消息ID: " + NumToString(msgId))
 		session.Close()
 		return
 	}
 
 	//消息处理
+	msgId := protoMsg.ID
+	msgData := protoMsg.Body
 	handle := GetIpcServerHandle(msgId)
 	if handle == nil {
 		ERR("收到未处理的消息ID: " + NumToString(msgId))

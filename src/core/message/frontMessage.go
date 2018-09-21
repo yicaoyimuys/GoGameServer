@@ -2,10 +2,8 @@ package message
 
 import (
 	. "core/libs"
-	"core/libs/array"
 	"core/libs/sessions"
 	"encoding/binary"
-	"proto/msg"
 )
 
 func FontReceive(session *sessions.FrontSession, msgBody []byte) {
@@ -21,9 +19,9 @@ func FontReceive(session *sessions.FrontSession, msgBody []byte) {
 	} else if isConnectorMsg(msgId) {
 		//连接服务器消息
 		dealConnectorMsg(session, msgBody)
-	} else if isMatchingMsg(msgId) {
-		//匹配服务器消息
-		dealMatchingMsg(session, msgBody)
+	} else if isLoginMsg(msgId) {
+		//登录服务器消息
+		dealLoginMsg(session, msgBody)
 	} else if isGameMsg(msgId) {
 		//游戏服务器消息
 		dealGameMsg(session, msgBody)
@@ -32,42 +30,23 @@ func FontReceive(session *sessions.FrontSession, msgBody []byte) {
 	}
 }
 
-//func isConnectorMsg(msgId uint16) bool {
-//	return msgId >= 1000 && msgId <= 1999
-//}
-//
-//func isGameMsg(msgId uint16) bool {
-//	return msgId >= 3000 && msgId <= 3999
-//}
-//
-//func isMatchingMsg(msgId uint16) bool {
-//	return msgId >= 4000 && msgId <= 4999
-//}
+//1-999: 系统消息
+//1000-1999: connector消息
+//2000-2999: login消息
+//3000-3999: game消息
 
 func isSystemMsg(msgId uint16) bool {
 	return msgId >= 1 && msgId <= 999
 }
 
 func isConnectorMsg(msgId uint16) bool {
-	return msgId == msg.ID_Client_ping_c2s
+	return msgId >= 1000 && msgId <= 1999
+}
+
+func isLoginMsg(msgId uint16) bool {
+	return msgId >= 2000 && msgId <= 2999
 }
 
 func isGameMsg(msgId uint16) bool {
-	return true
-}
-
-func isMatchingMsg(msgId uint16) bool {
-	ids := []uint16{
-		msg.ID_Game_matching_c2s,
-		msg.ID_Game_cancelMatching_c2s,
-
-		msg.ID_Game_createReadyRoom_c2s,
-		msg.ID_Game_joinReadyRoom_c2s,
-		msg.ID_Game_leaveReadyRoom_c2s,
-		msg.ID_Game_dissolveReadyRoom_c2s,
-		msg.ID_Game_startByReadyRoom_c2s,
-		msg.ID_Game_refuseReadyRoom_c2s,
-		msg.ID_Game_againJoinReadyRoom_c2s,
-	}
-	return array.InArray(ids, msgId)
+	return msgId >= 3000 && msgId <= 3999
 }

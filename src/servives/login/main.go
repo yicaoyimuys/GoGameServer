@@ -5,15 +5,15 @@ import (
 	. "core/libs"
 	"core/service"
 	_ "net/http/pprof"
-	"servives/connector/module"
 )
 
 func main() {
 	//初始化Service
-	newService := service.NewService(Service.Connector)
+	newService := service.NewService(Service.Login)
+	newService.StartIpcServer()
+	newService.StartRpcClient([]string{Service.Platform, Service.Log})
 	newService.StartRedis()
-	newService.StartWebSocket()
-	newService.StartIpcClient([]string{Service.Game, Service.Login})
+	newService.StartMysql()
 
 	//模块初始化
 	initModule()
@@ -23,5 +23,4 @@ func main() {
 }
 
 func initModule() {
-	module.StartServerTimer()
 }

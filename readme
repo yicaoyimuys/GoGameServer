@@ -1,12 +1,6 @@
 消息划分
 
-#1-999: 系统消息
-#1000-1999: connectorServer消息
-#3000-3999: gameServer消息
-#4000-4999: matchingServer消息
-
-
 1-999: 系统消息
-1000: connectorServer消息
-3013、3017: matchingServer消息
-其他:  gameServer消息
+1000-1999: connector消息
+2000-2999: login消息
+3000-3999: game消息
