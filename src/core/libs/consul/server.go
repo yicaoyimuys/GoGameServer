@@ -18,7 +18,7 @@ func NewServive(serviceName string, serviceId int, servicePort string) error {
 	//服务器配置
 	address := common.GetLocalIp()
 	port, _ := strconv.Atoi(servicePort)
-	id := "[" + address + ":" + servicePort + "]" + "-" + serviceName + "-" + common.NumToString(serviceId)
+	id := address + ":" + servicePort + "-" + serviceName + "-" + common.NumToString(serviceId)
 	name := serviceName
 
 	//健康检查配置

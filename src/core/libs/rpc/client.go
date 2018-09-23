@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
-	"sort"
 	"sync"
 	"time"
 )
@@ -45,7 +44,6 @@ func (this *Client) loop() {
 func (this *Client) initServices() {
 	this.servicesMutex.Lock()
 	this.services = this.consulClient.GetServices(this.serviceName)
-	sort.Strings(this.services)
 	this.servicesMutex.Unlock()
 
 	this.traceServices()

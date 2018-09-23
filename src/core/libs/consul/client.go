@@ -5,11 +5,20 @@ import (
 	"core/libs/common"
 	"core/libs/stack"
 	"github.com/hashicorp/consul/api"
+	"sort"
 	"strings"
 )
 
 type Client struct {
 	consulClient *api.Client
+}
+
+type ServiceInfo struct {
+	ID      string
+	Name    string
+	Address string
+	Port    string
+	SortKey string
 }
 
 func NewClient() (*Client, error) {
@@ -60,15 +69,37 @@ func getFilterServices() []string {
 func (this *Client) GetServices(service string) []string {
 	services, _, _ := this.consulClient.Health().Service(service, "", true, &api.QueryOptions{})
 	filterServices := getFilterServices()
-	results := []string{}
+	serviceDatas := []ServiceInfo{}
 	if services != nil {
 		for _, entry := range services {
 			if array.InArray(filterServices, entry.Service.Address) {
 				continue
 			}
-			addr := entry.Service.Address + ":" + common.NumToString(entry.Service.Port)
-			results = append(results, addr)
+
+			arr := strings.Split(entry.Service.ID, "-")
+			serviveId := arr[2]
+			data := ServiceInfo{
+				ID:      entry.Service.ID,
+				Name:    entry.Service.Service,
+				Address: entry.Service.Address,
+				Port:    common.NumToString(entry.Service.Port),
+				SortKey: entry.Service.Address + "-" + serviveId,
+			}
+			serviceDatas = append(serviceDatas, data)
 		}
+	}
+
+	//排序(从小到大)
+	sort.Slice(serviceDatas, func(i, j int) bool {
+		return serviceDatas[i].SortKey < serviceDatas[j].SortKey
+	})
+
+	//组装返回数据
+	results := []string{}
+	for i := 0; i < len(serviceDatas); i++ {
+		data := serviceDatas[i]
+		addr := data.Address + ":" + data.Port
+		results = append(results, addr)
 	}
 	return results
 }
