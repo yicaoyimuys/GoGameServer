@@ -14,6 +14,7 @@ func main() {
 	//初始化Service
 	newService := service.NewService(Service.Login)
 	newService.StartIpcServer()
+	newService.StartRpcServer(&module.LoginRpcServer{})
 	newService.StartRpcClient([]string{Service.Platform, Service.Log})
 	newService.StartRedis()
 	newService.StartMysql()

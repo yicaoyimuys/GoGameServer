@@ -17,8 +17,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+type SessionCreateHandle func(session *sessions.FrontSession)
 type SessionMsgHandle func(session *sessions.FrontSession, msgBody []byte)
-type SessionCloseHandle func(session *sessions.FrontSession)
 
 type Server struct {
 	port string
@@ -28,8 +28,8 @@ type Server struct {
 	tslCrt string
 	tslKey string
 
-	sessionMsgHandle   SessionMsgHandle
-	sessionCloseHandle SessionCloseHandle
+	sessionCreateHandle SessionCreateHandle
+	sessionMsgHandle    SessionMsgHandle
 }
 
 func NewServer(port string, serviceId int) *Server {
@@ -47,12 +47,12 @@ func (this *Server) SetTLS(tslCrt string, tslKey string) {
 	this.tslKey = tslKey
 }
 
-func (this *Server) SetSessionMsgHandle(handle SessionMsgHandle) {
-	this.sessionMsgHandle = handle
+func (this *Server) SetSessionCreateHandle(handle SessionCreateHandle) {
+	this.sessionCreateHandle = handle
 }
 
-func (this *Server) SetSessionCloseHandle(handle SessionCloseHandle) {
-	this.sessionCloseHandle = handle
+func (this *Server) SetSessionMsgHandle(handle SessionMsgHandle) {
+	this.sessionMsgHandle = handle
 }
 
 func (this *Server) Start() {
@@ -95,16 +95,12 @@ func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (this *Server) addFontSession(session *sessions.FrontSession) {
 	sessions.AddFrontSession(session)
+	if this.sessionCreateHandle != nil {
+		this.sessionCreateHandle(session)
+	}
 	if this.sessionMsgHandle != nil {
 		session.SetMsgHandle(this.sessionMsgHandle)
 	}
-	session.AddCloseCallback(nil, "webSocket.FrontSessionOffline", func() {
-		if this.sessionCloseHandle != nil {
-			this.sessionCloseHandle(session)
-		}
-		//DEBUG("session count: ", sessions.FrontSessionLen())
-	})
-	//DEBUG("session count: ", sessions.FrontSessionLen())
 
 	defer session.Close()
 	for {

@@ -13,7 +13,7 @@ const (
 )
 
 //设置DBUser缓存
-func SetDBUser(dbUser *dbModels.DbUser) error {
+func SetUser(dbUser *dbModels.User) error {
 	redisClient := core.Service.GetRedisClient("user")
 
 	userKey := DB_User_Key + NumToString(dbUser.Id)

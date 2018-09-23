@@ -96,7 +96,7 @@ func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody [
 	}
 
 	if service == "" {
-		return errors.New("service not exists")
+		return errors.New("service not exists ")
 	}
 
 	err := ipcClient.Send(core.Service.Name(), core.Service.ID(), session.ID(), msgBody, service)
@@ -104,11 +104,4 @@ func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody [
 		session.SetIpcService(serviceName, service)
 	}
 	return err
-}
-
-func SendMsgToBack_UserOffline(session *sessions.FrontSession) {
-	//sendMsg := msg.NewSystem_userOffline_c2s()
-	//sendMsgToBack(session.IpcServiceName(), session, sendMsg.Encode())
-
-	//TODO
 }

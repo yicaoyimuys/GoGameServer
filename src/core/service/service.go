@@ -36,6 +36,8 @@ type Service struct {
 	rpcClients   map[string]*rpc.Client
 	redisClients map[string]*redis.Client
 	dbClients    map[string]*mysql.Client
+
+	wsServer *websocket.Server
 }
 
 func NewService(name string) *Service {
@@ -140,12 +142,19 @@ func (this *Service) StartMysql() {
 	this.dbClients = make(map[string]*mysql.Client)
 
 	mysqlConfigs := config.GetMysqlConfig()
-	for aliasName, mysqlConfig := range mysqlConfigs {
-		client, err := mysql.NewClient(aliasName, mysqlConfig.(map[string]interface{}))
+	index := 0
+	for key, mysqlConfig := range mysqlConfigs {
+		dbAliasName := key
+		if index == 0 {
+			dbAliasName = "default"
+		}
+		index++
+
+		client, err := mysql.NewClient(dbAliasName, mysqlConfig.(map[string]interface{}))
 		CheckError(err)
 
-		this.dbClients[aliasName] = client
-		INFO("mysql_" + aliasName + "连接成功...")
+		this.dbClients[key] = client
+		INFO("mysql_" + key + "连接成功...")
 	}
 }
 
@@ -163,12 +172,21 @@ func (this *Service) StartWebSocket() {
 		server.SetTLS(tslCrt, tslKey)
 	}
 	server.SetSessionMsgHandle(messages.FontReceive)
-	server.SetSessionCloseHandle(messages.SendMsgToBack_UserOffline)
 	server.Start()
 	server.StartPing()
 
 	//服务注册
 	this.registerService(WS, port)
+
+	//service中保存wsServer
+	this.wsServer = server
+}
+
+func (this *Service) SetSessionCreateHandle(handle websocket.SessionCreateHandle) {
+	if this.wsServer == nil {
+		return
+	}
+	this.wsServer.SetSessionCreateHandle(handle)
 }
 
 func (this *Service) StartIpcClient(serviceNames []string) {
@@ -213,7 +231,8 @@ func (this *Service) StartRpcClient(serviceNames []string) {
 
 func (this *Service) StartRpcServer(rcvr interface{}) {
 	//rpc模块注册
-	err := rpc.RegisterModule(this.name, rcvr)
+	serviceName := packageServiceName(RPC, this.name)
+	err := rpc.RegisterModule(serviceName, rcvr)
 	CheckError(err)
 
 	//开启rpcServer

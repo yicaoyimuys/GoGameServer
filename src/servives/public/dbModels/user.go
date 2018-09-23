@@ -2,16 +2,20 @@ package dbModels
 
 import (
 	"core"
-	. "core/libs"
+	"github.com/astaxie/beego/orm"
 	"time"
 )
 
-type DbUser struct {
+type User struct {
 	Id            uint64
 	Account       string
 	Money         int32
 	CreateTime    int64
 	LastLoginTime int64
+}
+
+func init() {
+	orm.RegisterModel(new(User))
 }
 
 //o := orm.NewOrm()
@@ -32,11 +36,11 @@ type DbUser struct {
 //// delete
 //num, err = o.Delete(&u)
 
-func AddDbUser(account string, money int32) *DbUser {
+func AddUser(account string, money int32) *User {
 	create_time := time.Now().Unix()
 
 	userDb := core.Service.GetMysqlClient("user")
-	user := DbUser{
+	user := User{
 		Account:       account,
 		Money:         money,
 		CreateTime:    create_time,
@@ -44,18 +48,17 @@ func AddDbUser(account string, money int32) *DbUser {
 	}
 
 	// insert
-	id, err := userDb.Insert(&user)
+	_, err := userDb.Insert(&user)
 	if err != nil {
 		return nil
 	}
-	DEBUG(user, id)
 	return &user
 }
 
-func GetDbUser(account string) *DbUser {
+func GetUser(account string) *User {
 	userDb := core.Service.GetMysqlClient("user")
-	user := DbUser{Account: account}
-	err := userDb.Read(&user)
+	user := User{Account: account}
+	err := userDb.Read(&user, "Account")
 	if err != nil {
 		return nil
 	}

@@ -29,13 +29,13 @@ func SetServerInfo(domainName string, serverPort string, onlineUsersNum int) {
 	}
 
 	byteData, _ := json.Marshal(serverInfo)
-	redisClient := core.Service.GetRedisClient("default")
+	redisClient := core.Service.GetRedisClient("global")
 	redisClient.HSet(ServerInfo_KEY, serverKey, string(byteData))
 }
 
 func GetServerInfo(domainName string, serverPort string) map[string]int {
 	serverKey := domainName + ":" + serverPort
-	redisClient := core.Service.GetRedisClient("default")
+	redisClient := core.Service.GetRedisClient("global")
 	val, err := redisClient.HGet(ServerInfo_KEY, serverKey).Result()
 	if err != nil {
 		return nil

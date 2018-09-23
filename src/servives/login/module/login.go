@@ -37,16 +37,16 @@ func Login(clientSession *sessions.BackSession, msgData proto.Message) {
 	}
 }
 
-func login(account string) *dbModels.DbUser {
+func login(account string) *dbModels.User {
 	//db中获取用户数据
-	dbUser := dbModels.GetDbUser(account)
+	dbUser := dbModels.GetUser(account)
 	if dbUser == nil {
 		//注册
 		addMoney := random.RandomInt31n(999)
-		dbUser = dbModels.AddDbUser(account, addMoney)
+		dbUser = dbModels.AddUser(account, addMoney)
 	}
 	//加入redis缓存
-	redisCaches.SetDBUser(dbUser)
+	redisCaches.SetUser(dbUser)
 	return dbUser
 }
 

@@ -3,7 +3,9 @@ package main
 import (
 	"core/consts/service"
 	. "core/libs"
+	"core/libs/array"
 	"core/libs/hash"
+	"core/libs/random"
 	"core/libs/stack"
 	"core/libs/timer"
 	"core/protos"
@@ -15,7 +17,6 @@ import (
 	"github.com/gorilla/websocket"
 	_ "net/http/pprof"
 	"net/url"
-	"strconv"
 	"sync"
 	"sync/atomic"
 )
@@ -26,7 +27,7 @@ var (
 		"127.0.0.1:19882",
 	}
 
-	connectNums  = 10
+	connectNums  = 100
 	userAccounts = []string{}
 )
 
@@ -52,9 +53,15 @@ func startTest() {
 }
 
 func initAccount() {
-	for a := 0; a < connectNums; a++ {
-		account := strconv.Itoa(10000 + a)
+	for {
+		account := "ys" + NumToString(random.RandIntn(10000))
+		if array.InArray(userAccounts, account) {
+			continue
+		}
 		userAccounts = append(userAccounts, account)
+		if len(userAccounts) == connectNums {
+			break
+		}
 	}
 }
 
@@ -85,7 +92,7 @@ func startConnect(account string) {
 
 	client.ping()
 	client.network()
-	client.platformLogin()
+	client.login()
 }
 
 type clientSession struct {
@@ -121,33 +128,11 @@ func (this *clientSession) isClose() bool {
 }
 
 //平台登录
-func (this *clientSession) platformLogin() {
-	//userId := this.myUserId
-	//otherUserId := this.otherUserId
-	//roomId := this.roomId
-	//
-	//platformData := make(map[string]interface{})
-	//platformData["userId"] = userId
-	//platformData["userName"] = "Name" + userId
-	//platformData["userPic"] = "Pic" + userId
-	//platformData["userSex"] = 1
-	//
-	//platformData["otherUserId"] = otherUserId
-	//platformData["otherUserName"] = "Name" + otherUserId
-	//platformData["otherUserPic"] = "Pic" + otherUserId
-	//platformData["otherUserSex"] = 2
-	//
-	//platformData["roomId"] = roomId
-	//platformData["isAi"] = 0
-	//platformData["aiLevel"] = 0
-	//
-	//platformDataStr, _ := json.Marshal(platformData)
-	//
-	//var sendMsg = msg.NewPlatform_login_c2s()
-	//sendMsg.GameId = 1
-	//sendMsg.PlatformId = 0
-	//sendMsg.PlatformData = string(platformDataStr)
-	//this.sendMsg(sendMsg)
+func (this *clientSession) login() {
+	msg := &gameProto.UserLoginC2S{
+		Account: protos.String(this.account),
+	}
+	this.sendMsg(msg)
 }
 
 //进入游戏
@@ -241,6 +226,15 @@ func (this *clientSession) receiveMsg() {
 
 func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 	defer stack.PrintPanicStackError()
+
+	if msgId == gameProto.ID_user_login_s2c {
+		//登录成功
+		data := msgData.(*gameProto.UserLoginS2C)
+		DEBUG("登录成功", data.GetToken())
+	} else if msgId == gameProto.ID_error_notice_s2c {
+		data := msgData.(*gameProto.ErrorNoticeS2C)
+		DEBUG("收到错误消息", data)
+	}
 
 	//if msgId == msg.ID_Platform_login_s2c {
 	//	this.joinGame()

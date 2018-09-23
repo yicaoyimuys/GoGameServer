@@ -164,7 +164,7 @@ func (this *Client) Call(service string, serviceMethod string, arg interface{}) 
 	err := serviceResult[1].Interface()
 	if err != nil && err.(error) == io.ErrUnexpectedEOF {
 		this.removeLink(service)
-		logger.Error("service is error", service, err)
+		logger.Error("service is error", service)
 		return nil
 	}
 
