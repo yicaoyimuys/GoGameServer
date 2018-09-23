@@ -233,6 +233,14 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 		DEBUG("登录成功", data.GetToken())
 	} else if msgId == gameProto.ID_error_notice_s2c {
 		data := msgData.(*gameProto.ErrorNoticeS2C)
+		if data.GetErrorCode() == 1999 {
+			//系统服务错误
+			this.close()
+			//重新连接
+			timer.SetTimeOut(3000, func() {
+				go startConnect(this.account)
+			})
+		}
 		DEBUG("收到错误消息", data)
 	}
 

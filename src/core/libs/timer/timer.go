@@ -23,7 +23,9 @@ func (this *TimerEvent) IsClosed() bool {
 //关闭
 func (this *TimerEvent) Close() {
 	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
-		this.ticker.Stop()
+		if this.ticker != nil {
+			this.ticker.Stop()
+		}
 		close(this.closeChan)
 	}
 }
