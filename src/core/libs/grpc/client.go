@@ -136,21 +136,12 @@ func (this *Client) removeLink(service string) {
 }
 
 func (this *Client) Call(service string, serviceMethod string, arg interface{}) interface{} {
-	////根据Flag分配Service
-	//if flag == "" {
-	//	flag = NumToString(time.Now().Unix())
-	//}
-	//service := this.getServiceByFlag(flag)
-	//if service == "" {
-	//	ERR("grpcServer no exists")
-	//	return nil, ""
-	//}
-
 	//根据Service获取链接
 	link := this.getLink(service)
 	if link == nil {
 		this.removeService(service)
-		return this.Call(service, serviceMethod, arg)
+		logger.Error("service not exists", service)
+		return nil
 	}
 
 	//创建PbClient
@@ -173,7 +164,8 @@ func (this *Client) Call(service string, serviceMethod string, arg interface{}) 
 	err := serviceResult[1].Interface()
 	if err != nil && err.(error) == io.ErrUnexpectedEOF {
 		this.removeLink(service)
-		return this.Call(service, serviceMethod, arg)
+		logger.Error("service is error", service, err)
+		return nil
 	}
 
 	return reply
