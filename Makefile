@@ -10,6 +10,7 @@ all:
 	$(GO) install servives/connector
 	$(GO) install servives/game
 	$(GO) install servives/login
+	$(GO) install servives/test
 
 clean:
 	rm -rf bin pkg release
@@ -26,6 +27,9 @@ vendor_addExternal:
 
 create_proto:
 	cd $(SRC_DIR)/core/protos/gameProto && protoc --go_out=. gameProto.proto
+
+create_grpc_proto:
+	cd $(SRC_DIR)/core/libs/grpc/ipc && protoc --go_out=plugins=grpc:. *.proto
 
 publish_linux:
 	GOOS=linux GOARCH=amd64 $(GO) build -o release/connector servivess/connector

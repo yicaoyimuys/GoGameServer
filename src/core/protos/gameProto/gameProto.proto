@@ -1,11 +1,6 @@
 syntax = "proto2";
 
 
-//客户端ping(1)
-message client_ping_c2s{
-
-}
-
 //错误消息(500)
 message error_notice_s2c{
 	required int32 errorCode = 1;
@@ -13,6 +8,10 @@ message error_notice_s2c{
 
 
 
+//客户端ping(1001)
+message client_ping_c2s{
+
+}
 
 
 //用户登录C2S(2001)

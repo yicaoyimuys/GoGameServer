@@ -6,4 +6,5 @@ const (
 	Game      = "game"
 	Platform  = "platform"
 	Log       = "log"
+	Test      = "test"
 )

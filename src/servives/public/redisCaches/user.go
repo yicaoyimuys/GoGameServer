@@ -4,7 +4,7 @@ import (
 	"core"
 	. "core/libs"
 	"encoding/json"
-	"servives/login/model"
+	"servives/public/dbModels"
 	"time"
 )
 
@@ -13,7 +13,7 @@ const (
 )
 
 //设置DBUser缓存
-func SetDBUser(dbUser *model.DbUser) error {
+func SetDBUser(dbUser *dbModels.DbUser) error {
 	redisClient := core.Service.GetRedisClient("user")
 
 	userKey := DB_User_Key + NumToString(dbUser.Id)
