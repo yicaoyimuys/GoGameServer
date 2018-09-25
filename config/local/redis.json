@@ -1,11 +1,13 @@
 {
   "global": {
+    "prefix": "local",
     "host": "127.0.0.1",
     "port": "6379",
     "auth_pass": "",
     "db": 1
   },
   "user": {
+    "prefix": "local",
     "host": "127.0.0.1",
     "port": "6379",
     "auth_pass": "",
