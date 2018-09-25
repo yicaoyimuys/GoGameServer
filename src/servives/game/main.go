@@ -20,6 +20,9 @@ func main() {
 	newService.StartMysql()
 	newService.StartDebug()
 
+	//消息初始化
+	initMessage()
+
 	//模块初始化
 	initModule()
 
@@ -27,6 +30,10 @@ func main() {
 	Run()
 }
 
-func initModule() {
+func initMessage() {
 	messages.RegisterIpcServerHandle(gameProto.ID_user_getInfo_c2s, module.GetInfo)
+}
+
+func initModule() {
+
 }

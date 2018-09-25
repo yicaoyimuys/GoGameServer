@@ -1,11 +1,10 @@
 package cache
 
 import (
-	"core"
 	"encoding/json"
+	"servives/public/redisInstances"
+	"servives/public/redisKeys"
 )
-
-const ServerInfo_KEY = "BattleServer_ServerInfo"
 
 func SetServerInfo(domainName string, serverPort string, onlineUsersNum int) {
 	oldServerInfo := GetServerInfo(domainName, serverPort)
@@ -18,6 +17,7 @@ func SetServerInfo(domainName string, serverPort string, onlineUsersNum int) {
 		}
 	}
 
+	redisKey := redisKeys.ServerInfo
 	serverKey := domainName + ":" + serverPort
 
 	serverInfo := make(map[string]int)
@@ -29,14 +29,13 @@ func SetServerInfo(domainName string, serverPort string, onlineUsersNum int) {
 	}
 
 	byteData, _ := json.Marshal(serverInfo)
-	redisClient := core.Service.GetRedisClient("global")
-	redisClient.HSet(ServerInfo_KEY, serverKey, string(byteData))
+	redisInstances.Global().HSet(redisKey, serverKey, string(byteData))
 }
 
 func GetServerInfo(domainName string, serverPort string) map[string]int {
+	redisKey := redisKeys.ServerInfo
 	serverKey := domainName + ":" + serverPort
-	redisClient := core.Service.GetRedisClient("global")
-	val, err := redisClient.HGet(ServerInfo_KEY, serverKey).Result()
+	val, err := redisInstances.Global().HGet(redisKey, serverKey).Result()
 	if err != nil {
 		return nil
 	}

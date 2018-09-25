@@ -1,8 +1,8 @@
 package dbModels
 
 import (
-	"core"
 	"github.com/astaxie/beego/orm"
+	"servives/public/mysqlInstances"
 	"time"
 )
 
@@ -18,28 +18,9 @@ func init() {
 	orm.RegisterModel(new(User))
 }
 
-//o := orm.NewOrm()
-//
-//user := User{Name: "slene"}
-//
-//// insert
-//id, err := o.Insert(&user)
-//
-//// update
-//user.Name = "astaxie"
-//num, err := o.Update(&user)
-//
-//// read one
-//u := User{Id: user.Id}
-//err = o.Read(&u)
-//
-//// delete
-//num, err = o.Delete(&u)
-
 func AddUser(account string, money int32) *User {
 	create_time := time.Now().Unix()
 
-	userDb := core.Service.GetMysqlClient("user")
 	user := User{
 		Account:       account,
 		Money:         money,
@@ -48,7 +29,7 @@ func AddUser(account string, money int32) *User {
 	}
 
 	// insert
-	_, err := userDb.Insert(&user)
+	_, err := mysqlInstances.User().Insert(&user)
 	if err != nil {
 		return nil
 	}
@@ -56,11 +37,30 @@ func AddUser(account string, money int32) *User {
 }
 
 func GetUser(account string) *User {
-	userDb := core.Service.GetMysqlClient("user")
 	user := User{Account: account}
-	err := userDb.Read(&user, "Account")
+	err := mysqlInstances.User().Read(&user, "Account")
 	if err != nil {
 		return nil
 	}
 	return &user
+}
+
+func UpdateUser(dbUser *User) bool {
+	_, err := mysqlInstances.User().Update(dbUser)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func UpdateUserLoginTime(userId uint64, loginTime int64) bool {
+	dbUser := User{
+		Id:            userId,
+		LastLoginTime: loginTime,
+	}
+	_, err := mysqlInstances.User().Update(&dbUser, "LastLoginTime")
+	if err != nil {
+		return false
+	}
+	return true
 }

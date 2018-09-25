@@ -19,6 +19,9 @@ func main() {
 	newService.StartRedis()
 	newService.StartMysql()
 
+	//消息初始化
+	initMessage()
+
 	//模块初始化
 	initModule()
 
@@ -26,6 +29,10 @@ func main() {
 	Run()
 }
 
-func initModule() {
+func initMessage() {
 	messages.RegisterIpcServerHandle(gameProto.ID_user_login_c2s, module.Login)
+}
+
+func initModule() {
+
 }
