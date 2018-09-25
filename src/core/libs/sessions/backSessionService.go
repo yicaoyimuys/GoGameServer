@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"core/libs/common"
 	"sync"
 )
 
@@ -44,4 +45,8 @@ func BackSessionLen() int {
 	defer backSessionMutex.Unlock()
 
 	return len(backSessions)
+}
+
+func CreateBackSessionId(serviceIdentify string, userSessionId uint64) string {
+	return serviceIdentify + "_" + common.NumToString(userSessionId)
 }

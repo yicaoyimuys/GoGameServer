@@ -1,7 +1,6 @@
 package sessions
 
 import (
-	"core/libs/common"
 	"core/libs/grpc/ipc"
 	"core/libs/stack"
 	"sync"
@@ -9,10 +8,9 @@ import (
 )
 
 type BackSession struct {
-	id          string
-	serviceName string
-	sessionId   uint64
-	stream      *ipc.Stream
+	id        string
+	sessionId uint64
+	stream    *ipc.Stream
 
 	closeFlag          int32
 	closeChan          chan int
@@ -28,14 +26,13 @@ type BackSession struct {
 	gameId    uint16
 }
 
-func NewBackSession(serviceName string, sessionId uint64, stream *ipc.Stream) *BackSession {
+func NewBackSession(id string, sessionId uint64, stream *ipc.Stream) *BackSession {
 	session := &BackSession{
-		id:          serviceName + "_" + common.NumToString(sessionId),
-		serviceName: serviceName,
-		sessionId:   sessionId,
-		stream:      stream,
-		recvChan:    make(chan []byte, 100),
-		closeChan:   make(chan int),
+		id:        id,
+		sessionId: sessionId,
+		stream:    stream,
+		recvChan:  make(chan []byte, 100),
+		closeChan: make(chan int),
 	}
 	stream.AddSession(session)
 	go session.loop()
@@ -84,9 +81,8 @@ func (this *BackSession) Send(data []byte) error {
 	}
 
 	msg := &ipc.Res{
-		ServiceName: this.serviceName,
-		SessionId:   this.sessionId,
-		Data:        data,
+		UserSessionId: this.sessionId,
+		Data:          data,
 	}
 	return this.stream.Send(msg)
 }

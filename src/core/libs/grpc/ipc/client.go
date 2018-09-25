@@ -1,7 +1,6 @@
 package ipc
 
 import (
-	"core/libs/common"
 	"core/libs/consul"
 	myGprc "core/libs/grpc"
 	"core/libs/stack"
@@ -103,19 +102,19 @@ func (this *Client) GetServiceByFlag(flag string) string {
 	return this.grpcClient.GetServiceByFlag(flag)
 }
 
-func (this *Client) Send(serviceName string, serviceId int, sessionId uint64, data []byte, service string) error {
-	if service == "" {
+func (this *Client) Send(senderServiceIdentify string, userSessionId uint64, data []byte, receiverService string) error {
+	if receiverService == "" {
 		return errors.New("service is null")
 	}
 
-	stream := this.getStream(service)
+	stream := this.getStream(receiverService)
 	if stream == nil {
 		return errors.New("stream is null")
 	}
 
 	return stream.Send(&Req{
-		ServiceName: common.GetLocalIp() + "_" + serviceName + "_" + common.NumToString(serviceId),
-		SessionId:   sessionId,
-		Data:        data,
+		ServiceIdentify: senderServiceIdentify,
+		UserSessionId:   userSessionId,
+		Data:            data,
 	})
 }

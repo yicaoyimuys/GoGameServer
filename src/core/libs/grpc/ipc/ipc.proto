@@ -1,14 +1,13 @@
 syntax = "proto3";
 
 message Req{
-    string serviceName = 1;
-    uint64 sessionId = 2;
+    string serviceIdentify = 1;
+    uint64 userSessionId = 2;
     bytes data = 3;
 }
 
 message Res{
-    string serviceName = 1;
-    uint64 sessionId = 2;
+    uint64 userSessionId = 2;
     bytes data = 3;
 }
 

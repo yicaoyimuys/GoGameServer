@@ -269,6 +269,10 @@ func (this *Service) Port() string {
 	return this.port
 }
 
+func (this *Service) Identify() string {
+	return GetLocalIp() + "_" + this.name + "_" + NumToString(this.id)
+}
+
 func (this *Service) GetIpcClient(serviceName string) *ipc.Client {
 	serviceName = packageServiceName(IPC, serviceName)
 	client, _ := this.ipcClients[serviceName]

@@ -8,12 +8,11 @@ import (
 )
 
 func IpcClientReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
-	frontSession := sessions.GetFrontSession(msg.SessionId)
-	msgBody := msg.Data
-	if frontSession != nil {
-		frontSession.Send(msgBody)
+	clientSession := sessions.GetFrontSession(msg.UserSessionId)
+	if clientSession != nil {
+		clientSession.Send(msg.Data)
 	} else {
-		msgId := protos.UnmarshalProtoId(msgBody)
+		msgId := protos.UnmarshalProtoId(msg.Data)
 		WARN("frontSession no exists", msgId)
 	}
 }

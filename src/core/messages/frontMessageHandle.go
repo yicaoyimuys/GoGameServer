@@ -26,18 +26,18 @@ func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {
 }
 
 func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToBack(Service.Game, session, msgBody)
+	err := sendMsgToIpcService(Service.Game, session, msgBody)
 	if err != nil {
 		ERR("dealGameMsg", err)
-		sendMsgToClient_Error(session)
+		sendErrorMsgToClient(session)
 	}
 }
 
 func dealLoginMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToBack(Service.Login, session, msgBody)
+	err := sendMsgToIpcService(Service.Login, session, msgBody)
 	if err != nil {
 		ERR("dealLoginMsg", err)
-		sendMsgToClient_Error(session)
+		sendErrorMsgToClient(session)
 	}
 }
 
@@ -71,14 +71,14 @@ func getLoginService(session *sessions.FrontSession, msgBody []byte, ipcClient *
 	}
 }
 
-func sendMsgToClient_Error(session *sessions.FrontSession) {
+func sendErrorMsgToClient(session *sessions.FrontSession) {
 	sendMsg := protos.MarshalProtoMsg(&gameProto.ErrorNoticeS2C{
 		ErrorCode: protos.Int32(ErrCode.SYSTEM_ERR),
 	})
 	session.Send(sendMsg)
 }
 
-func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody []byte) error {
+func sendMsgToIpcService(serviceName string, session *sessions.FrontSession, msgBody []byte) error {
 	ipcClient := core.Service.GetIpcClient(serviceName)
 	if ipcClient == nil {
 		ERR("ipcClient not exists", serviceName)
@@ -99,7 +99,7 @@ func sendMsgToBack(serviceName string, session *sessions.FrontSession, msgBody [
 		return errors.New("service not exists ")
 	}
 
-	err := ipcClient.Send(core.Service.Name(), core.Service.ID(), session.ID(), msgBody, service)
+	err := ipcClient.Send(core.Service.Identify(), session.ID(), msgBody, service)
 	if err == nil {
 		session.SetIpcService(serviceName, service)
 	}

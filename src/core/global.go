@@ -12,6 +12,7 @@ type IService interface {
 	Name() string
 	ID() int
 	Port() string
+	Identify() string
 	GetIpcClient(serviceName string) *ipc.Client
 	GetRpcClient(serviceName string) *rpc.Client
 	GetRedisClient(redisAliasName string) *redis.Client

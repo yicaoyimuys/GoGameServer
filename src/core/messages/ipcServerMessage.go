@@ -11,10 +11,10 @@ func IpcServerReceive(stream *ipc.Stream, msg *ipc.Req) {
 	msgBody := msg.Data
 
 	//获取Session
-	id := msg.ServiceName + "_" + NumToString(msg.SessionId)
+	id := sessions.CreateBackSessionId(msg.ServiceIdentify, msg.UserSessionId)
 	session := sessions.GetBackSession(id)
 	if session == nil {
-		session = sessions.NewBackSession(msg.ServiceName, msg.SessionId, stream)
+		session = sessions.NewBackSession(id, msg.UserSessionId, stream)
 		session.SetMsgHandle(dealMessage)
 		sessions.SetBackSession(session)
 	}

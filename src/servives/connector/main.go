@@ -42,8 +42,8 @@ func sessionOffline(session *sessions.FrontSession) {
 
 	method := "ClientOffline"
 	args := &module2.RpcClientOfflineReq{
-		ServiceName: GetLocalIp() + "_" + core.Service.Name() + "_" + NumToString(core.Service.ID()),
-		SessionId:   session.ID(),
+		ServiceIdentify: core.Service.Identify(),
+		UserSessionId:   session.ID(),
 	}
 	reply := new(module2.RpcClientOfflineRes)
 	loginService.Call(method, args, reply, "")
