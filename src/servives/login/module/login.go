@@ -61,7 +61,7 @@ func loginSuccess(clientSession *sessions.BackSession, account string, userID ui
 	DEBUG("用户上线：当前在线人数", cache.GetOnlineUsersNum())
 
 	//返回客户端数据
-	token := public.CreateToken(NumToString(userID))
+	token := public.CreateToken(userID)
 	sendMsg := &gameProto.UserLoginS2C{
 		Token: protos.String(token),
 	}

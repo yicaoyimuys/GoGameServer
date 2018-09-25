@@ -73,7 +73,7 @@ func getLoginService(session *sessions.FrontSession, msgBody []byte, ipcClient *
 
 func sendMsgToClient_Error(session *sessions.FrontSession) {
 	sendMsg := protos.MarshalProtoMsg(&gameProto.ErrorNoticeS2C{
-		ErrorCode: protos.Int32(ErrCode.ERR_SYSTEM),
+		ErrorCode: protos.Int32(ErrCode.SYSTEM_ERR),
 	})
 	session.Send(sendMsg)
 }

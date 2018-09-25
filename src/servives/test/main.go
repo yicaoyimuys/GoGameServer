@@ -1,6 +1,7 @@
 package main
 
 import (
+	"core/consts/errCode"
 	"core/consts/service"
 	. "core/libs"
 	"core/libs/array"
@@ -96,15 +97,11 @@ func startConnect(account string) {
 }
 
 type clientSession struct {
-	con             *websocket.Conn
-	account         string
-	progressNum     uint16
-	progressTimerId *timer.TimerEvent
-	eventTimerId    *timer.TimerEvent
-	pingTimerId     *timer.TimerEvent
-	networkTimerId  *timer.TimerEvent
-	resultTimerId   *timer.TimerEvent
-	closeFlag       int32
+	con         *websocket.Conn
+	account     string
+	token       string
+	pingTimerId *timer.TimerEvent
+	closeFlag   int32
 
 	recvMutex sync.Mutex
 	sendMutex sync.Mutex
@@ -113,11 +110,7 @@ type clientSession struct {
 //关闭
 func (this *clientSession) close() {
 	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
-		timer.Remove(this.progressTimerId)
-		timer.Remove(this.eventTimerId)
 		timer.Remove(this.pingTimerId)
-		timer.Remove(this.networkTimerId)
-		timer.Remove(this.resultTimerId)
 		this.con.Close()
 	}
 }
@@ -135,38 +128,12 @@ func (this *clientSession) login() {
 	this.sendMsg(msg)
 }
 
-//进入游戏
-func (this *clientSession) joinGame() {
-	//var sendMsg = msg.NewGame_join_c2s()
-	//sendMsg.RoomId = this.roomId
-	//this.sendMsg(sendMsg)
-}
-
-//发送进度
-func (this *clientSession) loadProgress() {
-	//this.progressTimerId = timer.DoTimer(1000, func() {
-	//	this.progressNum += uint16(random.RandIntRange(1, 50))
-	//	if this.progressNum >= 100 {
-	//		this.progressNum = 100
-	//		timer.Remove(this.progressTimerId)
-	//	}
-	//
-	//	var msg = msg.NewGame_loadProgress_c2s()
-	//	msg.RoomId = this.roomId
-	//	msg.Progress = this.progressNum
-	//	this.sendMsg(msg)
-	//})
-}
-
-//发送游戏事件
-func (this *clientSession) gameEvent() {
-	//this.eventTimerId = timer.DoTimer(500, func() {
-	//	msg := msg.NewGame_event_c2s()
-	//	msg.RoomId = this.roomId
-	//	msg.SendType = 1
-	//	msg.Event = "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈" + this.myUserId
-	//	this.sendMsg(msg)
-	//})
+//获取用户数据
+func (this *clientSession) getInfo() {
+	msg := &gameProto.UserGetInfoC2S{
+		Token: protos.String(this.token),
+	}
+	this.sendMsg(msg)
 }
 
 //心跳
@@ -184,14 +151,6 @@ func (this *clientSession) network() {
 	//	msg.Time = uint32(time.Now().Unix())
 	//	this.sendMsg(msg)
 	//})
-}
-
-//结算
-func (this *clientSession) gameResult() {
-	//msg := msg.NewGame_result_c2s()
-	//msg.RoomId = this.roomId
-	//msg.Result = 1
-	//this.sendMsg(msg)
 }
 
 //接收消息
@@ -230,10 +189,17 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 	if msgId == gameProto.ID_user_login_s2c {
 		//登录成功
 		data := msgData.(*gameProto.UserLoginS2C)
-		DEBUG("登录成功", data.GetToken())
+		this.token = data.GetToken()
+		DEBUG("登录成功", this.token)
+		this.getInfo()
+	} else if msgId == gameProto.ID_user_getInfo_s2c {
+		//获取用户信息成功
+		data := msgData.(*gameProto.UserGetInfoS2C)
+		DEBUG("用户信息", data.GetData())
 	} else if msgId == gameProto.ID_error_notice_s2c {
 		data := msgData.(*gameProto.ErrorNoticeS2C)
-		if data.GetErrorCode() == 1999 {
+		errCode := data.GetErrorCode()
+		if errCode == ErrCode.SYSTEM_ERR {
 			//系统服务错误
 			this.close()
 			//重新连接
@@ -243,48 +209,6 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 		}
 		DEBUG("收到错误消息", data)
 	}
-
-	//if msgId == msg.ID_Platform_login_s2c {
-	//	this.joinGame()
-	//} else if msgId == msg.ID_Game_join_s2c {
-	//	this.loadProgress()
-	//} else if msgId == msg.ID_Game_loadProgress_notice_s2c {
-	//	data := msgData.(*msg.Game_loadProgress_notice_s2c)
-	//	DEBUG(this.myUserId, "收到加载进度", *data)
-	//} else if msgId == msg.ID_Game_start_notice_s2c {
-	//	data := msgData.(*msg.Game_start_notice_s2c)
-	//	DEBUG("收到游戏开启", *data)
-	//	//发送游戏事件
-	//	this.gameEvent()
-	//	//发送结算
-	//	arr := strings.Split(this.roomId, "_")
-	//	if this.myUserId == arr[0] {
-	//		this.resultTimerId = timer.SetTimeOut(60*1000, func() {
-	//			this.gameResult()
-	//		})
-	//	}
-	//} else if msgId == msg.ID_Game_event_notice_s2c {
-	//	data := msgData.(*msg.Game_event_notice_s2c)
-	//	DEBUG("收到游戏事件", *data)
-	//} else if msgId == msg.ID_Client_network_s2c {
-	//	data := msgData.(*msg.Client_network_s2c)
-	//	cha := uint32(time.Now().Unix()) - data.Time
-	//	if cha > 100 {
-	//		DEBUG("延迟：", cha)
-	//	}
-	//} else if msgId == msg.ID_Game_result_notice_s2c {
-	//	data := msgData.(*msg.Game_result_notice_s2c)
-	//	DEBUG("收到游戏结束", *data)
-	//	this.close()
-	//
-	//	//重新连接
-	//	timer.SetTimeOut(2000, func() {
-	//		startConnect(this.myUserId, this.otherUserId)
-	//	})
-	//} else if msgId == msg.ID_Error_notice_s2c {
-	//	data := msgData.(*msg.Error_notice_s2c)
-	//	DEBUG("收到错误消息", *data)
-	//}
 }
 
 func (this *clientSession) sendMsg(msg proto.Message) {

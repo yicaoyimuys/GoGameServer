@@ -20,3 +20,18 @@ func SetUser(dbUser *dbModels.User) error {
 	userData, _ := json.Marshal(dbUser)
 	return redisClient.Set(userKey, userData, time.Hour*24).Err()
 }
+
+//获取DBUser缓存
+func GetUser(userId uint64) *dbModels.User {
+	redisClient := core.Service.GetRedisClient("user")
+
+	key := DB_User_Key + NumToString(userId)
+	val, err := redisClient.Get(key).Result()
+	if err != nil {
+		return nil
+	}
+
+	var dbUser dbModels.User
+	err = json.Unmarshal([]byte(val), &dbUser)
+	return &dbUser
+}

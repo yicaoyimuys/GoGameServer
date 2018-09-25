@@ -3,6 +3,8 @@ package main
 import (
 	"core/consts/service"
 	. "core/libs"
+	"core/messages"
+	"core/protos/gameProto"
 	"core/service"
 	_ "net/http/pprof"
 	"servives/game/module"
@@ -26,4 +28,5 @@ func main() {
 }
 
 func initModule() {
+	messages.RegisterIpcServerHandle(gameProto.ID_user_getInfo_c2s, module.GetInfo)
 }
