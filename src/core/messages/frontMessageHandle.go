@@ -52,7 +52,7 @@ func getGameService(session *sessions.FrontSession, msgBody []byte, ipcClient *i
 		protoMsgData := protoMsg.Body.(*gameProto.UserGetInfoC2S)
 		return ipcClient.GetServiceByFlag(protoMsgData.GetToken())
 	} else {
-		return session.IpcService()
+		return session.GetIpcService(Service.Game)
 	}
 }
 
@@ -67,7 +67,7 @@ func getLoginService(session *sessions.FrontSession, msgBody []byte, ipcClient *
 		protoMsgData := protoMsg.Body.(*gameProto.UserLoginC2S)
 		return ipcClient.GetServiceByFlag(protoMsgData.GetAccount())
 	} else {
-		return session.IpcService()
+		return session.GetIpcService(Service.Login)
 	}
 }
 
@@ -78,30 +78,26 @@ func sendErrorMsgToClient(session *sessions.FrontSession) {
 	session.Send(sendMsg)
 }
 
-func sendMsgToIpcService(serviceName string, session *sessions.FrontSession, msgBody []byte) error {
+func sendMsgToIpcService(serviceName string, clientSession *sessions.FrontSession, msgBody []byte) error {
 	ipcClient := core.Service.GetIpcClient(serviceName)
 	if ipcClient == nil {
-		ERR("ipcClient not exists", serviceName)
+		return errors.New(serviceName + ": ipcClient not exists")
 	}
 
 	var service string
 	if serviceName == Service.Login {
-		service = getLoginService(session, msgBody, ipcClient)
+		service = getLoginService(clientSession, msgBody, ipcClient)
 	} else if serviceName == Service.Game {
-		service = getGameService(session, msgBody, ipcClient)
-	}
-
-	if ipcClient == nil {
-		return errors.New("serverName not exists")
+		service = getGameService(clientSession, msgBody, ipcClient)
 	}
 
 	if service == "" {
-		return errors.New("service not exists ")
+		return errors.New(serviceName + ": service not exists")
 	}
 
-	err := ipcClient.Send(core.Service.Identify(), session.ID(), msgBody, service)
+	err := ipcClient.Send(core.Service.Identify(), clientSession.ID(), msgBody, service)
 	if err == nil {
-		session.SetIpcService(serviceName, service)
+		clientSession.SetIpcService(serviceName, service)
 	}
 	return err
 }

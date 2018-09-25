@@ -28,9 +28,8 @@ type FrontSession struct {
 
 	msgHandle func(session *FrontSession, msgBody []byte)
 
-	pingTime       int64
-	ipcServiceName string
-	ipcService     string
+	pingTime    int64
+	ipcServices sync.Map
 }
 
 func NewFontSession(id uint64, codec Codec) *FrontSession {
@@ -53,12 +52,12 @@ func (this *FrontSession) IsClosed() bool {
 	return atomic.LoadInt32(&this.closeFlag) == 1
 }
 
-func (this *FrontSession) IpcServiceName() string {
-	return this.ipcServiceName
-}
-
-func (this *FrontSession) IpcService() string {
-	return this.ipcService
+func (this *FrontSession) GetIpcService(serviceName string) string {
+	value, _ := this.ipcServices.Load(serviceName)
+	if value != nil {
+		return value.(string)
+	}
+	return ""
 }
 
 func (this *FrontSession) PingTime() int64 {
@@ -66,8 +65,7 @@ func (this *FrontSession) PingTime() int64 {
 }
 
 func (this *FrontSession) SetIpcService(serviceName string, service string) {
-	this.ipcServiceName = serviceName
-	this.ipcService = service
+	this.ipcServices.Store(serviceName, service)
 }
 
 func (this *FrontSession) UpdatePingTime() {

@@ -152,3 +152,17 @@ func (this *Client) Call(serviceMethod string, args interface{}, reply interface
 	}
 	return err
 }
+
+func (this *Client) CallAll(serviceMethod string, args interface{}, reply interface{}, flag string) {
+	for _, value := range this.services {
+		link := this.getLink(value)
+		if link == nil {
+			continue
+		}
+
+		err := link.Call(this.serviceName+"."+serviceMethod, args, reply)
+		if err == io.ErrUnexpectedEOF || err == rpc.ErrShutdown {
+			this.removeLink(value)
+		}
+	}
+}
