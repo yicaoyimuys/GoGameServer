@@ -1,6 +1,5 @@
-# GoGameServer
-
-###介绍
+GoGameServer
+===============
 
 使用go搭建的一个游戏服务器项目  
 1：consul作为服务注册/发现中心，便于服务的动态扩容  
@@ -10,18 +9,17 @@
 5：缓存使用redis  
 6：数据库使用mysql
 
-===
 
-###结构图
+结构图
+===============
 
 
 ![image](server.png)
 
 
-===
 
-
-###Makefile脚本说明
+Makefile脚本说明
+===============
 
 	make: 代码编译
 	make clean: 清理编译文件
