@@ -14,7 +14,7 @@ GoGameServer
 ===============
 
 
-![image](server.png)
+![image](GoGameServer.png)
 
 
 
