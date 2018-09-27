@@ -65,12 +65,38 @@ func (this *Stream) close() {
 
 type Server struct {
 	serverRecvHandle ServerRecvHandle
+	streams          []*Stream
+	streamMutex      sync.Mutex
+}
+
+func (this *Server) addStream(stream *Stream) {
+	this.streamMutex.Lock()
+	defer this.streamMutex.Unlock()
+
+	this.streams = append(this.streams, stream)
+}
+
+func (this *Server) removeStream(stream *Stream) {
+	this.streamMutex.Lock()
+	defer this.streamMutex.Unlock()
+
+	for index, s := range this.streams {
+		if s == stream {
+			this.streams = append(this.streams[:index], this.streams[index+1:]...)
+		}
+	}
+}
+
+func (this *Server) GetStreams() []*Stream {
+	return this.streams
 }
 
 func (this *Server) Transfer(stream Ipc_TransferServer) error {
 	defer stack.PrintPanicStackError()
 
 	s := &Stream{stream, []StreamSession{}, sync.Mutex{}, 0}
+	this.addStream(s)
+	defer this.removeStream(s)
 
 	for {
 		in, err := s.Recv()
@@ -91,12 +117,14 @@ func (this *Server) dealServerRecvHandle(stream *Stream, msg *Req) {
 	this.serverRecvHandle(stream, msg)
 }
 
-func InitServer(serverRecvHandle ServerRecvHandle) (string, error) {
-	serverPort, err := myGprc.InitServer(func(server *grpc.Server) {
+func InitServer(serverRecvHandle ServerRecvHandle) (*Server, string, error) {
+	ipcServer := &Server{
+		serverRecvHandle: serverRecvHandle,
+		streams:          []*Stream{},
+	}
+	serverPort, err := myGprc.InitServer(func(grpcServer *grpc.Server) {
 		//注册处理模块
-		RegisterIpcServer(server, &Server{
-			serverRecvHandle: serverRecvHandle,
-		})
+		RegisterIpcServer(grpcServer, ipcServer)
 	})
-	return serverPort, err
+	return ipcServer, serverPort, err
 }

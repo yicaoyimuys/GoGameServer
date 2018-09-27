@@ -33,6 +33,14 @@ func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
 	}
 }
 
+func dealChatMsg(session *sessions.FrontSession, msgBody []byte) {
+	err := sendMsgToIpcService(Service.Chat, session, msgBody)
+	if err != nil {
+		ERR("dealGameMsg", err)
+		sendErrorMsgToClient(session)
+	}
+}
+
 func dealLoginMsg(session *sessions.FrontSession, msgBody []byte) {
 	err := sendMsgToIpcService(Service.Login, session, msgBody)
 	if err != nil {
@@ -53,6 +61,21 @@ func getGameService(session *sessions.FrontSession, msgBody []byte, ipcClient *i
 		return ipcClient.GetServiceByFlag(protoMsgData.GetToken())
 	} else {
 		return session.GetIpcService(Service.Game)
+	}
+}
+
+func getChatService(session *sessions.FrontSession, msgBody []byte, ipcClient *ipc.Client) string {
+	//1: 加入聊天，根据Token分配
+	msgId := protos.UnmarshalProtoId(msgBody)
+	if msgId == gameProto.ID_user_joinChat_c2s {
+		protoMsg := protos.UnmarshalProtoMsg(msgBody)
+		if protoMsg == protos.NullProtoMsg {
+			return ""
+		}
+		protoMsgData := protoMsg.Body.(*gameProto.UserJoinChatC2S)
+		return ipcClient.GetServiceByFlag(protoMsgData.GetToken())
+	} else {
+		return session.GetIpcService(Service.Chat)
 	}
 }
 
@@ -89,6 +112,8 @@ func sendMsgToIpcService(serviceName string, clientSession *sessions.FrontSessio
 		service = getLoginService(clientSession, msgBody, ipcClient)
 	} else if serviceName == Service.Game {
 		service = getGameService(clientSession, msgBody, ipcClient)
+	} else if serviceName == Service.Chat {
+		service = getChatService(clientSession, msgBody, ipcClient)
 	}
 
 	if service == "" {

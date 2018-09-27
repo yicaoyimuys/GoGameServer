@@ -20,4 +20,10 @@ func init() {
 	//game
 	protos.SetMsg(ID_user_getInfo_c2s, UserGetInfoC2S{})
 	protos.SetMsg(ID_user_getInfo_s2c, UserGetInfoS2C{})
+
+	//chat
+	protos.SetMsg(ID_user_joinChat_c2s, UserJoinChatC2S{})
+	protos.SetMsg(ID_user_joinChat_s2c, UserJoinChatS2C{})
+	protos.SetMsg(ID_user_chat_c2s, UserChatC2S{})
+	protos.SetMsg(ID_user_chat_notice_s2c, UserChatNoticeS2C{})
 }

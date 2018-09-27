@@ -6,9 +6,9 @@ import (
 	. "core/libs"
 	"core/libs/sessions"
 	"core/service"
-	_ "net/http/pprof"
+	moduleChat "servives/chat/module"
 	"servives/connector/module"
-	module2 "servives/login/module"
+	moduleLogin "servives/login/module"
 )
 
 func main() {
@@ -17,8 +17,8 @@ func main() {
 	newService.StartRedis()
 	newService.StartWebSocket()
 	newService.SetSessionCreateHandle(sessionCreate)
-	newService.StartIpcClient([]string{Service.Game, Service.Login})
-	newService.StartRpcClient([]string{Service.Game, Service.Login})
+	newService.StartIpcClient([]string{Service.Game, Service.Login, Service.Chat})
+	newService.StartRpcClient([]string{Service.Game, Service.Login, Service.Chat})
 
 	//模块初始化
 	initModule()
@@ -38,13 +38,29 @@ func sessionCreate(session *sessions.FrontSession) {
 }
 
 func sessionOffline(session *sessions.FrontSession) {
-	loginService := core.Service.GetRpcClient("login")
+	{
+		//通知登录服务器
+		loginService := core.Service.GetRpcClient(Service.Login)
 
-	method := "ClientOffline"
-	args := &module2.RpcClientOfflineReq{
-		ServiceIdentify: core.Service.Identify(),
-		UserSessionId:   session.ID(),
+		method := "ClientOffline"
+		args := &moduleLogin.RpcClientOfflineReq{
+			ServiceIdentify: core.Service.Identify(),
+			UserSessionId:   session.ID(),
+		}
+		reply := new(moduleLogin.RpcClientOfflineRes)
+		loginService.Call(method, args, reply, "")
 	}
-	reply := new(module2.RpcClientOfflineRes)
-	loginService.Call(method, args, reply, "")
+
+	{
+		//通知聊天服务器
+		chatService := core.Service.GetRpcClient(Service.Chat)
+
+		method := "ClientOffline"
+		args := moduleChat.RpcClientOfflineReq{
+			ServiceIdentify: core.Service.Identify(),
+			UserSessionId:   session.ID(),
+		}
+		reply := new(moduleChat.RpcClientOfflineRes)
+		chatService.Call(method, args, reply, "")
+	}
 }

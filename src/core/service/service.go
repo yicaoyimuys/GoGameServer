@@ -32,6 +32,8 @@ type Service struct {
 
 	port string
 
+	ipcServer *ipc.Server
+
 	ipcClients   map[string]*ipc.Client
 	rpcClients   map[string]*rpc.Client
 	redisClients map[string]*redis.Client
@@ -206,9 +208,12 @@ func (this *Service) StartIpcClient(serviceNames []string) {
 
 func (this *Service) StartIpcServer() {
 	//开启ipcServer
-	port, err := ipc.InitServer(messages.IpcServerReceive)
+	ipcServer, port, err := ipc.InitServer(messages.IpcServerReceive)
 	CheckError(err)
 	INFO("ipc server start...", port)
+
+	//service中记录ipcServer
+	this.ipcServer = ipcServer
 
 	//服务注册
 	this.registerService(IPC, port)
@@ -293,4 +298,11 @@ func (this *Service) GetRedisClient(redisAliasName string) *redis.Client {
 func (this *Service) GetMysqlClient(dbAliasName string) *mysql.Client {
 	client, _ := this.dbClients[dbAliasName]
 	return client
+}
+
+func (this *Service) GetIpcServerStreams() []*ipc.Stream {
+	if this.ipcServer == nil {
+		return nil
+	}
+	return this.ipcServer.GetStreams()
 }

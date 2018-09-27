@@ -11,4 +11,9 @@ const (
 
 	ID_user_getInfo_c2s = 3001
 	ID_user_getInfo_s2c = 3002
+
+	ID_user_joinChat_c2s    = 4001
+	ID_user_joinChat_s2c    = 4002
+	ID_user_chat_c2s        = 4003
+	ID_user_chat_notice_s2c = 4004
 )

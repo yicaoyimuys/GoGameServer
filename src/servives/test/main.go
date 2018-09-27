@@ -16,7 +16,6 @@ import (
 	"encoding/binary"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
-	_ "net/http/pprof"
 	"net/url"
 	"sync"
 	"sync/atomic"
@@ -28,7 +27,7 @@ var (
 		"127.0.0.1:19882",
 	}
 
-	connectNums  = 100
+	connectNum   = 100
 	userAccounts = []string{}
 )
 
@@ -48,7 +47,7 @@ func startTest() {
 	initAccount()
 
 	//开启链接
-	for i := 0; i < connectNums; i++ {
+	for i := 0; i < len(userAccounts); i++ {
 		go startConnect(userAccounts[i])
 	}
 }
@@ -60,16 +59,16 @@ func initAccount() {
 			continue
 		}
 		userAccounts = append(userAccounts, account)
-		if len(userAccounts) == connectNums {
+		if len(userAccounts) == connectNum {
 			break
 		}
 	}
 }
 
 func startConnect(account string) {
-	hash := hash.GetHash([]byte(account))
+	hashCode := hash.GetHash([]byte(account))
 
-	var serverIndex = hash % uint32(len(servers))
+	var serverIndex = hashCode % uint32(len(servers))
 	var server = servers[serverIndex]
 	//DEBUG(myUserId, serverIndex)
 
@@ -92,7 +91,6 @@ func startConnect(account string) {
 	go client.receiveMsg()
 
 	client.ping()
-	client.network()
 	client.login()
 }
 
@@ -101,6 +99,7 @@ type clientSession struct {
 	account     string
 	token       string
 	pingTimerId *timer.TimerEvent
+	chatTimerId *timer.TimerEvent
 	closeFlag   int32
 
 	recvMutex sync.Mutex
@@ -111,6 +110,7 @@ type clientSession struct {
 func (this *clientSession) close() {
 	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
 		timer.Remove(this.pingTimerId)
+		timer.Remove(this.chatTimerId)
 		this.con.Close()
 	}
 }
@@ -144,13 +144,21 @@ func (this *clientSession) ping() {
 	})
 }
 
-//网络监测
-func (this *clientSession) network() {
-	//this.networkTimerId = timer.DoTimer(5000, func() {
-	//	var msg = msg.NewClient_network_c2s()
-	//	msg.Time = uint32(time.Now().Unix())
-	//	this.sendMsg(msg)
-	//})
+//加入聊天
+func (this *clientSession) joinChat() {
+	var msg = &gameProto.UserJoinChatC2S{}
+	msg.Token = protos.String(this.token)
+	this.sendMsg(msg)
+}
+
+//聊天
+func (this *clientSession) chat() {
+	delay := random.RandIntRange(10000, 20000)
+	this.chatTimerId = timer.DoTimer(uint32(delay), func() {
+		var msg = &gameProto.UserChatC2S{}
+		msg.Msg = protos.String("你好啊")
+		this.sendMsg(msg)
+	})
 }
 
 //接收消息
@@ -191,11 +199,23 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 		data := msgData.(*gameProto.UserLoginS2C)
 		this.token = data.GetToken()
 		DEBUG("登录成功", this.token)
+		//获取用户数据
 		this.getInfo()
 	} else if msgId == gameProto.ID_user_getInfo_s2c {
 		//获取用户信息成功
 		data := msgData.(*gameProto.UserGetInfoS2C)
 		DEBUG("用户信息", data.GetData())
+		//加入聊天
+		this.joinChat()
+	} else if msgId == gameProto.ID_user_joinChat_s2c {
+		//加入聊天成功
+		DEBUG("加入聊天成功")
+		//开始聊天
+		this.chat()
+	} else if msgId == gameProto.ID_user_chat_notice_s2c {
+		//收到聊天消息
+		data := msgData.(*gameProto.UserChatNoticeS2C)
+		DEBUG(this.account, "收到聊天消息", data.GetUserName()+"说："+data.GetMsg())
 	} else if msgId == gameProto.ID_error_notice_s2c {
 		data := msgData.(*gameProto.ErrorNoticeS2C)
 		errCode := data.GetErrorCode()

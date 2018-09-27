@@ -24,15 +24,13 @@ func FontReceive(session *sessions.FrontSession, msgBody []byte) {
 	} else if isGameMsg(msgId) {
 		//游戏服务器消息
 		dealGameMsg(session, msgBody)
+	} else if isChatMsg(msgId) {
+		//聊天服务器消息
+		dealChatMsg(session, msgBody)
 	} else {
 		ERR("WHAT???", msgId)
 	}
 }
-
-//1-999: 系统消息
-//1000-1999: connector消息
-//2000-2999: login消息
-//3000-3999: game消息
 
 func isSystemMsg(msgId uint16) bool {
 	return msgId >= 1 && msgId <= 999
@@ -48,4 +46,8 @@ func isLoginMsg(msgId uint16) bool {
 
 func isGameMsg(msgId uint16) bool {
 	return msgId >= 3000 && msgId <= 3999
+}
+
+func isChatMsg(msgId uint16) bool {
+	return msgId >= 4000 && msgId <= 4999
 }

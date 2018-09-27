@@ -6,17 +6,16 @@ import (
 	"core/messages"
 	"core/protos/gameProto"
 	"core/service"
-	"servives/login/module"
+	"servives/chat/module"
 )
 
 func main() {
 	//初始化Service
-	newService := service.NewService(Service.Login)
+	newService := service.NewService(Service.Chat)
 	newService.StartIpcServer()
-	newService.StartRpcServer(&module.LoginRpcServer{})
+	newService.StartRpcServer(&module.ChatRpcServer{})
 	newService.StartRpcClient([]string{Service.Log})
 	newService.StartRedis()
-	newService.StartMysql()
 
 	//消息初始化
 	initMessage()
@@ -29,7 +28,8 @@ func main() {
 }
 
 func initMessage() {
-	messages.RegisterIpcServerHandle(gameProto.ID_user_login_c2s, module.Login)
+	messages.RegisterIpcServerHandle(gameProto.ID_user_joinChat_c2s, module.JoinChat)
+	messages.RegisterIpcServerHandle(gameProto.ID_user_chat_c2s, module.Chat)
 }
 
 func initModule() {

@@ -48,3 +48,27 @@ message user_getInfo_c2s {
 message user_getInfo_s2c {
 	required userInfo data = 1;
 }
+
+
+
+
+//用户加入聊天C2S(4001)
+message user_joinChat_c2s {
+	required string token = 1;
+}
+
+//用户加入聊天S2C(4002)
+message user_joinChat_s2c {
+}
+
+//用户聊天消息C2S(4003)
+message user_chat_c2s {
+    required string msg = 1;
+}
+
+//用户聊天消息S2C(4004)
+message user_chat_notice_s2c {
+    required uint64 userId = 1;
+    required string userName = 2;
+    required string msg = 3;
+}

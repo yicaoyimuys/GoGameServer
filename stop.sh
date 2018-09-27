@@ -14,6 +14,7 @@ if [ $# -eq 0 ]
 		func connector
 		func game
 		func login
+		func chat
 	else
 		func $1
 fi

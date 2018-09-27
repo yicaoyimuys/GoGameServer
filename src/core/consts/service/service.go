@@ -5,5 +5,6 @@ const (
 	Login     = "login"
 	Game      = "game"
 	Log       = "log"
+	Chat      = "chat"
 	Test      = "test"
 )

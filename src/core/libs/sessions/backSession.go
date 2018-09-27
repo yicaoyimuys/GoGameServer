@@ -22,8 +22,7 @@ type BackSession struct {
 	recvMutex sync.Mutex
 
 	msgHandle func(session *BackSession, msgBody []byte)
-	userId    string
-	gameId    uint16
+	userId    uint64
 }
 
 func NewBackSession(id string, sessionId uint64, stream *ipc.Stream) *BackSession {
@@ -47,20 +46,12 @@ func (this *BackSession) ID() string {
 	return this.id
 }
 
-func (this *BackSession) UserID() string {
+func (this *BackSession) UserID() uint64 {
 	return this.userId
 }
 
-func (this *BackSession) SetUserId(userId string) {
+func (this *BackSession) SetUserId(userId uint64) {
 	this.userId = userId
-}
-
-func (this *BackSession) SetGameId(gameId uint16) {
-	this.gameId = gameId
-}
-
-func (this *BackSession) GameID() uint16 {
-	return this.gameId
 }
 
 func (this *BackSession) Receive(data []byte) error {
