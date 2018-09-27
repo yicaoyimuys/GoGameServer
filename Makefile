@@ -26,10 +26,8 @@ vendor_init:
 vendor_addExternal:
 	cd $(SRC_DIR) && govendor add +external
 
-create_proto:
+proto:
 	cd $(SRC_DIR)/core/protos/gameProto && protoc --go_out=. gameProto.proto
-
-create_grpc_proto:
 	cd $(SRC_DIR)/core/libs/grpc/ipc && protoc --go_out=plugins=grpc:. *.proto
 
 publish_linux:
