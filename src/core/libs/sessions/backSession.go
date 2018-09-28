@@ -71,11 +71,7 @@ func (this *BackSession) Send(data []byte) error {
 		return ErrClosed
 	}
 
-	msg := &ipc.Res{
-		UserSessionIds: []uint64{this.sessionId},
-		Data:           data,
-	}
-	return this.stream.Send(msg)
+	return this.stream.Send([]uint64{this.sessionId}, data)
 }
 
 func (this *BackSession) IsClosed() bool {

@@ -17,7 +17,7 @@ type IService interface {
 	GetRpcClient(serviceName string) *rpc.Client
 	GetRedisClient(redisAliasName string) *redis.Client
 	GetMysqlClient(dbAliasName string) *mysql.Client
-	GetIpcServerStreams() []*ipc.Stream
+	GetIpcServer() *ipc.Server
 }
 
 var (

@@ -21,6 +21,14 @@ type Stream struct {
 	closeFlag     int32
 }
 
+func (this *Stream) Send(userSessionIds []uint64, data []byte) error {
+	msg := &Res{
+		UserSessionIds: userSessionIds,
+		Data:           data,
+	}
+	return this.Ipc_TransferServer.Send(msg)
+}
+
 func (this *Stream) IsClosed() bool {
 	return atomic.LoadInt32(&this.closeFlag) == 1
 }
@@ -87,8 +95,17 @@ func (this *Server) removeStream(stream *Stream) {
 	}
 }
 
-func (this *Server) GetStreams() []*Stream {
-	return this.streams
+func (this *Server) SendToClient(stream *Stream, userSessionIds []uint64, data []byte) {
+	stream.Send(userSessionIds, data)
+}
+
+func (this *Server) SendToAllClient(userSessionIds []uint64, data []byte) {
+	this.streamMutex.Lock()
+	defer this.streamMutex.Unlock()
+
+	for _, stream := range this.streams {
+		stream.Send(userSessionIds, data)
+	}
 }
 
 func (this *Server) Transfer(stream Ipc_TransferServer) error {

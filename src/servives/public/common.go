@@ -2,7 +2,6 @@ package public
 
 import (
 	"core"
-	"core/libs/grpc/ipc"
 	"core/libs/sessions"
 	"core/protos"
 	"core/protos/gameProto"
@@ -25,23 +24,10 @@ func SendMsgToClient(session *sessions.BackSession, sendMsg proto.Message) {
 
 func SendMsgToClientList(userSessionIds []uint64, sendMsg proto.Message) {
 	data := protos.MarshalProtoMsg(sendMsg)
-	streams := core.Service.GetIpcServerStreams()
-	for _, stream := range streams {
-		msg := &ipc.Res{
-			UserSessionIds: userSessionIds,
-			Data:           data,
-		}
-		stream.Send(msg)
-	}
+	core.Service.GetIpcServer().SendToAllClient(userSessionIds, data)
 }
 
 func SendMsgToAllClient(sendMsg proto.Message) {
 	data := protos.MarshalProtoMsg(sendMsg)
-	streams := core.Service.GetIpcServerStreams()
-	for _, stream := range streams {
-		msg := &ipc.Res{
-			Data: data,
-		}
-		stream.Send(msg)
-	}
+	core.Service.GetIpcServer().SendToAllClient(nil, data)
 }

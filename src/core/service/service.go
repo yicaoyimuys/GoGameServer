@@ -301,9 +301,6 @@ func (this *Service) GetMysqlClient(dbAliasName string) *mysql.Client {
 	return client
 }
 
-func (this *Service) GetIpcServerStreams() []*ipc.Stream {
-	if this.ipcServer == nil {
-		return nil
-	}
-	return this.ipcServer.GetStreams()
+func (this *Service) GetIpcServer() *ipc.Server {
+	return this.ipcServer
 }
