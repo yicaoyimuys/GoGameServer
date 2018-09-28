@@ -7,7 +7,7 @@ message Req{
 }
 
 message Res{
-    uint64 userSessionId = 2;
+    repeated uint64 userSessionIds = 2;
     bytes data = 3;
 }
 

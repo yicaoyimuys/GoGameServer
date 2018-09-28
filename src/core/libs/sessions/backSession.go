@@ -72,8 +72,8 @@ func (this *BackSession) Send(data []byte) error {
 	}
 
 	msg := &ipc.Res{
-		UserSessionId: this.sessionId,
-		Data:          data,
+		UserSessionIds: []uint64{this.sessionId},
+		Data:           data,
 	}
 	return this.stream.Send(msg)
 }

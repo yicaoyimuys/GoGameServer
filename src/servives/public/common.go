@@ -23,13 +23,24 @@ func SendMsgToClient(session *sessions.BackSession, sendMsg proto.Message) {
 	session.Send(protos.MarshalProtoMsg(sendMsg))
 }
 
+func SendMsgToClientList(userSessionIds []uint64, sendMsg proto.Message) {
+	data := protos.MarshalProtoMsg(sendMsg)
+	streams := core.Service.GetIpcServerStreams()
+	for _, stream := range streams {
+		msg := &ipc.Res{
+			UserSessionIds: userSessionIds,
+			Data:           data,
+		}
+		stream.Send(msg)
+	}
+}
+
 func SendMsgToAllClient(sendMsg proto.Message) {
 	data := protos.MarshalProtoMsg(sendMsg)
 	streams := core.Service.GetIpcServerStreams()
 	for _, stream := range streams {
 		msg := &ipc.Res{
-			UserSessionId: 0,
-			Data:          data,
+			Data: data,
 		}
 		stream.Send(msg)
 	}

@@ -38,8 +38,8 @@ func sessionCreate(session *sessions.FrontSession) {
 }
 
 func sessionOffline(session *sessions.FrontSession) {
-	{
-		//通知登录服务器
+	//通知登录服务器
+	go func() {
 		loginService := core.Service.GetRpcClient(Service.Login)
 
 		method := "ClientOffline"
@@ -49,18 +49,18 @@ func sessionOffline(session *sessions.FrontSession) {
 		}
 		reply := new(moduleLogin.RpcClientOfflineRes)
 		loginService.Call(method, args, reply, "")
-	}
+	}()
 
-	{
-		//通知聊天服务器
+	//通知聊天服务器
+	go func() {
 		chatService := core.Service.GetRpcClient(Service.Chat)
 
 		method := "ClientOffline"
-		args := moduleChat.RpcClientOfflineReq{
+		args := &moduleChat.RpcClientOfflineReq{
 			ServiceIdentify: core.Service.Identify(),
 			UserSessionId:   session.ID(),
 		}
 		reply := new(moduleChat.RpcClientOfflineRes)
 		chatService.Call(method, args, reply, "")
-	}
+	}()
 }
