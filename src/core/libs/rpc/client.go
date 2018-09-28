@@ -145,7 +145,7 @@ func (this *Client) Call(serviceMethod string, args interface{}, reply interface
 		return this.Call(serviceMethod, args, reply, flag)
 	}
 
-	err := link.Call(this.serviceName+"."+serviceMethod, args, reply)
+	err := link.Call(serviceMethod, args, reply)
 	if err == io.ErrUnexpectedEOF || err == rpc.ErrShutdown {
 		this.removeLink(service)
 		return this.Call(serviceMethod, args, reply, flag)
@@ -160,7 +160,7 @@ func (this *Client) CallAll(serviceMethod string, args interface{}, reply interf
 			continue
 		}
 
-		err := link.Call(this.serviceName+"."+serviceMethod, args, reply)
+		err := link.Call(serviceMethod, args, reply)
 		if err == io.ErrUnexpectedEOF || err == rpc.ErrShutdown {
 			this.removeLink(value)
 		}

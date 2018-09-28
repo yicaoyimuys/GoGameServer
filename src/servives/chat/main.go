@@ -7,15 +7,17 @@ import (
 	"core/protos/gameProto"
 	"core/service"
 	"servives/chat/module"
+	"servives/public/rpcModules"
 )
 
 func main() {
 	//初始化Service
 	newService := service.NewService(Service.Chat)
 	newService.StartIpcServer()
-	newService.StartRpcServer(&module.ChatRpcServer{})
+	newService.StartRpcServer()
 	newService.StartRpcClient([]string{Service.Log})
 	newService.StartRedis()
+	newService.RegisterRpcModule("Client", &rpcModules.Client{})
 
 	//消息初始化
 	initMessage()

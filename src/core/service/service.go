@@ -234,12 +234,7 @@ func (this *Service) StartRpcClient(serviceNames []string) {
 	}
 }
 
-func (this *Service) StartRpcServer(rcvr interface{}) {
-	//rpc模块注册
-	serviceName := packageServiceName(RPC, this.name)
-	err := rpc.RegisterModule(serviceName, rcvr)
-	CheckError(err)
-
+func (this *Service) StartRpcServer() {
 	//开启rpcServer
 	port, err := rpc.InitServer()
 	CheckError(err)
@@ -247,6 +242,12 @@ func (this *Service) StartRpcServer(rcvr interface{}) {
 
 	//服务注册
 	this.registerService(RPC, port)
+}
+
+func (this *Service) RegisterRpcModule(rpcName string, rpcModule interface{}) {
+	//rpc模块注册
+	err := rpc.RegisterModule(rpcName, rpcModule)
+	CheckError(err)
 }
 
 func (this *Service) StartDebug() {

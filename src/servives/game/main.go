@@ -14,7 +14,6 @@ func main() {
 	//初始化Service
 	newService := service.NewService(Service.Game)
 	newService.StartIpcServer()
-	newService.StartRpcServer(&module.GameRpcServer{})
 	newService.StartRpcClient([]string{Service.Log})
 	newService.StartRedis()
 	newService.StartMysql()

@@ -1,21 +1,21 @@
-package module
+package rpcModules
 
 import (
 	"core/libs/sessions"
 )
 
-type LoginRpcServer struct {
+type Client struct {
 }
 
-type RpcClientOfflineReq struct {
+type ClientOfflineReq struct {
 	ServiceIdentify string
 	UserSessionId   uint64
 }
 
-type RpcClientOfflineRes struct {
+type ClientOfflineRes struct {
 }
 
-func (this *LoginRpcServer) ClientOffline(args *RpcClientOfflineReq, reply *RpcClientOfflineRes) error {
+func (this *Client) Offline(args *ClientOfflineReq, reply *ClientOfflineRes) error {
 	id := sessions.CreateBackSessionId(args.ServiceIdentify, args.UserSessionId)
 	session := sessions.GetBackSession(id)
 	if session != nil {
