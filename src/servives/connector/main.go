@@ -17,7 +17,7 @@ func main() {
 	newService.StartWebSocket()
 	newService.SetSessionCreateHandle(sessionCreate)
 	newService.StartIpcClient([]string{Service.Game, Service.Login, Service.Chat})
-	newService.StartRpcClient([]string{Service.Game, Service.Login, Service.Chat})
+	newService.StartRpcClient([]string{Service.Login, Service.Chat})
 
 	//模块初始化
 	initModule()

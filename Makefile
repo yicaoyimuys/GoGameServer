@@ -11,6 +11,7 @@ all:
 	$(GO) install servives/game
 	$(GO) install servives/login
 	$(GO) install servives/chat
+	$(GO) install servives/log
 	$(GO) install servives/test
 
 clean:
