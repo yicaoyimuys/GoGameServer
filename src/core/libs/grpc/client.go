@@ -35,24 +35,23 @@ func NewClient(consulClient *consul.Client, serviceName string, newPbClientFunc 
 		newPbClientFunc: newPbClientFunc,
 	}
 	client.initServices()
+	client.loop()
 	return client
+}
+
+func (this *Client) loop() {
+	timer.SetTimeOut(5*1000, this.initServices)
 }
 
 func (this *Client) initServices() {
 	this.servicesMutex.Lock()
 	this.services = this.consulClient.GetServices(this.serviceName)
+	if len(this.services) == 0 {
+		timer.SetTimeOut(300, this.initServices)
+	}
 	this.servicesMutex.Unlock()
 
-	this.startNextInit()
 	this.traceServices()
-}
-
-func (this *Client) startNextInit() {
-	var delayTime uint32 = 5 * 1000
-	if len(this.services) == 0 {
-		delayTime = 300
-	}
-	timer.SetTimeOut(delayTime, this.initServices)
 }
 
 func (this *Client) traceServices() {
