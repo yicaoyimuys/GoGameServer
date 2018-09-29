@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"core/libs/logger"
 	"encoding/binary"
 	"github.com/gorilla/websocket"
 )
@@ -22,11 +23,20 @@ func (this *frontByteCodec) Receive() (interface{}, error) {
 		return nil, err
 	}
 
-	//消息长度
-	//	msgLen := binary.BigEndian.Uint16(data[:2])
+	if len(data) < 2 {
+		logger.Error("消息长度不够")
+		return nil, err
+	}
 
+	//消息长度
+	msgLen := binary.BigEndian.Uint16(data[:2])
 	//消息内容
 	msgBody := data[2:]
+	//长度检测
+	if len(msgBody) != int(msgLen) {
+		logger.Error("消息长度不够")
+		return nil, err
+	}
 
 	return msgBody, nil
 }
