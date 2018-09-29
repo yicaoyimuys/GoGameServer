@@ -44,7 +44,3 @@ func If(condition bool, trueVal, falseVal interface{}) interface{} {
 func CheckError(err error) {
 	stack.CheckError(err)
 }
-
-func GetLocalIp() string {
-	return common.GetLocalIp()
-}

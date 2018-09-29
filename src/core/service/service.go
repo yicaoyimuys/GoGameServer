@@ -3,8 +3,10 @@ package service
 import (
 	"core"
 	"core/config"
+	"core/consts/serviceType"
 	. "core/libs"
 	"core/libs/argv"
+	"core/libs/common"
 	"core/libs/consul"
 	"core/libs/dict"
 	"core/libs/grpc/ipc"
@@ -19,18 +21,13 @@ import (
 	"runtime"
 )
 
-const (
-	WS  = "ws"
-	RPC = "rpc"
-	IPC = "ipc"
-)
-
 type Service struct {
 	env  string
 	name string
 	id   int
 
-	port string
+	ip    string
+	ports map[string]string
 
 	ipcServer *ipc.Server
 
@@ -44,7 +41,9 @@ type Service struct {
 
 func NewService(name string) *Service {
 	service := &Service{
-		name: name,
+		name:  name,
+		ip:    common.GetLocalIp(),
+		ports: make(map[string]string),
 	}
 	service.init()
 
@@ -116,13 +115,20 @@ func packageServiceName(serviceType string, serviceName string) string {
 }
 
 func (this *Service) registerService(serviceType string, servicePort string) {
+	if _, exists := this.ports[serviceType]; exists {
+		ERR("该类型的Service已经在本进程内启用", serviceType)
+		return
+	}
+
+	//注册到Consul
 	serviceName := packageServiceName(serviceType, this.name)
-	err := consul.NewServive(serviceName, this.id, servicePort)
+	err := consul.NewServive(this.ip, serviceName, this.id, servicePort)
 	CheckError(err)
 
 	INFO("join consul service...", serviceName, servicePort)
 
-	this.port = servicePort
+	//记录该进程启用的端口号
+	this.ports[serviceType] = servicePort
 }
 
 /*********************************====以下为公开函数====*******************************/
@@ -178,7 +184,7 @@ func (this *Service) StartWebSocket() {
 	server.StartPing()
 
 	//服务注册
-	this.registerService(WS, port)
+	this.registerService(ServiceType.WS, port)
 
 	//service中保存wsServer
 	this.wsServer = server
@@ -200,7 +206,7 @@ func (this *Service) StartIpcClient(serviceNames []string) {
 
 	//初始化Ipc客户端
 	for _, serviceName := range serviceNames {
-		serviceName = packageServiceName(IPC, serviceName)
+		serviceName = packageServiceName(ServiceType.IPC, serviceName)
 		this.ipcClients[serviceName] = ipc.NewClient(consulClient, serviceName, messages.IpcClientReceive)
 		INFO("ipc client start...", serviceName)
 	}
@@ -216,7 +222,7 @@ func (this *Service) StartIpcServer() {
 	this.ipcServer = ipcServer
 
 	//服务注册
-	this.registerService(IPC, port)
+	this.registerService(ServiceType.IPC, port)
 }
 
 func (this *Service) StartRpcClient(serviceNames []string) {
@@ -228,7 +234,7 @@ func (this *Service) StartRpcClient(serviceNames []string) {
 
 	//初始化Rpc客户端
 	for _, serviceName := range serviceNames {
-		serviceName = packageServiceName(RPC, serviceName)
+		serviceName = packageServiceName(ServiceType.RPC, serviceName)
 		this.rpcClients[serviceName] = rpc.NewClient(consulClient, serviceName)
 		INFO("rpc client start...", serviceName)
 	}
@@ -241,7 +247,7 @@ func (this *Service) StartRpcServer() {
 	INFO("rpc server start...." + port)
 
 	//服务注册
-	this.registerService(RPC, port)
+	this.registerService(ServiceType.RPC, port)
 }
 
 func (this *Service) RegisterRpcModule(rpcName string, rpcModule interface{}) {
@@ -271,22 +277,26 @@ func (this *Service) Name() string {
 	return this.name
 }
 
-func (this *Service) Port() string {
-	return this.port
+func (this *Service) Ip() string {
+	return this.ip
+}
+
+func (this *Service) Port(serviceType string) string {
+	return this.ports[serviceType]
 }
 
 func (this *Service) Identify() string {
-	return GetLocalIp() + "_" + this.name + "_" + NumToString(this.id)
+	return this.ip + "_" + this.name + "_" + NumToString(this.id)
 }
 
 func (this *Service) GetIpcClient(serviceName string) *ipc.Client {
-	serviceName = packageServiceName(IPC, serviceName)
+	serviceName = packageServiceName(ServiceType.IPC, serviceName)
 	client, _ := this.ipcClients[serviceName]
 	return client
 }
 
 func (this *Service) GetRpcClient(serviceName string) *rpc.Client {
-	serviceName = packageServiceName(RPC, serviceName)
+	serviceName = packageServiceName(ServiceType.RPC, serviceName)
 	client, _ := this.rpcClients[serviceName]
 	return client
 }

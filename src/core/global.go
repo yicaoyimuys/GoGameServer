@@ -11,13 +11,14 @@ type IService interface {
 	Env() string
 	Name() string
 	ID() int
-	Port() string
 	Identify() string
 	GetIpcClient(serviceName string) *ipc.Client
 	GetRpcClient(serviceName string) *rpc.Client
 	GetRedisClient(redisAliasName string) *redis.Client
 	GetMysqlClient(dbAliasName string) *mysql.Client
 	GetIpcServer() *ipc.Server
+	Ip() string
+	Port(serviceType string) string
 }
 
 var (

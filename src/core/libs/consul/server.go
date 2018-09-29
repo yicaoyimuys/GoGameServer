@@ -9,14 +9,14 @@ import (
 	"strconv"
 )
 
-func NewServive(serviceName string, serviceId int, servicePort string) error {
+func NewServive(serviceAddress string, serviceName string, serviceId int, servicePort string) error {
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
 		return err
 	}
 
 	//服务器配置
-	address := common.GetLocalIp()
+	address := serviceAddress
 	port, _ := strconv.Atoi(servicePort)
 	id := address + ":" + servicePort + "-" + serviceName + "-" + common.NumToString(serviceId)
 	name := serviceName

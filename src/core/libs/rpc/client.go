@@ -33,12 +33,7 @@ func NewClient(consulClient *consul.Client, serviceName string) *Client {
 		links:        make(map[string]*rpc.Client),
 	}
 	client.initServices()
-	client.loop()
 	return client
-}
-
-func (this *Client) loop() {
-	timer.DoTimer(10*1000, this.initServices)
 }
 
 func (this *Client) initServices() {
@@ -46,7 +41,16 @@ func (this *Client) initServices() {
 	this.services = this.consulClient.GetServices(this.serviceName)
 	this.servicesMutex.Unlock()
 
+	this.startNextInit()
 	this.traceServices()
+}
+
+func (this *Client) startNextInit() {
+	var delayTime uint32 = 5 * 1000
+	if len(this.services) == 0 {
+		delayTime = 300
+	}
+	timer.SetTimeOut(delayTime, this.initServices)
 }
 
 func (this *Client) traceServices() {
