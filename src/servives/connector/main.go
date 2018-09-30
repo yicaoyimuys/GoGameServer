@@ -17,7 +17,8 @@ func main() {
 	newService.StartWebSocket()
 	newService.SetSessionCreateHandle(sessionCreate)
 	newService.StartIpcClient([]string{Service.Game, Service.Login, Service.Chat})
-	newService.StartRpcClient([]string{Service.Login, Service.Chat})
+	newService.StartRpcClient([]string{Service.Game, Service.Login, Service.Chat})
+	newService.StartPProf(6000)
 
 	//模块初始化
 	initModule()
@@ -47,12 +48,18 @@ func sessionOffline(session *sessions.FrontSession) {
 	//通知登录服务器
 	go func() {
 		loginService := core.Service.GetRpcClient(Service.Login)
-		loginService.Call(method, args, reply, "")
+		loginService.CallAll(method, args, reply)
 	}()
 
 	//通知聊天服务器
 	go func() {
 		chatService := core.Service.GetRpcClient(Service.Chat)
-		chatService.Call(method, args, reply, "")
+		chatService.CallAll(method, args, reply)
+	}()
+
+	//通知游戏服务器
+	go func() {
+		gameService := core.Service.GetRpcClient(Service.Game)
+		gameService.CallAll(method, args, reply)
 	}()
 }

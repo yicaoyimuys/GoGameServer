@@ -15,11 +15,14 @@ import (
 	"core/libs/redis"
 	"core/libs/rpc"
 	"core/libs/stack"
+	"core/libs/timer"
 	"core/libs/websocket"
 	"core/messages"
 	"net/http"
 	"runtime"
 )
+
+import _ "net/http/pprof"
 
 type Service struct {
 	env  string
@@ -104,6 +107,10 @@ func printEnv(service *Service) {
 	INFO("服务平台:", service.env)
 	INFO("服务名称:", service.name)
 	INFO("服务ID:", service.id)
+
+	timer.DoTimer(20*1000, func() {
+		INFO("当前GoroutineNum:", runtime.NumGoroutine())
+	})
 }
 
 func recoverErr() {
@@ -256,8 +263,8 @@ func (this *Service) RegisterRpcModule(rpcName string, rpcModule interface{}) {
 	CheckError(err)
 }
 
-func (this *Service) StartDebug() {
-	port := 6060 + this.id
+func (this *Service) StartPProf(port int) {
+	port = port + this.id
 	go func() {
 		defer stack.PrintPanicStackError()
 		http.ListenAndServe(":"+NumToString(port), nil)

@@ -46,12 +46,23 @@ func (this *Client) loop() {
 func (this *Client) initServices() {
 	this.servicesMutex.Lock()
 	this.services = this.consulClient.GetServices(this.serviceName)
-	if len(this.services) == 0 {
-		timer.SetTimeOut(300, this.initServices)
-	}
 	this.servicesMutex.Unlock()
 
+	this.initLinks()
 	this.traceServices()
+}
+
+func (this *Client) initLinks() {
+	if len(this.services) == 0 {
+		timer.SetTimeOut(300, this.initServices)
+		return
+	}
+
+	if len(this.links) == 0 {
+		for _, service := range this.services {
+			this.getLink(service)
+		}
+	}
 }
 
 func (this *Client) traceServices() {

@@ -6,18 +6,19 @@ import (
 	"core/messages"
 	"core/protos/gameProto"
 	"core/service"
-	_ "net/http/pprof"
 	"servives/game/module"
+	"servives/public/rpcModules"
 )
 
 func main() {
 	//初始化Service
 	newService := service.NewService(Service.Game)
 	newService.StartIpcServer()
+	newService.StartRpcServer()
 	newService.StartRpcClient([]string{Service.Log})
 	newService.StartRedis()
 	newService.StartMysql()
-	newService.StartDebug()
+	newService.RegisterRpcModule("Client", &rpcModules.Client{})
 
 	//消息初始化
 	initMessage()

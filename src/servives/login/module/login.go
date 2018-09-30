@@ -61,9 +61,9 @@ func loginSuccess(clientSession *sessions.BackSession, account string, userID ui
 	cache.AddOnlineUser(userID, account, clientSession)
 	clientSession.AddCloseCallback(nil, "user.loginSuccess", func() {
 		cache.RemoveOnlineUser(clientSession.ID())
-		DEBUG("用户下线：当前在线人数", cache.GetOnlineUsersNum())
+		DEBUG("用户下线：当前在线人数", cache.GetOnlineUsersNum(), sessions.BackSessionLen())
 	})
-	DEBUG("用户上线：当前在线人数", cache.GetOnlineUsersNum())
+	DEBUG("用户上线：当前在线人数", cache.GetOnlineUsersNum(), sessions.BackSessionLen())
 
 	//返回客户端数据
 	token := public.CreateToken(userID)

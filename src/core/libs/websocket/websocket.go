@@ -79,7 +79,6 @@ func (this *Server) StartPing() {
 func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Error("wsHandler: ", err)
 		return
 	}
 

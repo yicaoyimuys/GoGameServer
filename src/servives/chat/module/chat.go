@@ -36,9 +36,9 @@ func JoinChat(clientSession *sessions.BackSession, msgData proto.Message) {
 	//用户下线处理
 	clientSession.AddCloseCallback(nil, "user.joinChatSuccess", func() {
 		cache.RemoveUser(dbUser.Id)
-		DEBUG("用户下线：当前在线人数", cache.GetOnlineUsersNum())
+		DEBUG("用户下线：当前在线人数", cache.GetOnlineUsersNum(), sessions.BackSessionLen())
 	})
-	DEBUG("用户上线：当前在线人数", cache.GetOnlineUsersNum())
+	DEBUG("用户上线：当前在线人数", cache.GetOnlineUsersNum(), sessions.BackSessionLen())
 
 	//返回客户端
 	sendMsg := &gameProto.UserJoinChatS2C{}

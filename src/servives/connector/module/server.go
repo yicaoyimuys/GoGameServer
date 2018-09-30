@@ -6,7 +6,6 @@ import (
 	. "core/libs"
 	"core/libs/sessions"
 	"core/libs/timer"
-	"runtime"
 	"servives/connector/cache"
 )
 
@@ -21,6 +20,6 @@ func initServerLogTimer() {
 		ip := core.Service.Ip()
 		port := core.Service.Port(ServiceType.WS)
 		cache.SetServerInfo(ip, port, onlineUsersNum)
-		INFO("在线用户数量:" + NumToString(onlineUsersNum) + "   GoroutineNum:" + NumToString(runtime.NumGoroutine()))
+		INFO("在线用户数量:" + NumToString(onlineUsersNum))
 	})
 }

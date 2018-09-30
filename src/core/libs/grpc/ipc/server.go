@@ -15,10 +15,10 @@ type StreamSession interface {
 }
 
 type Stream struct {
-	Ipc_TransferServer
-	sessions      []StreamSession
-	sessionsMutex sync.Mutex
-	closeFlag     int32
+	transferServer Ipc_TransferServer
+	sessions       []StreamSession
+	sessionsMutex  sync.Mutex
+	closeFlag      int32
 }
 
 func (this *Stream) Send(userSessionIds []uint64, data []byte) error {
@@ -26,7 +26,7 @@ func (this *Stream) Send(userSessionIds []uint64, data []byte) error {
 		UserSessionIds: userSessionIds,
 		Data:           data,
 	}
-	return this.Ipc_TransferServer.Send(msg)
+	return this.transferServer.Send(msg)
 }
 
 func (this *Stream) IsClosed() bool {
@@ -61,6 +61,8 @@ func (this *Stream) RemoveSession(session StreamSession) {
 
 func (this *Stream) close() {
 	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
+		this.transferServer.Context().Done()
+
 		this.sessionsMutex.Lock()
 		defer this.sessionsMutex.Unlock()
 
@@ -93,6 +95,8 @@ func (this *Server) removeStream(stream *Stream) {
 			this.streams = append(this.streams[:index], this.streams[index+1:]...)
 		}
 	}
+
+	stream.close()
 }
 
 func (this *Server) SendToClient(stream *Stream, userSessionIds []uint64, data []byte) {
@@ -113,17 +117,18 @@ func (this *Server) Transfer(stream Ipc_TransferServer) error {
 
 	s := &Stream{stream, []StreamSession{}, sync.Mutex{}, 0}
 	this.addStream(s)
+
 	defer this.removeStream(s)
 
 	for {
-		in, err := s.Recv()
+		in, err := s.transferServer.Recv()
 		if err == io.EOF {
 			return nil
 		}
 		if err != nil {
-			s.close()
 			return err
 		}
+
 		go this.dealServerRecvHandle(s, in)
 	}
 }

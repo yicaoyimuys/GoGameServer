@@ -6,7 +6,6 @@ import (
 	"core/libs/stack"
 	"errors"
 	"google.golang.org/grpc"
-	"io"
 	"sync"
 )
 
@@ -44,9 +43,6 @@ func (this *Client) loop(service string, stream Ipc_TransferClient) {
 
 	for {
 		in, err := stream.Recv()
-		if err == io.EOF {
-			return
-		}
 		if err != nil {
 			return
 		}
@@ -55,32 +51,23 @@ func (this *Client) loop(service string, stream Ipc_TransferClient) {
 }
 
 func (this *Client) getStream(service string) Ipc_TransferClient {
-	//检测是否已经存在
 	this.serverStreamMutex.Lock()
-	stream, ok := this.serverStreams[service]
-	this.serverStreamMutex.Unlock()
+	defer this.serverStreamMutex.Unlock()
 
+	//检测是否已经存在
+	stream, ok := this.serverStreams[service]
 	if ok {
 		return stream
 	}
 
-	//创建stream
+	//创建新的stream
 	transferClient := this.grpcClient.Call(service, "Transfer", nil)
 	if transferClient == nil {
 		return nil
 	}
 	stream = transferClient.(Ipc_TransferClient)
-
-	//保存
-	this.serverStreamMutex.Lock()
-	if stream2, ok := this.serverStreams[service]; ok {
-		stream.CloseSend()
-		stream = stream2
-	} else {
-		this.serverStreams[service] = stream
-		go this.loop(service, stream)
-	}
-	this.serverStreamMutex.Unlock()
+	this.serverStreams[service] = stream
+	go this.loop(service, stream)
 
 	return stream
 }
@@ -88,6 +75,7 @@ func (this *Client) getStream(service string) Ipc_TransferClient {
 func (this *Client) removeStream(service string) {
 	this.serverStreamMutex.Lock()
 	if stream, ok := this.serverStreams[service]; ok {
+		stream.Context().Done()
 		stream.CloseSend()
 		delete(this.serverStreams, service)
 	}
