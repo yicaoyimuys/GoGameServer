@@ -25,3 +25,14 @@ Makefile脚本说明
 	make clean: 清理编译文件
 	make fmt: 代码格式化
 	make proto: 生成protobuf的go文件
+
+
+启动说明
+===============
+
+	执行make进行代码编译
+	启动consul
+	启动mysql(config/local/mysql.json)
+	启动redis(config/local/redis.json)
+	执行sh run.sh启动服务器
+    执行sh test.sh启动测试服务器
