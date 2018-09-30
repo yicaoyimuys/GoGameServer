@@ -9,6 +9,12 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "a9Sq/X9bS1l5EA7KfRmtw4lMedY=",
+			"path": "github.com/astaxie/beego",
+			"revision": "f16688817aa428d10361394015b40d096b680542",
+			"revisionTime": "2017-12-18T11:18:59Z"
+		},
+		{
 			"checksumSHA1": "ochJai7DifamCfjDhMQGZYrqrDE=",
 			"path": "github.com/astaxie/beego/logs",
 			"revision": "f16688817aa428d10361394015b40d096b680542",

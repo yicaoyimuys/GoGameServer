@@ -16,6 +16,7 @@ if [ $# -eq 0 ]
 		func login
 		func chat
 		func log
+		func api
 	else
 		func $1
 fi

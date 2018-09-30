@@ -1,7 +1,8 @@
 package ServiceType
 
 const (
-	WS  = "ws"
-	RPC = "rpc"
-	IPC = "ipc"
+	WS   = "ws"
+	HTTP = "http"
+	RPC  = "rpc"
+	IPC  = "ipc"
 )

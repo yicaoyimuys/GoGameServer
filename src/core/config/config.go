@@ -61,6 +61,22 @@ func GetConnectorServiceTslKey() string {
 	return serverData["tslKey"].(string)
 }
 
+func GetApiService(serviceId int) map[string]interface{} {
+	serviceData := serviceConfig["api"].(map[string]interface{})
+	serverDatas := serviceData["services"].(map[string]interface{})
+	return serverDatas[NumToString(serviceId)].(map[string]interface{})
+}
+
+func GetApiServiceTslCrt() string {
+	serverData := serviceConfig["api"].(map[string]interface{})
+	return serverData["tslCrt"].(string)
+}
+
+func GetApiServiceTslKey() string {
+	serverData := serviceConfig["api"].(map[string]interface{})
+	return serverData["tslKey"].(string)
+}
+
 func GetRedisConfig() map[string]interface{} {
 	return redisConfig
 }

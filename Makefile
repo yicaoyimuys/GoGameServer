@@ -12,6 +12,7 @@ all:
 	$(GO) install servives/login
 	$(GO) install servives/chat
 	$(GO) install servives/log
+	$(GO) install servives/api
 	$(GO) install servives/test
 
 clean:

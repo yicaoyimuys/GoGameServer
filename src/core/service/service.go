@@ -18,11 +18,11 @@ import (
 	"core/libs/timer"
 	"core/libs/websocket"
 	"core/messages"
+	"github.com/astaxie/beego"
 	"net/http"
+	_ "net/http/pprof"
 	"runtime"
 )
-
-import _ "net/http/pprof"
 
 type Service struct {
 	env  string
@@ -171,6 +171,37 @@ func (this *Service) StartMysql() {
 		this.dbClients[key] = client
 		INFO("mysql_" + key + "连接成功...")
 	}
+}
+
+func (this *Service) StartHttpServer() {
+	//Api服务配置
+	serviceConfig := config.GetApiService(this.id)
+	port := dict.GetInt(serviceConfig, "clientPort")
+	useSSL := dict.GetBool(serviceConfig, "useSSL")
+
+	//Http服务配置
+	if useSSL {
+		tslCrt := config.GetApiServiceTslCrt()
+		tslKey := config.GetApiServiceTslKey()
+
+		beego.BConfig.Listen.EnableHTTPS = true
+		beego.BConfig.Listen.HTTPSCertFile = tslCrt
+		beego.BConfig.Listen.HTTPSKeyFile = tslKey
+		beego.BConfig.Listen.HTTPSPort = port
+	} else {
+		beego.BConfig.Listen.HTTPPort = port
+	}
+	beego.BConfig.RunMode = beego.PROD
+
+	//启动http服务
+	go beego.Run()
+
+	//服务注册
+	this.registerService(ServiceType.HTTP, NumToString(port))
+}
+
+func (this *Service) RegisterHttpRouter(rootPath string, controller beego.ControllerInterface) {
+	beego.Router(rootPath, controller)
 }
 
 func (this *Service) StartWebSocket() {
