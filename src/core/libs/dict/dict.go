@@ -74,6 +74,34 @@ func GetUint32(data interface{}, key interface{}) uint32 {
 	return result
 }
 
+func GetUint64(data interface{}, key interface{}) uint64 {
+	var result uint64 = 0
+	value := getValue(data, key)
+	if value != nil {
+		valueType := reflect.TypeOf(value).Kind()
+		if valueType == reflect.Float64 {
+			result = uint64(value.(float64))
+		} else if valueType == reflect.Uint64 {
+			result = value.(uint64)
+		}
+	}
+	return result
+}
+
+func GetInt64(data interface{}, key interface{}) int64 {
+	var result int64 = 0
+	value := getValue(data, key)
+	if value != nil {
+		valueType := reflect.TypeOf(value).Kind()
+		if valueType == reflect.Float64 {
+			result = int64(value.(float64))
+		} else if valueType == reflect.Int64 {
+			result = value.(int64)
+		}
+	}
+	return result
+}
+
 func GetUint8(data interface{}, key interface{}) uint8 {
 	var result uint8 = 0
 	value := getValue(data, key)
