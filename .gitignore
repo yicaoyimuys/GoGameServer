@@ -6,4 +6,5 @@ pkg/
 release/
 consul_run.sh
 .DS_Store
+dump.rdb
 
