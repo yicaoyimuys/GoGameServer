@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.8
+-- version 4.0.10.10
 -- http://www.phpmyadmin.net
 --
--- 主机: 127.0.0.1
--- 生成日期: 2015-12-10 08:55:39
--- 服务器版本: 5.1.63-log
--- PHP 版本: 5.5.29
+-- Host: 127.0.0.1
+-- Generation Time: Oct 09, 2018 at 07:25 AM
+-- Server version: 5.7.21
+-- PHP Version: 5.6.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -17,24 +17,24 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 --
--- 数据库: `game_db`
+-- Database: `test_user_1`
 --
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `user`
+-- Table structure for table `user`
 --
 
 CREATE TABLE IF NOT EXISTS `user` (
-  `id` bigint(20) NOT NULL COMMENT 'ID',
-  `account` varchar(50) NOT NULL COMMENT 'Account',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `account` varchar(50) NOT NULL COMMENT 'Name',
   `money` int(11) NOT NULL,
   `create_time` int(11) NOT NULL COMMENT '注册时间',
   `last_login_time` int(11) NOT NULL COMMENT '最后登录时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `name` (`account`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8465 ;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
