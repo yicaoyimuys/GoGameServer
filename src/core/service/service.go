@@ -11,6 +11,7 @@ import (
 	"core/libs/dict"
 	"core/libs/grpc/ipc"
 	"core/libs/logger"
+	"core/libs/mongo"
 	"core/libs/mysql"
 	"core/libs/redis"
 	"core/libs/rpc"
@@ -37,7 +38,8 @@ type Service struct {
 	ipcClients   map[string]*ipc.Client
 	rpcClients   map[string]*rpc.Client
 	redisClients map[string]*redis.Client
-	dbClients    map[string]*mysql.Client
+	mysqlClients map[string]*mysql.Client
+	mongoClients map[string]*mongo.Client
 
 	wsServer *websocket.Server
 }
@@ -148,13 +150,15 @@ func (this *Service) StartRedis() {
 		client, err := redis.NewClient(redisConfig.(map[string]interface{}))
 		CheckError(err)
 
-		this.redisClients[aliasName] = client
-		INFO("redis_" + aliasName + "连接成功...")
+		if client != nil {
+			this.redisClients[aliasName] = client
+			INFO("redis_" + aliasName + "连接成功...")
+		}
 	}
 }
 
 func (this *Service) StartMysql() {
-	this.dbClients = make(map[string]*mysql.Client)
+	this.mysqlClients = make(map[string]*mysql.Client)
 
 	mysqlConfigs := config.GetMysqlConfig()
 	index := 0
@@ -168,8 +172,25 @@ func (this *Service) StartMysql() {
 		client, err := mysql.NewClient(dbAliasName, mysqlConfig.(map[string]interface{}))
 		CheckError(err)
 
-		this.dbClients[key] = client
-		INFO("mysql_" + key + "连接成功...")
+		if client != nil {
+			this.mysqlClients[key] = client
+			INFO("mysql_" + key + "连接成功...")
+		}
+	}
+}
+
+func (this *Service) StartMongo() {
+	this.mongoClients = make(map[string]*mongo.Client)
+
+	mongoConfigs := config.GetMongoConfig()
+	for aliasName, mongoConfig := range mongoConfigs {
+		client, err := mongo.NewClient(mongoConfig.(map[string]interface{}))
+		CheckError(err)
+
+		if client != nil {
+			this.mongoClients[aliasName] = client
+			INFO("mongo_" + aliasName + "连接成功")
+		}
 	}
 }
 
@@ -345,7 +366,12 @@ func (this *Service) GetRedisClient(redisAliasName string) *redis.Client {
 }
 
 func (this *Service) GetMysqlClient(dbAliasName string) *mysql.Client {
-	client, _ := this.dbClients[dbAliasName]
+	client, _ := this.mysqlClients[dbAliasName]
+	return client
+}
+
+func (this *Service) GetMongoClient(dbAliasName string) *mongo.Client {
+	client, _ := this.mongoClients[dbAliasName]
 	return client
 }
 

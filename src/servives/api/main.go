@@ -11,7 +11,7 @@ func main() {
 	//初始化Service
 	newService := service.NewService(Service.Api)
 	newService.StartRedis()
-	newService.StartMysql()
+	newService.StartMongo()
 	newService.StartHttpServer()
 	newService.RegisterHttpRouter("/", &controllers.DefaultController{})
 

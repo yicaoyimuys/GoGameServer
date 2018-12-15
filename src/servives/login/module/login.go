@@ -9,7 +9,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"servives/login/cache"
 	"servives/public"
-	"servives/public/dbModels"
+	"servives/public/mysqlModels"
 	"servives/public/redisCaches"
 	"time"
 )
@@ -38,17 +38,17 @@ func Login(clientSession *sessions.BackSession, msgData proto.Message) {
 	}
 }
 
-func login(account string) *dbModels.User {
+func login(account string) *mysqlModels.User {
 	//db中获取用户数据
-	dbUser := dbModels.GetUser(account)
+	dbUser := mysqlModels.GetUser(account)
 	if dbUser == nil {
 		//注册新用户
 		addMoney := random.RandomInt31n(999)
-		dbUser = dbModels.AddUser(account, addMoney)
+		dbUser = mysqlModels.AddUser(account, addMoney)
 	} else {
 		//更新用户最后登录时间
 		dbUser.LastLoginTime = time.Now().Unix()
-		dbModels.UpdateUserLoginTime(dbUser.Id, dbUser.LastLoginTime)
+		mysqlModels.UpdateUserLoginTime(dbUser.Id, dbUser.LastLoginTime)
 	}
 	//加入redis缓存
 	redisCaches.SetUser(dbUser)

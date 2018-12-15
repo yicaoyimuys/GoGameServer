@@ -7,7 +7,7 @@ GoGameServer
 3：与客户端的通信协议使用protobuf  
 4：服务之间支持基于TCP的ipc，rpc通信  
 5：缓存使用redis  
-6：数据库使用mysql
+6：数据库支持mysql、mongodb
 
 
 结构图

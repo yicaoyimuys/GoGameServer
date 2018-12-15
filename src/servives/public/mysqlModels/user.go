@@ -1,4 +1,4 @@
-package dbModels
+package mysqlModels
 
 import (
 	"github.com/astaxie/beego/orm"

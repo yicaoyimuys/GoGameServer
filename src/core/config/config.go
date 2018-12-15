@@ -14,6 +14,7 @@ var (
 	redisConfig   map[string]interface{}
 	logConfig     map[string]interface{}
 	mysqlConfig   map[string]interface{}
+	mongoConfig   map[string]interface{}
 	lock          sync.Mutex
 )
 
@@ -26,12 +27,14 @@ func load() {
 	var serviceConfigPath = getConfigPath("service.json")
 	var redisConfigPath = getConfigPath("redis.json")
 	var mysqlConfigPath = getConfigPath("mysql.json")
+	var mongoConfigPath = getConfigPath("mongo.json")
 	var logConfigPath = getConfigPath("log.json")
 
 	lock.Lock()
 	loadConfig(&serviceConfig, serviceConfigPath)
 	loadConfig(&redisConfig, redisConfigPath)
 	loadConfig(&mysqlConfig, mysqlConfigPath)
+	loadConfig(&mongoConfig, mongoConfigPath)
 	loadConfig(&logConfig, logConfigPath)
 	lock.Unlock()
 }
@@ -87,4 +90,8 @@ func GetMysqlConfig() map[string]interface{} {
 
 func GetLogConfig() map[string]interface{} {
 	return logConfig
+}
+
+func GetMongoConfig() map[string]interface{} {
+	return mongoConfig
 }

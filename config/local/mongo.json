@@ -1,0 +1,9 @@
+{
+  "global": {
+    "host": "localhost",
+    "port": "27017",
+    "user": "",
+    "password": "",
+    "db": "test_global_1"
+  }
+}
