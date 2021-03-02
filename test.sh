@@ -1,5 +1,5 @@
 #!/bin/sh 
 
-sh stop.sh test
+sh stop.sh servives/test/main
 
-./bin/test -e local
+go run servives/test/main.go -e local

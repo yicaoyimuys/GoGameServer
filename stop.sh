@@ -1,22 +1,17 @@
 #!/bin/sh 
 function func(){
-	killall -9 $1
-	
-	killall -0 $1
-	while [ $? -ne 1 ]; do
-		sleep 1
-		killall -0 $1
-	done
+	ps -ef | grep $1 | grep -v grep | awk '{print $2}' | xargs kill -9
 }
 
 if [ $# -eq 0 ]
 	then
-		func connector
-		func game
-		func login
-		func chat
-		func log
-		func api
+		func servives/connector/main
+		func servives/game/main
+		func servives/login/main
+		func servives/chat/main
+		func servives/log/main
+		func servives/api/main
+		func exe/main
 	else
 		func $1
 fi
