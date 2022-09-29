@@ -2,9 +2,9 @@ package public
 
 import (
 	"GoGameServer/core"
+	"GoGameServer/core/libs/protos"
 	"GoGameServer/core/libs/sessions"
-	"GoGameServer/core/protos"
-	"GoGameServer/core/protos/gameProto"
+	"GoGameServer/servives/public/gameProto"
 
 	"github.com/golang/protobuf/proto"
 )

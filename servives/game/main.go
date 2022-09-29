@@ -4,9 +4,9 @@ import (
 	"GoGameServer/core/consts/Service"
 	. "GoGameServer/core/libs"
 	"GoGameServer/core/messages"
-	"GoGameServer/core/protos/gameProto"
 	"GoGameServer/core/service"
 	"GoGameServer/servives/game/module"
+	"GoGameServer/servives/public/gameProto"
 	"GoGameServer/servives/public/rpcModules"
 )
 

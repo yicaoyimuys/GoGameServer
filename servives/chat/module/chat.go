@@ -2,12 +2,12 @@ package module
 
 import (
 	. "GoGameServer/core/libs"
+	"GoGameServer/core/libs/protos"
 	"GoGameServer/core/libs/sessions"
-	"GoGameServer/core/protos"
-	"GoGameServer/core/protos/gameProto"
 	"GoGameServer/servives/chat/cache"
 	"GoGameServer/servives/public"
 	"GoGameServer/servives/public/errCodes"
+	"GoGameServer/servives/public/gameProto"
 	"GoGameServer/servives/public/redisCaches"
 
 	"github.com/golang/protobuf/proto"

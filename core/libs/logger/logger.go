@@ -49,21 +49,21 @@ func getLogMsg(v ...interface{}) string {
 }
 
 func Error(v ...interface{}) {
-	log.Error(getLogMsg(v))
+	log.Error(getLogMsg(v...))
 }
 
 func Warn(v ...interface{}) {
-	log.Warn(getLogMsg(v))
+	log.Warn(getLogMsg(v...))
 }
 
 func Info(v ...interface{}) {
-	log.Info(getLogMsg(v))
+	log.Info(getLogMsg(v...))
 }
 
 func Notice(v ...interface{}) {
-	log.Notice(getLogMsg(v))
+	log.Notice(getLogMsg(v...))
 }
 
 func Debug(v ...interface{}) {
-	log.Debug(getLogMsg(v))
+	log.Debug(getLogMsg(v...))
 }

@@ -2,12 +2,12 @@ package module
 
 import (
 	. "GoGameServer/core/libs"
+	"GoGameServer/core/libs/protos"
 	"GoGameServer/core/libs/random"
 	"GoGameServer/core/libs/sessions"
-	"GoGameServer/core/protos"
-	"GoGameServer/core/protos/gameProto"
 	"GoGameServer/servives/login/cache"
 	"GoGameServer/servives/public"
+	"GoGameServer/servives/public/gameProto"
 	"GoGameServer/servives/public/mysqlModels"
 	"GoGameServer/servives/public/redisCaches"
 	"time"

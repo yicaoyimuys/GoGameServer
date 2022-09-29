@@ -3,8 +3,8 @@ package messages
 import (
 	. "GoGameServer/core/libs"
 	"GoGameServer/core/libs/grpc/ipc"
+	"GoGameServer/core/libs/protos"
 	"GoGameServer/core/libs/sessions"
-	"GoGameServer/core/protos"
 )
 
 func IpcClientReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {

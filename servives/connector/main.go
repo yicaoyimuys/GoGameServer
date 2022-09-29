@@ -6,6 +6,7 @@ import (
 	. "GoGameServer/core/libs"
 	"GoGameServer/core/libs/sessions"
 	"GoGameServer/core/service"
+	"GoGameServer/servives/connector/messages"
 	"GoGameServer/servives/connector/module"
 	"GoGameServer/servives/public/rpcModules"
 )
@@ -14,7 +15,7 @@ func main() {
 	//初始化Service
 	newService := service.NewService(Service.Connector)
 	newService.StartRedis()
-	newService.StartWebSocket()
+	newService.StartWebSocket(messages.FontReceive)
 	newService.SetSessionCreateHandle(sessionCreate)
 	newService.StartIpcClient([]string{Service.Game, Service.Login, Service.Chat})
 	newService.StartRpcClient([]string{Service.Game, Service.Login, Service.Chat})
@@ -43,7 +44,7 @@ func sessionOffline(session *sessions.FrontSession) {
 		ServiceIdentify: core.Service.Identify(),
 		UserSessionId:   session.ID(),
 	}
-	reply := &rpcModules.ClientOfflineReq{}
+	reply := &rpcModules.ClientOfflineRes{}
 
 	//通知登录服务器
 	go func() {

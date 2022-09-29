@@ -6,9 +6,9 @@ import (
 	"GoGameServer/core/consts/Service"
 	. "GoGameServer/core/libs"
 	"GoGameServer/core/libs/grpc/ipc"
+	"GoGameServer/core/libs/protos"
 	"GoGameServer/core/libs/sessions"
-	"GoGameServer/core/protos"
-	"GoGameServer/core/protos/gameProto"
+	"GoGameServer/servives/public/gameProto"
 	"errors"
 )
 

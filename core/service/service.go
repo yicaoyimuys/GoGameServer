@@ -226,7 +226,7 @@ func (this *Service) RegisterHttpRouter(rootPath string, controller beego.Contro
 	beego.Router(rootPath, controller)
 }
 
-func (this *Service) StartWebSocket() {
+func (this *Service) StartWebSocket(handle websocket.SessionMsgHandle) {
 	//WebSocket配置
 	serviceConfig := config.GetConnectorService(this.id)
 	port := dict.GetString(serviceConfig, "clientPort")
@@ -239,7 +239,7 @@ func (this *Service) StartWebSocket() {
 		tslKey := config.GetConnectorServiceTslKey()
 		server.SetTLS(tslCrt, tslKey)
 	}
-	server.SetSessionMsgHandle(messages.FontReceive)
+	server.SetSessionMsgHandle(handle)
 	server.Start()
 	server.StartPing()
 

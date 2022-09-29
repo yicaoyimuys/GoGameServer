@@ -11,23 +11,23 @@ func init() {
 }
 
 func ERR(v ...interface{}) {
-	logger.Error(v)
+	logger.Error(v...)
 }
 
 func WARN(v ...interface{}) {
-	logger.Warn(v)
+	logger.Warn(v...)
 }
 
 func INFO(v ...interface{}) {
-	logger.Info(v)
+	logger.Info(v...)
 }
 
 func NOTICE(v ...interface{}) {
-	logger.Notice(v)
+	logger.Notice(v...)
 }
 
 func DEBUG(v ...interface{}) {
-	logger.Debug(v)
+	logger.Debug(v...)
 }
 
 func Run() {
