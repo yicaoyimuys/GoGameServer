@@ -14,6 +14,9 @@ import (
 	"GoGameServer/servives/public/gameProto"
 	"crypto/tls"
 	"encoding/binary"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"sync"
 	"sync/atomic"
@@ -23,10 +26,7 @@ import (
 )
 
 var (
-	servers = []string{
-		"127.0.0.1:19881",
-		"127.0.0.1:19882",
-	}
+	servers []string
 
 	connectNum   = 100
 	userAccounts = []string{}
@@ -35,6 +35,23 @@ var (
 func main() {
 	//初始化Service
 	service.NewService(Service.Test)
+
+	//请求服务器连接地址
+	resp, err := http.Get("http://127.0.0.1:18881/GetConnector")
+	if err != nil {
+		ERR(err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		ERR(err)
+		return
+	}
+	json.Unmarshal(body, &servers)
+	for _, v := range servers {
+		DEBUG(v)
+	}
 
 	//开始测试
 	startTest()

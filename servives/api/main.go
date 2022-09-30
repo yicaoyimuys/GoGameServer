@@ -14,6 +14,7 @@ func main() {
 	newService.StartMongo()
 	newService.StartHttpServer()
 	newService.RegisterHttpRouter("/", &controllers.DefaultController{})
+	newService.RegisterHttpRouter("/GetConnector", &controllers.ConnectorController{})
 
 	//模块初始化
 	initModule()
