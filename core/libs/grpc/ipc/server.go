@@ -113,6 +113,10 @@ func (this *Server) SendToAllClient(userSessionIds []uint64, data []byte) {
 	}
 }
 
+func (this *Server) mustEmbedUnimplementedIpcServer() {
+
+}
+
 func (this *Server) Transfer(stream Ipc_TransferServer) error {
 	defer stack.TryError()
 

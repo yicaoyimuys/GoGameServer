@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = ".;ipc";
+
 message Req{
     string serviceIdentify = 1;
     uint64 userSessionId = 2;
@@ -7,8 +9,8 @@ message Req{
 }
 
 message Res{
-    repeated uint64 userSessionIds = 2;
-    bytes data = 3;
+    repeated uint64 userSessionIds = 1;
+    bytes data = 2;
 }
 
 service Ipc{
