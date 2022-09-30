@@ -1,9 +1,10 @@
 package stack
 
 import (
-	"GoGameServer/core/libs/common"
 	"GoGameServer/core/libs/logger"
 	"runtime"
+
+	"github.com/spf13/cast"
 )
 
 func PrintPanicStack() {
@@ -11,7 +12,7 @@ func PrintPanicStack() {
 		funcName, file, line, ok := runtime.Caller(i)
 		if ok {
 			funcName := runtime.FuncForPC(funcName).Name()
-			logger.Error("frame " + common.NumToString(i) + ":[func:" + funcName + ", file: " + file + ", line:" + common.NumToString(line) + "]")
+			logger.Error("frame " + cast.ToString(i) + ":[func:" + funcName + ", file: " + file + ", line:" + cast.ToString(line) + "]")
 		}
 	}
 }

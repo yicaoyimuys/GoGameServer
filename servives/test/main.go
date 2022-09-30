@@ -23,6 +23,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
+	"github.com/spf13/cast"
 )
 
 var (
@@ -72,7 +73,7 @@ func startTest() {
 
 func initAccount() {
 	for {
-		account := "ys" + NumToString(random.RandIntn(10000))
+		account := "ys" + cast.ToString(random.RandIntn(10000))
 		if array.InArray(userAccounts, account) {
 			continue
 		}

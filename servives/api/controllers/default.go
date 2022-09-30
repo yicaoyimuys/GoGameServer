@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	. "GoGameServer/core/libs"
 	"GoGameServer/core/libs/guid"
 	"GoGameServer/core/libs/random"
 	"GoGameServer/servives/public/mongoModels"
 
 	"github.com/astaxie/beego"
+	"github.com/spf13/cast"
 )
 
 type DefaultController struct {
@@ -25,7 +25,7 @@ func (this *DefaultController) Get() {
 	id := g.NewID()
 	account := this.GetString("name")
 	if len(account) == 0 {
-		account = "ys_" + NumToString(id)
+		account = "ys_" + cast.ToString(id)
 	}
 	money := int32(random.RandIntRange(1000, 9999))
 

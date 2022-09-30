@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"GoGameServer/core/libs/common"
 	"GoGameServer/core/libs/consul"
 	"GoGameServer/core/libs/hash"
 	"GoGameServer/core/libs/logger"
@@ -11,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/spf13/cast"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -104,7 +104,7 @@ func (this *Client) GetServiceByFlag(flag string) string {
 }
 
 func (this *Client) GetServiceByRandom() string {
-	return this.GetServiceByFlag(common.NumToString(time.Now().Unix()))
+	return this.GetServiceByFlag(cast.ToString(time.Now().Unix()))
 }
 
 func (this *Client) getLink(service string) *grpc.ClientConn {

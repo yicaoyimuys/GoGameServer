@@ -26,7 +26,7 @@ func dealMessage(session *sessions.BackSession, msgBody []byte) {
 	protoMsg := protos.UnmarshalProtoMsg(msgBody)
 	if protoMsg == protos.NullProtoMsg {
 		msgId := protos.UnmarshalProtoId(msgBody)
-		ERR("收到错误消息ID: " + NumToString(msgId))
+		ERR("收到错误消息ID: ", msgId)
 		session.Close()
 		return
 	}
@@ -36,7 +36,7 @@ func dealMessage(session *sessions.BackSession, msgBody []byte) {
 	msgData := protoMsg.Body
 	handle := GetIpcServerHandle(msgId)
 	if handle == nil {
-		ERR("收到未处理的消息ID: " + NumToString(msgId))
+		ERR("收到未处理的消息ID: ", msgId)
 		return
 	}
 	handle(session, msgData)

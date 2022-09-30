@@ -1,8 +1,9 @@
 package sessions
 
 import (
-	"GoGameServer/core/libs/common"
 	"sync"
+
+	"github.com/spf13/cast"
 )
 
 var (
@@ -48,5 +49,5 @@ func BackSessionLen() int {
 }
 
 func CreateBackSessionId(serviceIdentify string, userSessionId uint64) string {
-	return serviceIdentify + "_" + common.NumToString(userSessionId)
+	return serviceIdentify + "_" + cast.ToString(userSessionId)
 }

@@ -1,13 +1,13 @@
 package consul
 
 import (
-	"GoGameServer/core/libs/common"
 	"GoGameServer/core/libs/logger"
 	"os"
 	"os/signal"
 	"strconv"
 
 	"github.com/hashicorp/consul/api"
+	"github.com/spf13/cast"
 )
 
 func NewServive(serviceAddress string, serviceName string, serviceId int, servicePort string) error {
@@ -19,7 +19,7 @@ func NewServive(serviceAddress string, serviceName string, serviceId int, servic
 	//服务器配置
 	address := serviceAddress
 	port, _ := strconv.Atoi(servicePort)
-	id := address + ":" + servicePort + "-" + serviceName + "-" + common.NumToString(serviceId)
+	id := address + ":" + servicePort + "-" + serviceName + "-" + cast.ToString(serviceId)
 	name := serviceName
 
 	//健康检查配置

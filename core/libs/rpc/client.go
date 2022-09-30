@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"GoGameServer/core/libs/common"
 	"GoGameServer/core/libs/consul"
 	"GoGameServer/core/libs/hash"
 	"GoGameServer/core/libs/logger"
@@ -13,6 +12,8 @@ import (
 	"net/rpc/jsonrpc"
 	"sync"
 	"time"
+
+	"github.com/spf13/cast"
 )
 
 type Client struct {
@@ -146,7 +147,7 @@ func (this *Client) removeLink(service string) {
 
 func (this *Client) Call(serviceMethod string, args interface{}, reply interface{}, flag string) error {
 	if flag == "" {
-		flag = common.NumToString(time.Now().Unix())
+		flag = cast.ToString(time.Now().Unix())
 	}
 	service := this.getServiceByFlag(flag)
 	if service == "" {

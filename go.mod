@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api v1.8.1
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/spf13/cast v1.5.0 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect
 	google.golang.org/grpc v1.36.0

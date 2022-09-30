@@ -1,11 +1,12 @@
 package config
 
 import (
-	. "GoGameServer/core/libs"
 	"GoGameServer/core/libs/system"
 	"encoding/json"
 	"io/ioutil"
 	"sync"
+
+	"github.com/spf13/cast"
 )
 
 var (
@@ -51,7 +52,7 @@ func loadConfig(data *map[string]interface{}, configPath string) {
 func GetConnectorService(serviceId int) map[string]interface{} {
 	serviceData := serviceConfig["connector"].(map[string]interface{})
 	serverDatas := serviceData["services"].(map[string]interface{})
-	return serverDatas[NumToString(serviceId)].(map[string]interface{})
+	return serverDatas[cast.ToString(serviceId)].(map[string]interface{})
 }
 
 func GetConnectorServiceTslCrt() string {
@@ -67,7 +68,7 @@ func GetConnectorServiceTslKey() string {
 func GetApiService(serviceId int) map[string]interface{} {
 	serviceData := serviceConfig["api"].(map[string]interface{})
 	serverDatas := serviceData["services"].(map[string]interface{})
-	return serverDatas[NumToString(serviceId)].(map[string]interface{})
+	return serverDatas[cast.ToString(serviceId)].(map[string]interface{})
 }
 
 func GetApiServiceTslCrt() string {

@@ -34,10 +34,6 @@ func Run() {
 	system.Run()
 }
 
-func NumToString(num interface{}) string {
-	return common.NumToString(num)
-}
-
 func If(condition bool, trueVal, falseVal interface{}) interface{} {
 	return common.If(condition, trueVal, falseVal)
 }

@@ -2,12 +2,12 @@ package consul
 
 import (
 	"GoGameServer/core/libs/array"
-	"GoGameServer/core/libs/common"
 	"GoGameServer/core/libs/stack"
 	"sort"
 	"strings"
 
 	"github.com/hashicorp/consul/api"
+	"github.com/spf13/cast"
 )
 
 type Client struct {
@@ -47,7 +47,7 @@ func NewClient() (*Client, error) {
 //			if value.Service != service {
 //				continue
 //			}
-//			addr := value.Address + ":" + NumToString(value.Port)
+//			addr := value.Address + ":" + cast.ToString(value.Port)
 //			results = append(results, addr)
 //		}
 //	}
@@ -83,7 +83,7 @@ func (this *Client) GetServices(service string) []string {
 				ID:      entry.Service.ID,
 				Name:    entry.Service.Service,
 				Address: entry.Service.Address,
-				Port:    common.NumToString(entry.Service.Port),
+				Port:    cast.ToString(entry.Service.Port),
 				SortKey: entry.Service.Address + "-" + serviveId,
 			}
 			serviceDatas = append(serviceDatas, data)

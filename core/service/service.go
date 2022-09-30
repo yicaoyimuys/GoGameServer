@@ -25,6 +25,7 @@ import (
 	"runtime"
 
 	"github.com/astaxie/beego"
+	"github.com/spf13/cast"
 )
 
 type Service struct {
@@ -96,7 +97,7 @@ func initLog(service *Service) {
 
 	logOpenDebug := dict.GetBool(logConfig, "debug")
 	logOutput := dict.GetString(logConfig, "output")
-	logFileName := service.name + "-" + NumToString(service.id)
+	logFileName := service.name + "-" + cast.ToString(service.id)
 
 	logger.SetLogFile(logFileName, logOutput)
 	logger.SetLogDebug(logOpenDebug)
@@ -220,7 +221,7 @@ func (this *Service) StartHttpServer() {
 	go beego.Run()
 
 	//服务注册
-	this.registerService(ServiceType.HTTP, NumToString(port))
+	this.registerService(ServiceType.HTTP, cast.ToString(port))
 }
 
 func (this *Service) RegisterHttpRouter(rootPath string, controller beego.ControllerInterface) {
@@ -326,7 +327,7 @@ func (this *Service) StartPProf(port int) {
 	port = port + this.id
 	go func() {
 		defer stack.TryError()
-		http.ListenAndServe(":"+NumToString(port), nil)
+		http.ListenAndServe(":"+cast.ToString(port), nil)
 	}()
 	INFO("debug start...", port)
 }
@@ -352,7 +353,7 @@ func (this *Service) Port(serviceType string) string {
 }
 
 func (this *Service) Identify() string {
-	return this.ip + "_" + this.name + "_" + NumToString(this.id)
+	return this.ip + "_" + this.name + "_" + cast.ToString(this.id)
 }
 
 func (this *Service) GetIpcClient(serviceName string) *ipc.Client {
