@@ -20,6 +20,6 @@ func initServerLogTimer() {
 		ip := core.Service.Ip()
 		port := core.Service.Port(ServiceType.WS)
 		cache.SetServerInfo(ip, port, onlineUsersNum)
-		INFO("在线用户数量:" + NumToString(onlineUsersNum))
+		INFO("当前在线用户数量:" + NumToString(onlineUsersNum))
 	})
 }

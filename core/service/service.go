@@ -14,6 +14,7 @@ import (
 	"GoGameServer/core/libs/mysql"
 	"GoGameServer/core/libs/redis"
 	"GoGameServer/core/libs/rpc"
+	"GoGameServer/core/libs/sessions"
 	"GoGameServer/core/libs/stack"
 	"GoGameServer/core/libs/system"
 	"GoGameServer/core/libs/timer"
@@ -283,6 +284,11 @@ func (this *Service) StartIpcServer() {
 
 	//服务注册
 	this.registerService(ServiceType.IPC, port)
+
+	//Log
+	timer.DoTimer(20*1000, func() {
+		INFO("当前BackSession数量:", sessions.BackSessionLen())
+	})
 }
 
 func (this *Service) StartRpcClient(serviceNames []string) {
