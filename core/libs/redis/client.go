@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"GoGameServer/core/libs/dict"
+	"GoGameServer/core/config"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -12,12 +12,12 @@ type Client struct {
 	prefix      string
 }
 
-func NewClient(redisConfig map[string]interface{}) (*Client, error) {
-	prefix := dict.GetString(redisConfig, "prefix")
-	host := dict.GetString(redisConfig, "host")
-	port := dict.GetString(redisConfig, "port")
-	pass := dict.GetString(redisConfig, "auth_pass")
-	db := dict.GetInt(redisConfig, "db")
+func NewClient(redisConfig config.RedisConfig) (*Client, error) {
+	prefix := redisConfig.Prefix
+	host := redisConfig.Host
+	port := redisConfig.Port
+	pass := redisConfig.AuthPass
+	db := redisConfig.Db
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     host + ":" + port,

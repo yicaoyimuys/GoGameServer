@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"GoGameServer/core/libs/dict"
+	"GoGameServer/core/config"
 	"GoGameServer/core/libs/logger"
 
 	"github.com/astaxie/beego/orm"
@@ -22,13 +22,13 @@ type Client struct {
 	orm.Ormer
 }
 
-func NewClient(dbAliasName string, mysqlConfig map[string]interface{}) (*Client, error) {
-	dbUser := dict.GetString(mysqlConfig, "user")
-	dbPassword := dict.GetString(mysqlConfig, "password")
-	dbHost := dict.GetString(mysqlConfig, "host")
-	dbPort := dict.GetString(mysqlConfig, "port")
-	dbName := dict.GetString(mysqlConfig, "db")
-	dbCharset := dict.GetString(mysqlConfig, "charset")
+func NewClient(dbAliasName string, mysqlConfig config.MysqlConfig) (*Client, error) {
+	dbHost := mysqlConfig.Host
+	dbPort := mysqlConfig.Port
+	dbUser := mysqlConfig.User
+	dbPassword := mysqlConfig.Password
+	dbName := mysqlConfig.Db
+	dbCharset := mysqlConfig.Charset
 
 	//数据库连接
 	dataSource := dbUser + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=" + dbCharset

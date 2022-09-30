@@ -7,7 +7,6 @@ import (
 	. "GoGameServer/core/libs"
 	"GoGameServer/core/libs/common"
 	"GoGameServer/core/libs/consul"
-	"GoGameServer/core/libs/dict"
 	"GoGameServer/core/libs/grpc/ipc"
 	"GoGameServer/core/libs/logger"
 	"GoGameServer/core/libs/mongo"
@@ -95,8 +94,8 @@ func initConfig(service *Service) {
 func initLog(service *Service) {
 	logConfig := config.GetLogConfig()
 
-	logOpenDebug := dict.GetBool(logConfig, "debug")
-	logOutput := dict.GetString(logConfig, "output")
+	logOpenDebug := logConfig.Debug
+	logOutput := logConfig.Output
 	logFileName := service.name + "-" + cast.ToString(service.id)
 
 	logger.SetLogFile(logFileName, logOutput)
@@ -148,7 +147,7 @@ func (this *Service) StartRedis() {
 
 	redisConfigs := config.GetRedisConfig()
 	for aliasName, redisConfig := range redisConfigs {
-		client, err := redis.NewClient(redisConfig.(map[string]interface{}))
+		client, err := redis.NewClient(redisConfig)
 		CheckError(err)
 
 		if client != nil {
@@ -170,7 +169,7 @@ func (this *Service) StartMysql() {
 		}
 		index++
 
-		client, err := mysql.NewClient(dbAliasName, mysqlConfig.(map[string]interface{}))
+		client, err := mysql.NewClient(dbAliasName, mysqlConfig)
 		CheckError(err)
 
 		if client != nil {
@@ -185,7 +184,7 @@ func (this *Service) StartMongo() {
 
 	mongoConfigs := config.GetMongoConfig()
 	for aliasName, mongoConfig := range mongoConfigs {
-		client, err := mongo.NewClient(mongoConfig.(map[string]interface{}))
+		client, err := mongo.NewClient(mongoConfig)
 		CheckError(err)
 
 		if client != nil {
@@ -199,21 +198,22 @@ func (this *Service) StartMongo() {
 
 func (this *Service) StartHttpServer() {
 	//Api服务配置
-	serviceConfig := config.GetApiService(this.id)
-	port := dict.GetInt(serviceConfig, "clientPort")
-	useSSL := dict.GetBool(serviceConfig, "useSSL")
+	serviceConfig := config.GetService("api")
+	serviceNodeConfig := serviceConfig.ServiceNodes[this.id]
+	port := serviceNodeConfig.ClientPort
+	useSSL := serviceNodeConfig.UseSSL
 
 	//Http服务配置
 	if useSSL {
-		tslCrt := config.GetApiServiceTslCrt()
-		tslKey := config.GetApiServiceTslKey()
+		tslCrt := serviceConfig.TslCrt
+		tslKey := serviceConfig.TslKey
 
 		beego.BConfig.Listen.EnableHTTPS = true
 		beego.BConfig.Listen.HTTPSCertFile = tslCrt
 		beego.BConfig.Listen.HTTPSKeyFile = tslKey
-		beego.BConfig.Listen.HTTPSPort = port
+		beego.BConfig.Listen.HTTPSPort = cast.ToInt(port)
 	} else {
-		beego.BConfig.Listen.HTTPPort = port
+		beego.BConfig.Listen.HTTPPort = cast.ToInt(port)
 	}
 	beego.BConfig.RunMode = beego.PROD
 
@@ -221,7 +221,7 @@ func (this *Service) StartHttpServer() {
 	go beego.Run()
 
 	//服务注册
-	this.registerService(ServiceType.HTTP, cast.ToString(port))
+	this.registerService(ServiceType.HTTP, port)
 }
 
 func (this *Service) RegisterHttpRouter(rootPath string, controller beego.ControllerInterface) {
@@ -230,15 +230,16 @@ func (this *Service) RegisterHttpRouter(rootPath string, controller beego.Contro
 
 func (this *Service) StartWebSocket(handle websocket.SessionMsgHandle) {
 	//WebSocket配置
-	serviceConfig := config.GetConnectorService(this.id)
-	port := dict.GetString(serviceConfig, "clientPort")
-	useSSL := dict.GetBool(serviceConfig, "useSSL")
+	serviceConfig := config.GetService("connector")
+	serviceNodeConfig := serviceConfig.ServiceNodes[this.id]
+	port := serviceNodeConfig.ClientPort
+	useSSL := serviceNodeConfig.UseSSL
 
 	//创建WebSocket Server
 	server := websocket.NewServer(port, this.id)
 	if useSSL {
-		tslCrt := config.GetConnectorServiceTslCrt()
-		tslKey := config.GetConnectorServiceTslKey()
+		tslCrt := serviceConfig.TslCrt
+		tslKey := serviceConfig.TslKey
 		server.SetTLS(tslCrt, tslKey)
 	}
 	server.SetSessionMsgHandle(handle)

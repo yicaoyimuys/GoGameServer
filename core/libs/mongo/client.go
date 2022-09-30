@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"GoGameServer/core/libs/dict"
+	"GoGameServer/core/config"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -12,11 +12,11 @@ type Client struct {
 	db      string
 }
 
-func NewClient(mongoConfig map[string]interface{}) (*Client, error) {
-	addr := dict.GetString(mongoConfig, "host") + ":" + dict.GetString(mongoConfig, "port")
-	user := dict.GetString(mongoConfig, "user")
-	pwd := dict.GetString(mongoConfig, "password")
-	db := dict.GetString(mongoConfig, "db")
+func NewClient(mongoConfig config.MongoConfig) (*Client, error) {
+	addr := mongoConfig.Host + ":" + mongoConfig.Port
+	user := mongoConfig.User
+	pwd := mongoConfig.Password
+	db := mongoConfig.Db
 
 	dialInfo := &mgo.DialInfo{
 		Addrs:    []string{addr},

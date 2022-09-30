@@ -11,8 +11,8 @@
     "tslCrt": "/usr/local/nginx/cert/xxx.crt",
     "tslKey": "/usr/local/nginx/cert/xxx.key",
     "services":{
-      "1": { "clientPort": 18881, "useSSL": false },
-      "2": { "clientPort": 18882, "useSSL": false }
+      "1": { "clientPort": "18881", "useSSL": false },
+      "2": { "clientPort": "18882", "useSSL": false }
     }
   }
 }
