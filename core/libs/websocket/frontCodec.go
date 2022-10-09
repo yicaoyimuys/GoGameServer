@@ -1,24 +1,25 @@
-package sessions
+package websocket
 
 import (
 	"GoGameServer/core/libs/logger"
+	"GoGameServer/core/libs/sessions"
 	"encoding/binary"
 
 	"github.com/gorilla/websocket"
 )
 
-func NewFrontCodec(rw *websocket.Conn) Codec {
-	codec := &frontByteCodec{
+func NewFrontCodec(rw *websocket.Conn) sessions.Codec {
+	codec := &frontCodec{
 		rw: rw,
 	}
 	return codec
 }
 
-type frontByteCodec struct {
+type frontCodec struct {
 	rw *websocket.Conn
 }
 
-func (this *frontByteCodec) Receive() (interface{}, error) {
+func (this *frontCodec) Receive() (interface{}, error) {
 	_, data, err := this.rw.ReadMessage()
 	if err != nil {
 		return nil, err
@@ -42,7 +43,7 @@ func (this *frontByteCodec) Receive() (interface{}, error) {
 	return msgBody, nil
 }
 
-func (this *frontByteCodec) Send(msg1 interface{}) error {
+func (this *frontCodec) Send(msg1 interface{}) error {
 	msg := msg1.([]byte)
 
 	msgLen := uint16(len(msg))
@@ -53,6 +54,6 @@ func (this *frontByteCodec) Send(msg1 interface{}) error {
 	return this.rw.WriteMessage(websocket.BinaryMessage, sendMsg)
 }
 
-func (this *frontByteCodec) Close() error {
+func (this *frontCodec) Close() error {
 	return this.rw.Close()
 }

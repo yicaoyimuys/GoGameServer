@@ -88,7 +88,7 @@ func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Session创建
 	sessionId := this.guid.NewID()
-	sessionCodec := sessions.NewFrontCodec(conn)
+	sessionCodec := NewFrontCodec(conn)
 	session := sessions.NewFontSession(sessionId, sessionCodec)
 	this.addFontSession(session)
 }
