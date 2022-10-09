@@ -36,7 +36,7 @@ func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
 func dealChatMsg(session *sessions.FrontSession, msgBody []byte) {
 	err := sendMsgToIpcService(Service.Chat, session, msgBody)
 	if err != nil {
-		ERR("dealGameMsg", err)
+		ERR("dealChatMsg", err)
 		sendErrorMsgToClient(session)
 	}
 }

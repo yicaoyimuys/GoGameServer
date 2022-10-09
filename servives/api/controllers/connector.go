@@ -25,7 +25,15 @@ func (this *ConnectorController) Get() {
 	consulClient, err := consul.NewClient()
 	CheckError(err)
 
-	serviceName := packageServiceName(ServiceType.WS, Service.Connector)
+	serviceName := ""
+
+	typeStr := this.GetString("type")
+	if typeStr == "Socket" {
+		serviceName = packageServiceName(ServiceType.SOCKET, Service.Connector)
+	} else if typeStr == "WebSocket" {
+		serviceName = packageServiceName(ServiceType.WEBSOCKET, Service.Connector)
+	}
+
 	services := consulClient.GetServices(serviceName)
 
 	this.Data["json"] = services

@@ -1,30 +1,20 @@
-package websocket
+package socket
 
 import (
 	"GoGameServer/core/libs/guid"
 	"GoGameServer/core/libs/logger"
 	"GoGameServer/core/libs/sessions"
 	"GoGameServer/core/libs/stack"
-	"net/http"
-
-	"github.com/gorilla/websocket"
+	"net"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+const (
+	ServerNetworkType = "tcp4"
+)
 
 type Server struct {
 	port string
 	guid *guid.Guid
-
-	useSSL bool
-	tslCrt string
-	tslKey string
 
 	sessionCreateHandle     sessions.FrontSessionCreateHandle
 	sessionReceiveMsgHandle sessions.FrontSessionReceiveMsgHandle
@@ -32,17 +22,10 @@ type Server struct {
 
 func NewServer(port string, serviceId int) *Server {
 	server := &Server{
-		port:   port,
-		guid:   guid.NewGuid(uint16(serviceId)),
-		useSSL: false,
+		port: port,
+		guid: guid.NewGuid(uint16(serviceId)),
 	}
 	return server
-}
-
-func (this *Server) SetTLS(tslCrt string, tslKey string) {
-	this.useSSL = true
-	this.tslCrt = tslCrt
-	this.tslKey = tslKey
 }
 
 func (this *Server) SetSessionCreateHandle(handle sessions.FrontSessionCreateHandle) {
@@ -54,17 +37,26 @@ func (this *Server) SetSessionReceiveMsgHandle(handle sessions.FrontSessionRecei
 }
 
 func (this *Server) Start() {
-	logger.Info("front start webSocket...", this.port)
+	logger.Info("front start socket...", this.port)
 
 	go func() {
-		http.HandleFunc("/", this.wsHandler)
+		defer stack.TryError()
+
 		var err error
-		if this.useSSL {
-			err = http.ListenAndServeTLS("0.0.0.0:"+this.port, this.tslCrt, this.tslKey, nil)
-		} else {
-			err = http.ListenAndServe("0.0.0.0:"+this.port, nil)
-		}
+		addr, err := net.ResolveTCPAddr(ServerNetworkType, "0.0.0.0:"+this.port)
 		stack.CheckError(err)
+
+		listener, err := net.ListenTCP(ServerNetworkType, addr)
+		stack.CheckError(err)
+
+		defer listener.Close()
+		logger.Info("socket waiting client connect...")
+		for {
+			conn, err := listener.Accept()
+			stack.CheckError(err)
+
+			go this.handleConnect(conn)
+		}
 	}()
 }
 
@@ -74,12 +66,7 @@ func (this *Server) StartPing() {
 	logger.Info("session超时时间设置", overTime)
 }
 
-func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return
-	}
-
+func (this *Server) handleConnect(conn net.Conn) {
 	//捕获异常
 	defer stack.TryError()
 

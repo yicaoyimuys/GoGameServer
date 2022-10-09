@@ -12,17 +12,16 @@ import (
 	"GoGameServer/core/libs/timer"
 	"GoGameServer/core/service"
 	"GoGameServer/servives/public/gameProto"
-	"crypto/tls"
 	"encoding/binary"
 	"encoding/json"
+	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
-	"net/url"
 	"sync"
 	"sync/atomic"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/gorilla/websocket"
 	"github.com/spf13/cast"
 )
 
@@ -38,7 +37,7 @@ func main() {
 	service.NewService(Service.Test)
 
 	//请求服务器连接地址
-	resp, err := http.Get("http://127.0.0.1:18881/GetConnector")
+	resp, err := http.Get("http://127.0.0.1:18881/GetConnector?type=Socket")
 	if err != nil {
 		ERR(err)
 		return
@@ -91,20 +90,22 @@ func startConnect(account string) {
 	var server = servers[serverIndex]
 	//DEBUG(myUserId, serverIndex)
 
-	scheme := "ws"
-	u := url.URL{Scheme: scheme, Host: server, Path: "/"}
-	d := websocket.DefaultDialer
-	d.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	c, _, err := d.Dial(u.String(), nil)
+	//服务器端ip和端口
+	addr, err := net.ResolveTCPAddr("tcp4", server)
 	if err != nil {
 		ERR(account, "连接失败")
 		return
 	}
-
+	//申请连接客户端
+	conn, err := net.DialTCP("tcp4", nil, addr)
+	if err != nil {
+		ERR(account, "连接失败")
+		return
+	}
 	INFO(account, "连接成功")
 
 	client := new(clientSession)
-	client.con = c
+	client.con = conn
 	client.account = account
 
 	go client.receiveMsg()
@@ -114,7 +115,7 @@ func startConnect(account string) {
 }
 
 type clientSession struct {
-	con         *websocket.Conn
+	con         *net.TCPConn
 	account     string
 	token       string
 	pingTimerId *timer.TimerEvent
@@ -131,6 +132,7 @@ func (this *clientSession) close() {
 		timer.Remove(this.pingTimerId)
 		timer.Remove(this.chatTimerId)
 		this.con.Close()
+		DEBUG("连接关闭", this.account)
 	}
 }
 
@@ -175,7 +177,7 @@ func (this *clientSession) chat() {
 	delay := random.RandIntRange(10000, 20000)
 	this.chatTimerId = timer.DoTimer(uint32(delay), func() {
 		var msg = &gameProto.UserChatC2S{}
-		msg.Msg = protos.String("你好啊")
+		msg.Msg = protos.String("你好啊" + cast.ToString(delay))
 		this.sendMsg(msg)
 	})
 }
@@ -189,14 +191,21 @@ func (this *clientSession) receiveMsg() {
 			break
 		}
 
-		_, message, err := this.con.ReadMessage()
-		if err != nil {
-			ERR("read:", err)
+		//消息头
+		msgHead := make([]byte, 2)
+		if _, err := io.ReadFull(this.con, msgHead); err != nil {
+			ERR("read1:", err)
+			break
+		}
+		msgLen := binary.BigEndian.Uint16(msgHead)
+
+		//消息内容
+		msgBody := make([]byte, msgLen)
+		if _, err := io.ReadFull(this.con, msgBody); err != nil {
+			ERR("read2:", err)
 			break
 		}
 
-		//消息内容
-		msgBody := message[2:]
 		//消息解析
 		protoMsg := protos.UnmarshalProtoMsg(msgBody)
 		if protoMsg == protos.NullProtoMsg {
@@ -204,6 +213,7 @@ func (this *clientSession) receiveMsg() {
 			break
 		}
 		DEBUG(this.account, "收到消息ID", protoMsg.ID)
+
 		//消息处理
 		this.handleMsg(protoMsg.ID, protoMsg.Body)
 	}
@@ -267,5 +277,5 @@ func (this *clientSession) sendMsg(msg proto.Message) {
 	binary.BigEndian.PutUint16(sendMsg[:2], msgLen)
 	copy(sendMsg[2:], msgBytes)
 
-	this.con.WriteMessage(websocket.BinaryMessage, sendMsg)
+	this.con.Write(sendMsg)
 }

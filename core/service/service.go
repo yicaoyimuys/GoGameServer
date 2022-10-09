@@ -14,6 +14,7 @@ import (
 	"GoGameServer/core/libs/redis"
 	"GoGameServer/core/libs/rpc"
 	"GoGameServer/core/libs/sessions"
+	"GoGameServer/core/libs/socket"
 	"GoGameServer/core/libs/stack"
 	"GoGameServer/core/libs/system"
 	"GoGameServer/core/libs/timer"
@@ -43,7 +44,8 @@ type Service struct {
 	mysqlClients map[string]*mysql.Client
 	mongoClients map[string]*mongo.Client
 
-	wsServer *websocket.Server
+	websocketServer *websocket.Server
+	socketServer    *socket.Server
 }
 
 func NewService(name string) *Service {
@@ -228,7 +230,7 @@ func (this *Service) RegisterHttpRouter(rootPath string, controller beego.Contro
 	beego.Router(rootPath, controller)
 }
 
-func (this *Service) StartWebSocket(handle websocket.SessionMsgHandle) {
+func (this *Service) StartWebSocket(handle sessions.FrontSessionReceiveMsgHandle) {
 	//WebSocket配置
 	serviceConfig := config.GetService("connector")
 	serviceNodeConfig := serviceConfig.ServiceNodes[this.id]
@@ -242,22 +244,43 @@ func (this *Service) StartWebSocket(handle websocket.SessionMsgHandle) {
 		tslKey := serviceConfig.TslKey
 		server.SetTLS(tslCrt, tslKey)
 	}
-	server.SetSessionMsgHandle(handle)
+	server.SetSessionReceiveMsgHandle(handle)
 	server.Start()
 	server.StartPing()
 
 	//服务注册
-	this.registerService(ServiceType.WS, port)
+	this.registerService(ServiceType.WEBSOCKET, port)
 
-	//service中保存wsServer
-	this.wsServer = server
+	//service中保存websocketServer
+	this.websocketServer = server
 }
 
-func (this *Service) SetSessionCreateHandle(handle websocket.SessionCreateHandle) {
-	if this.wsServer == nil {
-		return
+func (this *Service) StartSocket(handle sessions.FrontSessionReceiveMsgHandle) {
+	//Socket配置
+	serviceConfig := config.GetService("connector")
+	serviceNodeConfig := serviceConfig.ServiceNodes[this.id]
+	port := serviceNodeConfig.ClientPort
+
+	//创建Socket Server
+	server := socket.NewServer(port, this.id)
+	server.SetSessionReceiveMsgHandle(handle)
+	server.Start()
+	server.StartPing()
+
+	//服务注册
+	this.registerService(ServiceType.SOCKET, port)
+
+	//service中保存socketServer
+	this.socketServer = server
+}
+
+func (this *Service) SetSessionCreateHandle(handle sessions.FrontSessionCreateHandle) {
+	if this.websocketServer != nil {
+		this.websocketServer.SetSessionCreateHandle(handle)
 	}
-	this.wsServer.SetSessionCreateHandle(handle)
+	if this.socketServer != nil {
+		this.socketServer.SetSessionCreateHandle(handle)
+	}
 }
 
 func (this *Service) StartIpcClient(serviceNames []string) {

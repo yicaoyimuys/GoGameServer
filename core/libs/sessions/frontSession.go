@@ -13,6 +13,9 @@ type Codec interface {
 	Close() error
 }
 
+type FrontSessionCreateHandle func(session *FrontSession)
+type FrontSessionReceiveMsgHandle func(session *FrontSession, msgBody []byte)
+
 type FrontSession struct {
 	id        uint64
 	codec     Codec

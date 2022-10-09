@@ -15,7 +15,8 @@ func main() {
 	//初始化Service
 	newService := service.NewService(Service.Connector)
 	newService.StartRedis()
-	newService.StartWebSocket(messages.FontReceive)
+	// newService.StartWebSocket(messages.FontReceive)
+	newService.StartSocket(messages.FontReceive)
 	newService.SetSessionCreateHandle(sessionCreate)
 	newService.StartIpcClient([]string{Service.Game, Service.Login, Service.Chat})
 	newService.StartRpcClient([]string{Service.Game, Service.Login, Service.Chat})
