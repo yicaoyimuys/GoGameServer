@@ -19,7 +19,7 @@ type frontCodec struct {
 	rw *websocket.Conn
 }
 
-func (this *frontCodec) Receive() (interface{}, error) {
+func (this *frontCodec) Receive() ([]byte, error) {
 	_, data, err := this.rw.ReadMessage()
 	if err != nil {
 		return nil, err
@@ -43,9 +43,7 @@ func (this *frontCodec) Receive() (interface{}, error) {
 	return msgBody, nil
 }
 
-func (this *frontCodec) Send(msg1 interface{}) error {
-	msg := msg1.([]byte)
-
+func (this *frontCodec) Send(msg []byte) error {
 	msgLen := uint16(len(msg))
 	sendMsg := make([]byte, msgLen+2)
 	binary.BigEndian.PutUint16(sendMsg[:2], msgLen)

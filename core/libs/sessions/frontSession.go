@@ -8,8 +8,8 @@ import (
 )
 
 type Codec interface {
-	Receive() (interface{}, error)
-	Send(interface{}) error
+	Receive() ([]byte, error)
+	Send([]byte) error
 	Close() error
 }
 
@@ -92,7 +92,7 @@ func (this *FrontSession) Close() {
 	}
 }
 
-func (this *FrontSession) Receive() (interface{}, error) {
+func (this *FrontSession) Receive() ([]byte, error) {
 	msg, err := this.codec.Receive()
 	if msg != nil {
 		this.recvMutex.Lock()
@@ -100,13 +100,13 @@ func (this *FrontSession) Receive() (interface{}, error) {
 			this.recvMutex.Unlock()
 			return nil, ErrClosed
 		}
-		this.recvChan <- msg.([]byte)
+		this.recvChan <- msg
 		this.recvMutex.Unlock()
 	}
 	return msg, err
 }
 
-func (this *FrontSession) Send(msg interface{}) (err error) {
+func (this *FrontSession) Send(msg []byte) (err error) {
 	if this.IsClosed() {
 		return ErrClosed
 	}
