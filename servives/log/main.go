@@ -1,9 +1,9 @@
 package main
 
 import (
-	"GoGameServer/core/consts/Service"
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/service"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/service"
 )
 
 func main() {

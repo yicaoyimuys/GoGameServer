@@ -1,10 +1,11 @@
 package consul
 
 import (
-	"GoGameServer/core/libs/logger"
 	"os"
 	"os/signal"
 	"strconv"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 
 	"github.com/hashicorp/consul/api"
 	"github.com/spf13/cast"

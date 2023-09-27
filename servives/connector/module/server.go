@@ -1,12 +1,12 @@
 package module
 
 import (
-	"GoGameServer/core"
-	"GoGameServer/core/consts/ServiceType"
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/libs/sessions"
-	"GoGameServer/core/libs/timer"
-	"GoGameServer/servives/connector/cache"
+	"github.com/yicaoyimuys/GoGameServer/core"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/ServiceType"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
+	"github.com/yicaoyimuys/GoGameServer/servives/connector/cache"
 )
 
 func StartServerTimer() {

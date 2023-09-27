@@ -1,6 +1,6 @@
 package model
 
-import "GoGameServer/core/libs/sessions"
+import "github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 
 type ChatUser struct {
 	Session  *sessions.BackSession

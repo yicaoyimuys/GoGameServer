@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/consul/api"
-	//"GoGameServer/core/libs/logger"
+	//"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 )
 
 var (

@@ -1,4 +1,4 @@
-module GoGameServer
+module github.com/yicaoyimuys/GoGameServer
 
 go 1.14
 

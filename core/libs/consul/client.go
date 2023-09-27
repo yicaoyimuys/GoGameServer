@@ -1,10 +1,11 @@
 package consul
 
 import (
-	"GoGameServer/core/libs/array"
-	"GoGameServer/core/libs/stack"
 	"sort"
 	"strings"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/array"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 
 	"github.com/hashicorp/consul/api"
 	"github.com/spf13/cast"

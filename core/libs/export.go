@@ -1,10 +1,10 @@
 package libs
 
 import (
-	"GoGameServer/core/libs/common"
-	"GoGameServer/core/libs/logger"
-	"GoGameServer/core/libs/stack"
-	"GoGameServer/core/libs/system"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/common"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/system"
 )
 
 func init() {

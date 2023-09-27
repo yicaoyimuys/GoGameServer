@@ -1,17 +1,17 @@
 package module
 
 import (
-	"GoGameServer/core/libs/protos"
-	"GoGameServer/core/libs/sessions"
-	"GoGameServer/servives/public"
-	"GoGameServer/servives/public/errCodes"
-	"GoGameServer/servives/public/gameProto"
-	"GoGameServer/servives/public/redisCaches"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/servives/public"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/errCodes"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/redisCaches"
 
 	"github.com/golang/protobuf/proto"
 )
 
-//获取用户信息
+// 获取用户信息
 func GetInfo(clientSession *sessions.BackSession, msgData proto.Message) {
 	data := msgData.(*gameProto.UserGetInfoC2S)
 	token := data.GetToken()

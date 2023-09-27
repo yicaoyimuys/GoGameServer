@@ -1,8 +1,8 @@
 package mongoInstances
 
 import (
-	"GoGameServer/core"
-	"GoGameServer/core/libs/mongo"
+	"github.com/yicaoyimuys/GoGameServer/core"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/mongo"
 )
 
 func Global() *mongo.Client {

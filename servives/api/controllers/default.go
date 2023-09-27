@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"GoGameServer/core/libs/guid"
-	"GoGameServer/core/libs/random"
-	"GoGameServer/servives/public/mongoModels"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/guid"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/random"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/mongoModels"
 
 	"github.com/astaxie/beego"
 	"github.com/spf13/cast"

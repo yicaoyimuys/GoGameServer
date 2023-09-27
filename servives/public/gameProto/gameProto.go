@@ -1,10 +1,10 @@
 package gameProto
 
 import (
-	"GoGameServer/core/libs/protos"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
 )
 
-//初始化消息ID和消息类型的对应关系
+// 初始化消息ID和消息类型的对应关系
 func init() {
 	//system
 	protos.SetMsg(ID_error_notice_s2c, ErrorNoticeS2C{})

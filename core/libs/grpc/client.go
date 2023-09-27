@@ -1,14 +1,15 @@
 package grpc
 
 import (
-	"GoGameServer/core/libs/consul"
-	"GoGameServer/core/libs/hash"
-	"GoGameServer/core/libs/logger"
-	"GoGameServer/core/libs/timer"
 	"io"
 	"reflect"
 	"sync"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/consul"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/hash"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
 
 	"github.com/spf13/cast"
 	"golang.org/x/net/context"

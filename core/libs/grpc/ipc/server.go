@@ -1,11 +1,12 @@
 package ipc
 
 import (
-	myGprc "GoGameServer/core/libs/grpc"
-	"GoGameServer/core/libs/stack"
 	"io"
 	"sync"
 	"sync/atomic"
+
+	myGprc "github.com/yicaoyimuys/GoGameServer/core/libs/grpc"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 
 	"google.golang.org/grpc"
 )

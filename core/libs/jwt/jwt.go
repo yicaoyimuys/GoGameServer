@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"GoGameServer/core/libs/logger"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 
 	"github.com/dgrijalva/jwt-go"
 )

@@ -1,9 +1,10 @@
 package cache
 
 import (
-	"GoGameServer/servives/public/redisInstances"
-	"GoGameServer/servives/public/redisKeys"
 	"encoding/json"
+
+	"github.com/yicaoyimuys/GoGameServer/servives/public/redisInstances"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/redisKeys"
 )
 
 func SetServerInfo(domainName string, serverPort string, onlineUsersNum int) {

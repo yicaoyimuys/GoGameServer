@@ -1,10 +1,10 @@
 package messages
 
 import (
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/libs/grpc/ipc"
-	"GoGameServer/core/libs/protos"
-	"GoGameServer/core/libs/sessions"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/grpc/ipc"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 )
 
 func IpcServerReceive(stream *ipc.Stream, msg *ipc.Req) {

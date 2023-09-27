@@ -1,10 +1,11 @@
 package sessions
 
 import (
-	"GoGameServer/core/libs/grpc/ipc"
-	"GoGameServer/core/libs/stack"
 	"sync"
 	"sync/atomic"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/grpc/ipc"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 )
 
 type BackSession struct {

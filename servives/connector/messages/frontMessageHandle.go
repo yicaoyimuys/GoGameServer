@@ -1,15 +1,16 @@
 package messages
 
 import (
-	"GoGameServer/core"
-	"GoGameServer/core/consts/ErrCode"
-	"GoGameServer/core/consts/Service"
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/libs/grpc/ipc"
-	"GoGameServer/core/libs/protos"
-	"GoGameServer/core/libs/sessions"
-	"GoGameServer/servives/public/gameProto"
 	"errors"
+
+	"github.com/yicaoyimuys/GoGameServer/core"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/ErrCode"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/grpc/ipc"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 )
 
 func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {

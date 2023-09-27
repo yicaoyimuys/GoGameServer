@@ -1,12 +1,13 @@
 package request
 
 import (
-	"GoGameServer/core/libs/logger"
 	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 )
 
 func init() {
@@ -18,7 +19,7 @@ func init() {
 	}
 }
 
-//HttpGet
+// HttpGet
 func HttpGet(url string, retryNum int) (string, uint32) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -41,7 +42,7 @@ func HttpGet(url string, retryNum int) (string, uint32) {
 	return string(body), 0
 }
 
-//HttpPost
+// HttpPost
 func HttpPost(url string, retryNum int) (string, uint32) {
 	arr := strings.Split(url, "?")
 	resp, err := http.Post(arr[0], "application/x-www-form-urlencoded", strings.NewReader(arr[1]))

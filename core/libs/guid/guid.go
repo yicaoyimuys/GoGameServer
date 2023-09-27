@@ -1,9 +1,10 @@
 package guid
 
 import (
-	"GoGameServer/core/libs/logger"
 	"sync"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 )
 
 type Guid struct {

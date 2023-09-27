@@ -1,9 +1,10 @@
 package logger
 
 import (
-	"GoGameServer/core/libs/system"
 	"fmt"
 	"strings"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/system"
 
 	"github.com/astaxie/beego/logs"
 )

@@ -1,9 +1,10 @@
 package cache
 
 import (
-	"GoGameServer/core/libs/sessions"
-	. "GoGameServer/servives/login/model"
 	"sync"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	. "github.com/yicaoyimuys/GoGameServer/servives/login/model"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 	onlineUsersMutex   sync.RWMutex
 )
 
-//添加在线用户缓存
+// 添加在线用户缓存
 func AddOnlineUser(userID uint64, account string, session *sessions.BackSession) bool {
 	onlineUsersMutex.Lock()
 	defer onlineUsersMutex.Unlock()
@@ -39,7 +40,7 @@ func AddOnlineUser(userID uint64, account string, session *sessions.BackSession)
 	}
 }
 
-//获取用户数据根据Account
+// 获取用户数据根据Account
 func GetOnlineUserByAccount(account string) *OnlineUser {
 	onlineUsersMutex.Lock()
 	defer onlineUsersMutex.Unlock()
@@ -50,7 +51,7 @@ func GetOnlineUserByAccount(account string) *OnlineUser {
 	return nil
 }
 
-//获取用户数据根据UserID
+// 获取用户数据根据UserID
 func GetOnlineUserByUserID(userID uint64) *OnlineUser {
 	onlineUsersMutex.Lock()
 	defer onlineUsersMutex.Unlock()
@@ -63,7 +64,7 @@ func GetOnlineUserByUserID(userID uint64) *OnlineUser {
 	return nil
 }
 
-//获取用户数据根据SessionID
+// 获取用户数据根据SessionID
 func GetOnlineUserBySession(sessionID string) *OnlineUser {
 	onlineUsersMutex.Lock()
 	defer onlineUsersMutex.Unlock()
@@ -76,7 +77,7 @@ func GetOnlineUserBySession(sessionID string) *OnlineUser {
 	return nil
 }
 
-//移除一个在线用户
+// 移除一个在线用户
 func RemoveOnlineUser(sessionID string) {
 	onlineUsersMutex.Lock()
 	defer onlineUsersMutex.Unlock()
@@ -91,7 +92,7 @@ func RemoveOnlineUser(sessionID string) {
 	}
 }
 
-//获取在线用户数量
+// 获取在线用户数量
 func GetOnlineUsersNum() int32 {
 	return onlineUsersNum
 }

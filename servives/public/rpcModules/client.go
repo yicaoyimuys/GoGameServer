@@ -1,7 +1,7 @@
 package rpcModules
 
 import (
-	"GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 )
 
 type Client struct {

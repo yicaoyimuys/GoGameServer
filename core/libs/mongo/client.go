@@ -1,8 +1,9 @@
 package mongo
 
 import (
-	"GoGameServer/core/config"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/config"
 
 	"gopkg.in/mgo.v2"
 )

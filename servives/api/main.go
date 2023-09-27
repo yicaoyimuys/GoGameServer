@@ -1,10 +1,10 @@
 package main
 
 import (
-	"GoGameServer/core/consts/Service"
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/service"
-	"GoGameServer/servives/api/controllers"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/service"
+	"github.com/yicaoyimuys/GoGameServer/servives/api/controllers"
 )
 
 func main() {

@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"GoGameServer/core/consts/Service"
-	"GoGameServer/core/consts/ServiceType"
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/libs/consul"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/ServiceType"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/consul"
 
 	"github.com/astaxie/beego"
 )

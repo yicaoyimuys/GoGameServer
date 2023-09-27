@@ -1,9 +1,10 @@
 package timer
 
 import (
-	"GoGameServer/core/libs/stack"
 	"sync/atomic"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 )
 
 type TimerEvent struct {
@@ -15,12 +16,12 @@ type TimerEvent struct {
 	closeChan   chan int     //关闭使用
 }
 
-//是否已关闭
+// 是否已关闭
 func (this *TimerEvent) IsClosed() bool {
 	return atomic.LoadInt32(&this.closeFlag) == 1
 }
 
-//关闭
+// 关闭
 func (this *TimerEvent) Close() {
 	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
 		if this.ticker != nil {
@@ -30,17 +31,17 @@ func (this *TimerEvent) Close() {
 	}
 }
 
-//无限次数执行
+// 无限次数执行
 func DoTimer(delay uint32, callback func()) *TimerEvent {
 	return Do(delay, 0, callback)
 }
 
-//延时处理
+// 延时处理
 func SetTimeOut(delay uint32, callback func()) *TimerEvent {
 	return Do(delay, 1, callback)
 }
 
-//移除一个定时器
+// 移除一个定时器
 func Remove(event *TimerEvent) {
 	if event == nil {
 		return
@@ -48,7 +49,7 @@ func Remove(event *TimerEvent) {
 	event.Close()
 }
 
-//时间间隔，执行次数，回调函数
+// 时间间隔，执行次数，回调函数
 func Do(delay uint32, repeatCount uint32, callback func()) *TimerEvent {
 	//最小单位1ms
 	if delay < 1 {

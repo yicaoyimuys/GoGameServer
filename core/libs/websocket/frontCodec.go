@@ -1,9 +1,10 @@
 package websocket
 
 import (
-	"GoGameServer/core/libs/logger"
-	"GoGameServer/core/libs/sessions"
 	"encoding/binary"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 
 	"github.com/gorilla/websocket"
 )

@@ -1,8 +1,8 @@
 package mysqlInstances
 
 import (
-	"GoGameServer/core"
-	"GoGameServer/core/libs/mysql"
+	"github.com/yicaoyimuys/GoGameServer/core"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/mysql"
 )
 
 func Global() *mysql.Client {

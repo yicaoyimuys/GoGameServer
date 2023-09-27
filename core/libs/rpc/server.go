@@ -1,12 +1,13 @@
 package rpc
 
 import (
-	"GoGameServer/core/libs/logger"
-	"GoGameServer/core/libs/stack"
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
 	"strconv"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 )
 
 func InitServer() (string, error) {

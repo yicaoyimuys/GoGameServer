@@ -1,10 +1,11 @@
 package sessions
 
 import (
-	"GoGameServer/core/libs/stack"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 )
 
 type Codec interface {

@@ -1,11 +1,11 @@
 GoGameServer
 ===============
 
-使用go搭建的一个游戏服务器项目  
-1：consul作为服务注册/发现中心，便于服务的动态扩容  
-2：与客户端的通信协议使用protobuf  
-3：服务之间支持基于TCP的ipc，rpc通信  
-4：缓存使用redis  
+使用go搭建的一个游戏服务器项目
+1：consul作为服务注册/发现中心，便于服务的动态扩容
+2：与客户端的通信协议使用protobuf
+3：服务之间支持基于TCP的ipc，rpc通信
+4：缓存使用redis
 5：数据库支持mysql、mongodb
 
 

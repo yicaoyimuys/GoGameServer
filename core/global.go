@@ -1,11 +1,11 @@
 package core
 
 import (
-	"GoGameServer/core/libs/grpc/ipc"
-	"GoGameServer/core/libs/mongo"
-	"GoGameServer/core/libs/mysql"
-	"GoGameServer/core/libs/redis"
-	"GoGameServer/core/libs/rpc"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/grpc/ipc"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/mongo"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/mysql"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/redis"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/rpc"
 )
 
 type IService interface {

@@ -1,8 +1,9 @@
 package mongoModels
 
 import (
-	"GoGameServer/servives/public/mongoInstances"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/servives/public/mongoInstances"
 
 	"gopkg.in/mgo.v2/bson"
 )

@@ -1,11 +1,12 @@
 package socket
 
 import (
-	"GoGameServer/core/libs/guid"
-	"GoGameServer/core/libs/logger"
-	"GoGameServer/core/libs/sessions"
-	"GoGameServer/core/libs/stack"
 	"net"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/guid"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 )
 
 const (

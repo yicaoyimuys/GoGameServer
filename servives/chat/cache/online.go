@@ -1,9 +1,10 @@
 package cache
 
 import (
-	"GoGameServer/core/libs/sessions"
-	"GoGameServer/servives/chat/model"
 	"sync"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/servives/chat/model"
 )
 
 var (

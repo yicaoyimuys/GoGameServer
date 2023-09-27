@@ -1,10 +1,11 @@
 package socket
 
 import (
-	"GoGameServer/core/libs/sessions"
 	"encoding/binary"
 	"io"
 	"net"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 )
 
 func NewFrontCodec(rw net.Conn) sessions.Codec {

@@ -1,11 +1,12 @@
 package config
 
 import (
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/libs/system"
 	"encoding/json"
 	"io/ioutil"
 	"sync"
+
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/system"
 )
 
 var (

@@ -1,7 +1,7 @@
 package messages
 
 import (
-	"GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 
 	"github.com/golang/protobuf/proto"
 )

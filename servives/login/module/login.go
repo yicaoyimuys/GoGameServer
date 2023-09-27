@@ -1,21 +1,22 @@
 package module
 
 import (
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/libs/protos"
-	"GoGameServer/core/libs/random"
-	"GoGameServer/core/libs/sessions"
-	"GoGameServer/servives/login/cache"
-	"GoGameServer/servives/public"
-	"GoGameServer/servives/public/gameProto"
-	"GoGameServer/servives/public/mysqlModels"
-	"GoGameServer/servives/public/redisCaches"
 	"time"
+
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/random"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/servives/login/cache"
+	"github.com/yicaoyimuys/GoGameServer/servives/public"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/mysqlModels"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/redisCaches"
 
 	"github.com/golang/protobuf/proto"
 )
 
-//登录
+// 登录
 func Login(clientSession *sessions.BackSession, msgData proto.Message) {
 	data := msgData.(*gameProto.UserLoginC2S)
 	account := data.GetAccount()
@@ -56,7 +57,7 @@ func login(account string) *mysqlModels.User {
 	return dbUser
 }
 
-//登录成功后处理
+// 登录成功后处理
 func loginSuccess(clientSession *sessions.BackSession, account string, userID uint64) {
 	//缓存用户在线数据
 	cache.AddOnlineUser(userID, account, clientSession)

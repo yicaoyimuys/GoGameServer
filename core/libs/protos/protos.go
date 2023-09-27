@@ -1,9 +1,10 @@
 package protos
 
 import (
-	. "GoGameServer/core/libs"
 	"encoding/binary"
 	"reflect"
+
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -19,7 +20,7 @@ var (
 	MsgIDMap     = make(map[reflect.Type]uint16)
 )
 
-//设置消息类型和消息ID的对应关系
+// 设置消息类型和消息ID的对应关系
 func SetMsg(msgID uint16, data interface{}) {
 	msgType := reflect.TypeOf(data)
 
@@ -27,7 +28,7 @@ func SetMsg(msgID uint16, data interface{}) {
 	MsgIDMap[reflect.TypeOf(reflect.New(msgType).Interface())] = msgID
 }
 
-//根据消息ID获取消息实体
+// 根据消息ID获取消息实体
 func GetMsgObject(msgID uint16) proto.Message {
 	if msgType, exists := MsgObjectMap[msgID]; exists {
 		return reflect.New(msgType).Interface().(proto.Message)
@@ -37,7 +38,7 @@ func GetMsgObject(msgID uint16) proto.Message {
 	return nil
 }
 
-//根据一条消息获取消息ID
+// 根据一条消息获取消息ID
 func GetMsgID(msg interface{}) uint16 {
 	msgType := reflect.TypeOf(msg)
 	if msgID, exists := MsgIDMap[msgType]; exists {
@@ -48,7 +49,7 @@ func GetMsgID(msg interface{}) uint16 {
 	return 0
 }
 
-//序列化
+// 序列化
 func MarshalProtoMsg(args proto.Message) []byte {
 	msgID := GetMsgID(args)
 	msgBody, _ := proto.Marshal(args)
@@ -64,7 +65,7 @@ func UnmarshalProtoId(msg []byte) uint16 {
 	return binary.BigEndian.Uint16(msg[:2])
 }
 
-//反序列化
+// 反序列化
 func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 	if len(msg) < 2 {
 		return NullProtoMsg

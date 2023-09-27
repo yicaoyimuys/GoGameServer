@@ -1,9 +1,10 @@
 package sessions
 
 import (
-	"GoGameServer/core/libs/timer"
 	"sync"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
 )
 
 var (

@@ -1,11 +1,12 @@
 package ipc
 
 import (
-	"GoGameServer/core/libs/consul"
-	myGprc "GoGameServer/core/libs/grpc"
-	"GoGameServer/core/libs/stack"
 	"errors"
 	"sync"
+
+	"github.com/yicaoyimuys/GoGameServer/core/libs/consul"
+	myGprc "github.com/yicaoyimuys/GoGameServer/core/libs/grpc"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 
 	"google.golang.org/grpc"
 )

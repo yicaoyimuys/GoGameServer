@@ -1,8 +1,8 @@
 package redisInstances
 
 import (
-	"GoGameServer/core"
-	"GoGameServer/core/libs/redis"
+	"github.com/yicaoyimuys/GoGameServer/core"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/redis"
 )
 
 func Global() *redis.Client {

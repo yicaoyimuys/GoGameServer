@@ -1,10 +1,10 @@
 package public
 
 import (
-	"GoGameServer/core"
-	"GoGameServer/core/libs/protos"
-	"GoGameServer/core/libs/sessions"
-	"GoGameServer/servives/public/gameProto"
+	"github.com/yicaoyimuys/GoGameServer/core"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 
 	"github.com/golang/protobuf/proto"
 )

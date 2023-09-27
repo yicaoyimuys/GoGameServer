@@ -1,8 +1,9 @@
 package mysqlModels
 
 import (
-	"GoGameServer/servives/public/mysqlInstances"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/servives/public/mysqlInstances"
 
 	"github.com/astaxie/beego/orm"
 )

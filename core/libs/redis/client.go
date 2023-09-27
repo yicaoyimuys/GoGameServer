@@ -1,8 +1,9 @@
 package redis
 
 import (
-	"GoGameServer/core/config"
 	"time"
+
+	"github.com/yicaoyimuys/GoGameServer/core/config"
 
 	"github.com/go-redis/redis"
 )

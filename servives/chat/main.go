@@ -1,13 +1,13 @@
 package main
 
 import (
-	"GoGameServer/core/consts/Service"
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/messages"
-	"GoGameServer/core/service"
-	"GoGameServer/servives/chat/module"
-	"GoGameServer/servives/public/gameProto"
-	"GoGameServer/servives/public/rpcModules"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/messages"
+	"github.com/yicaoyimuys/GoGameServer/core/service"
+	"github.com/yicaoyimuys/GoGameServer/servives/chat/module"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/rpcModules"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 package mysql
 
 import (
-	"GoGameServer/core/config"
-	"GoGameServer/core/libs/logger"
+	"github.com/yicaoyimuys/GoGameServer/core/config"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"

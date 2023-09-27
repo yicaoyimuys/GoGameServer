@@ -1,17 +1,6 @@
 package main
 
 import (
-	"GoGameServer/core/consts/ErrCode"
-	"GoGameServer/core/consts/Service"
-	. "GoGameServer/core/libs"
-	"GoGameServer/core/libs/array"
-	"GoGameServer/core/libs/hash"
-	"GoGameServer/core/libs/protos"
-	"GoGameServer/core/libs/random"
-	"GoGameServer/core/libs/stack"
-	"GoGameServer/core/libs/timer"
-	"GoGameServer/core/service"
-	"GoGameServer/servives/public/gameProto"
 	"encoding/binary"
 	"encoding/json"
 	"io"
@@ -20,6 +9,18 @@ import (
 	"net/http"
 	"sync"
 	"sync/atomic"
+
+	"github.com/yicaoyimuys/GoGameServer/core/consts/ErrCode"
+	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/array"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/hash"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/random"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
+	"github.com/yicaoyimuys/GoGameServer/core/service"
+	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/spf13/cast"
@@ -126,7 +127,7 @@ type clientSession struct {
 	sendMutex sync.Mutex
 }
 
-//关闭
+// 关闭
 func (this *clientSession) close() {
 	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
 		timer.Remove(this.pingTimerId)
@@ -136,12 +137,12 @@ func (this *clientSession) close() {
 	}
 }
 
-//是否关闭
+// 是否关闭
 func (this *clientSession) isClose() bool {
 	return atomic.LoadInt32(&this.closeFlag) == 1
 }
 
-//平台登录
+// 平台登录
 func (this *clientSession) login() {
 	msg := &gameProto.UserLoginC2S{
 		Account: protos.String(this.account),
@@ -149,7 +150,7 @@ func (this *clientSession) login() {
 	this.sendMsg(msg)
 }
 
-//获取用户数据
+// 获取用户数据
 func (this *clientSession) getInfo() {
 	msg := &gameProto.UserGetInfoC2S{
 		Token: protos.String(this.token),
@@ -157,7 +158,7 @@ func (this *clientSession) getInfo() {
 	this.sendMsg(msg)
 }
 
-//心跳
+// 心跳
 func (this *clientSession) ping() {
 	this.pingTimerId = timer.DoTimer(2000, func() {
 		var msg = &gameProto.ClientPingC2S{}
@@ -165,14 +166,14 @@ func (this *clientSession) ping() {
 	})
 }
 
-//加入聊天
+// 加入聊天
 func (this *clientSession) joinChat() {
 	var msg = &gameProto.UserJoinChatC2S{}
 	msg.Token = protos.String(this.token)
 	this.sendMsg(msg)
 }
 
-//聊天
+// 聊天
 func (this *clientSession) chat() {
 	delay := random.RandIntRange(10000, 20000)
 	this.chatTimerId = timer.DoTimer(uint32(delay), func() {
@@ -182,7 +183,7 @@ func (this *clientSession) chat() {
 	})
 }
 
-//接收消息
+// 接收消息
 func (this *clientSession) receiveMsg() {
 	defer stack.TryError()
 

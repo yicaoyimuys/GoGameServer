@@ -1,9 +1,9 @@
 package public
 
 import (
-	"GoGameServer/core/libs/common"
-	"GoGameServer/core/libs/dict"
-	"GoGameServer/core/libs/jwt"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/common"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/dict"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/jwt"
 )
 
 const (
