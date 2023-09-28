@@ -10,8 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/yicaoyimuys/GoGameServer/core/consts/ErrCode"
-	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	"github.com/yicaoyimuys/GoGameServer/core/consts"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/array"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/hash"
@@ -35,7 +34,7 @@ var (
 
 func main() {
 	//初始化Service
-	service.NewService(Service.Test)
+	service.NewService(consts.Service_Test)
 
 	//请求服务器连接地址
 	resp, err := http.Get("http://127.0.0.1:18881/GetConnector?type=Socket")
@@ -249,7 +248,7 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 	} else if msgId == gameProto.ID_error_notice_s2c {
 		data := msgData.(*gameProto.ErrorNoticeS2C)
 		errCode := data.GetErrorCode()
-		if errCode == ErrCode.SYSTEM_ERR {
+		if errCode == consts.ErrCode_SystemError {
 			//系统服务错误
 			this.close()
 			//重新连接

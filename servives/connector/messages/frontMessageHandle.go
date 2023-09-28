@@ -4,8 +4,7 @@ import (
 	"errors"
 
 	"github.com/yicaoyimuys/GoGameServer/core"
-	"github.com/yicaoyimuys/GoGameServer/core/consts/ErrCode"
-	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	"github.com/yicaoyimuys/GoGameServer/core/consts"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/grpc/ipc"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
@@ -27,7 +26,7 @@ func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {
 }
 
 func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToIpcService(Service.Game, session, msgBody)
+	err := sendMsgToIpcService(consts.Service_Game, session, msgBody)
 	if err != nil {
 		ERR("dealGameMsg", err)
 		sendErrorMsgToClient(session)
@@ -35,7 +34,7 @@ func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
 }
 
 func dealChatMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToIpcService(Service.Chat, session, msgBody)
+	err := sendMsgToIpcService(consts.Service_Chat, session, msgBody)
 	if err != nil {
 		ERR("dealChatMsg", err)
 		sendErrorMsgToClient(session)
@@ -43,7 +42,7 @@ func dealChatMsg(session *sessions.FrontSession, msgBody []byte) {
 }
 
 func dealLoginMsg(session *sessions.FrontSession, msgBody []byte) {
-	err := sendMsgToIpcService(Service.Login, session, msgBody)
+	err := sendMsgToIpcService(consts.Service_Login, session, msgBody)
 	if err != nil {
 		ERR("dealLoginMsg", err)
 		sendErrorMsgToClient(session)
@@ -61,7 +60,7 @@ func getGameService(session *sessions.FrontSession, msgBody []byte, ipcClient *i
 		protoMsgData := protoMsg.Body.(*gameProto.UserGetInfoC2S)
 		return ipcClient.GetServiceByFlag(protoMsgData.GetToken())
 	} else {
-		return session.GetIpcService(Service.Game)
+		return session.GetIpcService(consts.Service_Game)
 	}
 }
 
@@ -76,7 +75,7 @@ func getChatService(session *sessions.FrontSession, msgBody []byte, ipcClient *i
 		protoMsgData := protoMsg.Body.(*gameProto.UserJoinChatC2S)
 		return ipcClient.GetServiceByFlag(protoMsgData.GetToken())
 	} else {
-		return session.GetIpcService(Service.Chat)
+		return session.GetIpcService(consts.Service_Chat)
 	}
 }
 
@@ -91,13 +90,13 @@ func getLoginService(session *sessions.FrontSession, msgBody []byte, ipcClient *
 		protoMsgData := protoMsg.Body.(*gameProto.UserLoginC2S)
 		return ipcClient.GetServiceByFlag(protoMsgData.GetAccount())
 	} else {
-		return session.GetIpcService(Service.Login)
+		return session.GetIpcService(consts.Service_Login)
 	}
 }
 
 func sendErrorMsgToClient(session *sessions.FrontSession) {
 	sendMsg := protos.MarshalProtoMsg(&gameProto.ErrorNoticeS2C{
-		ErrorCode: protos.Int32(ErrCode.SYSTEM_ERR),
+		ErrorCode: protos.Int32(consts.ErrCode_SystemError),
 	})
 	session.Send(sendMsg)
 }
@@ -109,11 +108,11 @@ func sendMsgToIpcService(serviceName string, clientSession *sessions.FrontSessio
 	}
 
 	var service string
-	if serviceName == Service.Login {
+	if serviceName == consts.Service_Login {
 		service = getLoginService(clientSession, msgBody, ipcClient)
-	} else if serviceName == Service.Game {
+	} else if serviceName == consts.Service_Game {
 		service = getGameService(clientSession, msgBody, ipcClient)
-	} else if serviceName == Service.Chat {
+	} else if serviceName == consts.Service_Chat {
 		service = getChatService(clientSession, msgBody, ipcClient)
 	}
 

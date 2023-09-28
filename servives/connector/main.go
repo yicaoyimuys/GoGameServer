@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/yicaoyimuys/GoGameServer/core"
-	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	"github.com/yicaoyimuys/GoGameServer/core/consts"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 	"github.com/yicaoyimuys/GoGameServer/core/service"
@@ -13,13 +13,13 @@ import (
 
 func main() {
 	//初始化Service
-	newService := service.NewService(Service.Connector)
+	newService := service.NewService(consts.Service_Connector)
 	newService.StartRedis()
 	// newService.StartWebSocket(messages.FontReceive)
 	newService.StartSocket(messages.FontReceive)
 	newService.SetSessionCreateHandle(sessionCreate)
-	newService.StartIpcClient([]string{Service.Game, Service.Login, Service.Chat})
-	newService.StartRpcClient([]string{Service.Game, Service.Login, Service.Chat})
+	newService.StartIpcClient([]string{consts.Service_Game, consts.Service_Login, consts.Service_Chat})
+	newService.StartRpcClient([]string{consts.Service_Game, consts.Service_Login, consts.Service_Chat})
 	newService.StartPProf(6000)
 
 	//模块初始化
@@ -49,19 +49,19 @@ func sessionOffline(session *sessions.FrontSession) {
 
 	//通知登录服务器
 	go func() {
-		loginService := core.Service.GetRpcClient(Service.Login)
+		loginService := core.Service.GetRpcClient(consts.Service_Login)
 		loginService.CallAll(method, args, reply)
 	}()
 
 	//通知聊天服务器
 	go func() {
-		chatService := core.Service.GetRpcClient(Service.Chat)
+		chatService := core.Service.GetRpcClient(consts.Service_Chat)
 		chatService.CallAll(method, args, reply)
 	}()
 
 	//通知游戏服务器
 	go func() {
-		gameService := core.Service.GetRpcClient(Service.Game)
+		gameService := core.Service.GetRpcClient(consts.Service_Game)
 		gameService.CallAll(method, args, reply)
 	}()
 }

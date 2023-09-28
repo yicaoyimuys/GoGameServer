@@ -1,8 +1,7 @@
 package controllers
 
 import (
-	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
-	"github.com/yicaoyimuys/GoGameServer/core/consts/ServiceType"
+	"github.com/yicaoyimuys/GoGameServer/core/consts"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/consul"
 
@@ -29,9 +28,9 @@ func (this *ConnectorController) Get() {
 
 	typeStr := this.GetString("type")
 	if typeStr == "Socket" {
-		serviceName = packageServiceName(ServiceType.SOCKET, Service.Connector)
+		serviceName = packageServiceName(consts.ServiceType_Socket, consts.Service_Connector)
 	} else if typeStr == "WebSocket" {
-		serviceName = packageServiceName(ServiceType.WEBSOCKET, Service.Connector)
+		serviceName = packageServiceName(consts.ServiceType_WebSocket, consts.Service_Connector)
 	}
 
 	services := consulClient.GetServices(serviceName)

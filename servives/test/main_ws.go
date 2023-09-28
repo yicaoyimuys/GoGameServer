@@ -1,8 +1,16 @@
 package main
 
 // import (
-// 	"github.com/yicaoyimuys/GoGameServer/core/consts/ErrCode"
-// 	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+// 	"crypto/tls"
+// 	"encoding/binary"
+// 	"encoding/json"
+// 	"io/ioutil"
+// 	"net/http"
+// 	"net/url"
+// 	"sync"
+// 	"sync/atomic"
+
+// 	"github.com/yicaoyimuys/GoGameServer/core/consts"
 // 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 // 	"github.com/yicaoyimuys/GoGameServer/core/libs/array"
 // 	"github.com/yicaoyimuys/GoGameServer/core/libs/hash"
@@ -12,14 +20,6 @@ package main
 // 	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
 // 	"github.com/yicaoyimuys/GoGameServer/core/service"
 // 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
-// 	"crypto/tls"
-// 	"encoding/binary"
-// 	"encoding/json"
-// 	"io/ioutil"
-// 	"net/http"
-// 	"net/url"
-// 	"sync"
-// 	"sync/atomic"
 
 // 	"github.com/golang/protobuf/proto"
 // 	"github.com/gorilla/websocket"
@@ -35,7 +35,7 @@ package main
 
 // func main() {
 // 	//初始化Service
-// 	service.NewService(Service.Test)
+// 	service.NewService(consts.Service_Test)
 
 // 	//请求服务器连接地址
 // 	resp, err := http.Get("http://127.0.0.1:18881/GetConnector?type=WebSocket")
@@ -125,7 +125,7 @@ package main
 // 	sendMutex sync.Mutex
 // }
 
-// //关闭
+// // 关闭
 // func (this *clientSession) close() {
 // 	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) {
 // 		timer.Remove(this.pingTimerId)
@@ -135,12 +135,12 @@ package main
 // 	}
 // }
 
-// //是否关闭
+// // 是否关闭
 // func (this *clientSession) isClose() bool {
 // 	return atomic.LoadInt32(&this.closeFlag) == 1
 // }
 
-// //平台登录
+// // 平台登录
 // func (this *clientSession) login() {
 // 	msg := &gameProto.UserLoginC2S{
 // 		Account: protos.String(this.account),
@@ -148,7 +148,7 @@ package main
 // 	this.sendMsg(msg)
 // }
 
-// //获取用户数据
+// // 获取用户数据
 // func (this *clientSession) getInfo() {
 // 	msg := &gameProto.UserGetInfoC2S{
 // 		Token: protos.String(this.token),
@@ -156,7 +156,7 @@ package main
 // 	this.sendMsg(msg)
 // }
 
-// //心跳
+// // 心跳
 // func (this *clientSession) ping() {
 // 	this.pingTimerId = timer.DoTimer(2000, func() {
 // 		var msg = &gameProto.ClientPingC2S{}
@@ -164,14 +164,14 @@ package main
 // 	})
 // }
 
-// //加入聊天
+// // 加入聊天
 // func (this *clientSession) joinChat() {
 // 	var msg = &gameProto.UserJoinChatC2S{}
 // 	msg.Token = protos.String(this.token)
 // 	this.sendMsg(msg)
 // }
 
-// //聊天
+// // 聊天
 // func (this *clientSession) chat() {
 // 	delay := random.RandIntRange(10000, 20000)
 // 	this.chatTimerId = timer.DoTimer(uint32(delay), func() {
@@ -181,7 +181,7 @@ package main
 // 	})
 // }
 
-// //接收消息
+// // 接收消息
 // func (this *clientSession) receiveMsg() {
 // 	defer stack.TryError()
 
@@ -239,7 +239,7 @@ package main
 // 	} else if msgId == gameProto.ID_error_notice_s2c {
 // 		data := msgData.(*gameProto.ErrorNoticeS2C)
 // 		errCode := data.GetErrorCode()
-// 		if errCode == ErrCode.SYSTEM_ERR {
+// 		if errCode == consts.ErrCode_SystemError {
 // 			//系统服务错误
 // 			this.close()
 // 			//重新连接

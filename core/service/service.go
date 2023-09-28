@@ -7,7 +7,7 @@ import (
 
 	"github.com/yicaoyimuys/GoGameServer/core"
 	"github.com/yicaoyimuys/GoGameServer/core/config"
-	"github.com/yicaoyimuys/GoGameServer/core/consts/ServiceType"
+	"github.com/yicaoyimuys/GoGameServer/core/consts"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/common"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/consul"
@@ -224,7 +224,7 @@ func (this *Service) StartHttpServer() {
 	go beego.Run()
 
 	//服务注册
-	this.registerService(ServiceType.HTTP, port)
+	this.registerService(consts.ServiceType_Http, port)
 }
 
 func (this *Service) RegisterHttpRouter(rootPath string, controller beego.ControllerInterface) {
@@ -250,7 +250,7 @@ func (this *Service) StartWebSocket(handle sessions.FrontSessionReceiveMsgHandle
 	server.StartPing()
 
 	//服务注册
-	this.registerService(ServiceType.WEBSOCKET, port)
+	this.registerService(consts.ServiceType_WebSocket, port)
 
 	//service中保存websocketServer
 	this.websocketServer = server
@@ -269,7 +269,7 @@ func (this *Service) StartSocket(handle sessions.FrontSessionReceiveMsgHandle) {
 	server.StartPing()
 
 	//服务注册
-	this.registerService(ServiceType.SOCKET, port)
+	this.registerService(consts.ServiceType_Socket, port)
 
 	//service中保存socketServer
 	this.socketServer = server
@@ -293,7 +293,7 @@ func (this *Service) StartIpcClient(serviceNames []string) {
 
 	//初始化Ipc客户端
 	for _, serviceName := range serviceNames {
-		serviceName = packageServiceName(ServiceType.IPC, serviceName)
+		serviceName = packageServiceName(consts.ServiceType_Ipc, serviceName)
 		this.ipcClients[serviceName] = ipc.NewClient(consulClient, serviceName, messages.IpcClientReceive)
 		INFO("ipc client start...", serviceName)
 	}
@@ -309,7 +309,7 @@ func (this *Service) StartIpcServer() {
 	this.ipcServer = ipcServer
 
 	//服务注册
-	this.registerService(ServiceType.IPC, port)
+	this.registerService(consts.ServiceType_Ipc, port)
 
 	//Log
 	timer.DoTimer(20*1000, func() {
@@ -326,7 +326,7 @@ func (this *Service) StartRpcClient(serviceNames []string) {
 
 	//初始化Rpc客户端
 	for _, serviceName := range serviceNames {
-		serviceName = packageServiceName(ServiceType.RPC, serviceName)
+		serviceName = packageServiceName(consts.ServiceType_Rpc, serviceName)
 		this.rpcClients[serviceName] = rpc.NewClient(consulClient, serviceName)
 		INFO("rpc client start...", serviceName)
 	}
@@ -339,7 +339,7 @@ func (this *Service) StartRpcServer() {
 	INFO("rpc server start...." + port)
 
 	//服务注册
-	this.registerService(ServiceType.RPC, port)
+	this.registerService(consts.ServiceType_Rpc, port)
 }
 
 func (this *Service) RegisterRpcModule(rpcName string, rpcModule interface{}) {
@@ -382,13 +382,13 @@ func (this *Service) Identify() string {
 }
 
 func (this *Service) GetIpcClient(serviceName string) *ipc.Client {
-	serviceName = packageServiceName(ServiceType.IPC, serviceName)
+	serviceName = packageServiceName(consts.ServiceType_Ipc, serviceName)
 	client, _ := this.ipcClients[serviceName]
 	return client
 }
 
 func (this *Service) GetRpcClient(serviceName string) *rpc.Client {
-	serviceName = packageServiceName(ServiceType.RPC, serviceName)
+	serviceName = packageServiceName(consts.ServiceType_Rpc, serviceName)
 	client, _ := this.rpcClients[serviceName]
 	return client
 }

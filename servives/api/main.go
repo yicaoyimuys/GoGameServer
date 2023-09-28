@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	"github.com/yicaoyimuys/GoGameServer/core/consts"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/service"
 	"github.com/yicaoyimuys/GoGameServer/servives/api/controllers"
@@ -9,7 +9,7 @@ import (
 
 func main() {
 	//初始化Service
-	newService := service.NewService(Service.Api)
+	newService := service.NewService(consts.Service_Api)
 	newService.StartRedis()
 	newService.StartMongo()
 	newService.StartHttpServer()

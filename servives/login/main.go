@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/yicaoyimuys/GoGameServer/core/consts/Service"
+	"github.com/yicaoyimuys/GoGameServer/core/consts"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/messages"
 	"github.com/yicaoyimuys/GoGameServer/core/service"
@@ -12,10 +12,10 @@ import (
 
 func main() {
 	//初始化Service
-	newService := service.NewService(Service.Login)
+	newService := service.NewService(consts.Service_Login)
 	newService.StartIpcServer()
 	newService.StartRpcServer()
-	newService.StartRpcClient([]string{Service.Log})
+	newService.StartRpcClient([]string{consts.Service_Log})
 	newService.StartRedis()
 	newService.StartMysql()
 	newService.RegisterRpcModule("Client", &rpcModules.Client{})
