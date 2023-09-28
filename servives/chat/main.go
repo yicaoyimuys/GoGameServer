@@ -7,7 +7,6 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/service"
 	"github.com/yicaoyimuys/GoGameServer/servives/chat/module"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
-	"github.com/yicaoyimuys/GoGameServer/servives/public/rpcModules"
 )
 
 func main() {
@@ -17,7 +16,6 @@ func main() {
 	newService.StartRpcServer()
 	newService.StartRpcClient([]string{consts.Service_Log})
 	newService.StartRedis()
-	newService.RegisterRpcModule("Client", &rpcModules.Client{})
 
 	//消息初始化
 	initMessage()
