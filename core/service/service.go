@@ -3,6 +3,8 @@ package service
 import (
 	"runtime"
 
+	beegoLogs "github.com/astaxie/beego/logs"
+	beegoOrm "github.com/astaxie/beego/orm"
 	"github.com/yicaoyimuys/GoGameServer/core"
 	"github.com/yicaoyimuys/GoGameServer/core/config"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
@@ -19,6 +21,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/system"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/websocket"
+	"go.uber.org/zap"
 
 	"github.com/spf13/cast"
 )
@@ -91,24 +94,36 @@ func initConfig(service *Service) {
 func initLog(service *Service) {
 	logConfig := config.GetLogConfig()
 
-	logOpenDebug := logConfig.Debug
-	logOutput := logConfig.Output
-	logFileName := service.name + "-" + cast.ToString(service.id)
+	logger.Init(
+		logger.WithDebug(logConfig.Debug),
+		logger.WithBoth(logConfig.Both),
+		logger.WithFile(logConfig.File),
+		logger.WithName(service.name+"-"+cast.ToString(service.id)),
+	)
 
-	logger.SetLogFile(logFileName, logOutput)
-	logger.SetLogDebug(logOpenDebug)
+	// 设置beego logs
+	if logConfig.Debug {
+		beegoLogs.SetLevel(beegoLogs.LevelDebug)
+	} else {
+		beegoLogs.SetLevel(beegoLogs.LevelInfo)
+	}
+
+	// 设置beego orm
+	beegoOrm.Debug = logConfig.Debug
 }
 
 func printEnv(service *Service) {
-	INFO("使用CPU数量:", runtime.GOMAXPROCS(-1))
-	INFO("初始GoroutineNum:", runtime.NumGoroutine())
-	INFO("服务平台:", service.env)
-	INFO("服务名称:", service.name)
-	INFO("服务ID:", service.id)
-	INFO("启动参数:", system.Args)
+	INFO("CPU数量", zap.Int("CpuNum", runtime.GOMAXPROCS(-1)))
+	INFO("协程数量", zap.Int("GoroutineNum", runtime.NumGoroutine()))
+	INFO("Go版本", zap.String("GoVersion", runtime.Version()))
+	INFO("启动路径", zap.String("Root", system.Root))
+	INFO("服务器环境", zap.String("ServiceEnv", service.env))
+	INFO("服务器名称", zap.String("ServiceName", service.name))
+	INFO("服务器ID", zap.Int("ServiceId", service.id))
+	INFO("服务器IP", zap.String("ServiceIp", common.GetLocalIp()))
 
 	timer.DoTimer(20*1000, func() {
-		INFO("当前GoroutineNum:", runtime.NumGoroutine())
+		INFO("协程数量", zap.Int("GoroutineNum", runtime.NumGoroutine()))
 	})
 }
 
@@ -122,7 +137,7 @@ func packageServiceName(serviceType string, serviceName string) string {
 
 func (this *Service) registerService(serviceType string, servicePort string) {
 	if _, exists := this.ports[serviceType]; exists {
-		ERR("该类型的Service已经在本进程内启用", serviceType)
+		ERR("该类型的Service已经在本进程内启用", zap.String("ServiceType", serviceType))
 		return
 	}
 
@@ -131,7 +146,7 @@ func (this *Service) registerService(serviceType string, servicePort string) {
 	err := consul.NewServive(this.ip, serviceName, this.id, servicePort)
 	CheckError(err)
 
-	INFO("join consul service...", serviceName, servicePort)
+	INFO("Join Consul Service", zap.String("ServiceName", serviceName), zap.String("ServicePort", servicePort))
 
 	//记录该进程启用的端口号
 	this.ports[serviceType] = servicePort

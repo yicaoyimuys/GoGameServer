@@ -1,70 +1,167 @@
 package logger
 
 import (
-	"fmt"
-	"strings"
+	"os"
 
-	"github.com/yicaoyimuys/GoGameServer/core/libs/system"
-
-	"github.com/astaxie/beego/logs"
+	"github.com/natefinch/lumberjack"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
-	prefix = "log"
-	log    = logs.GetBeeLogger()
+	fileLogger    *zap.Logger
+	consoleLogger *zap.Logger
+	conf          option
 )
 
-func init() {
-	logs.Async(10000)
+type option struct {
+	debug bool
+	both  bool
+	file  bool
+	name  string
 }
 
-func SetLogDebug(debug bool) {
-	if debug {
-		logs.SetLevel(logs.LevelDebug)
-	} else {
-		logs.SetLevel(logs.LevelInfo)
+// 默认参数
+func defaultOption() option {
+	return option{
+		debug: false,
+		both:  true,
+		file:  true,
+		name:  "log",
 	}
 }
 
-func SetLogFile(fileName string, log_output string) {
-	prefix = fileName
-	startLogger(fileName+".log", log_output)
-}
+// Option 参数
+type Option func(*option)
 
-func startLogger(path string, log_output string) {
-	path = system.Root + "/logs/" + path
+// Init Init
+func Init(opts ...Option) {
+	conf := defaultOption()
+	for _, opt := range opts {
+		opt(&conf)
+	}
 
-	switch log_output {
-	case "both":
-		logs.SetLogger("console", "")
-	case "file":
-		logs.SetLogger("file", `{"filename":"`+path+`"}`)
-	case "both&file":
-		logs.SetLogger("console", "")
-		logs.SetLogger("file", `{"filename":"`+path+`"}`)
+	var logLevel = zapcore.InfoLevel
+	if conf.debug {
+		logLevel = zapcore.DebugLevel
+	}
+
+	if conf.both {
+		createConsoleLogger(conf.name, logLevel)
+	}
+
+	if conf.file {
+		createFileLogger(conf.name, logLevel)
 	}
 }
 
-func getLogMsg(v ...interface{}) string {
-	return "[" + prefix + "] " + strings.TrimRight(fmt.Sprintln(v...), "\n")
+func createFileLogger(name string, logLevel zapcore.Level) {
+	lumberJackLogger := &lumberjack.Logger{
+		Filename:   "./logs/" + name + ".log",
+		MaxSize:    10,
+		MaxBackups: 5,
+		MaxAge:     30,
+		Compress:   false,
+	}
+	writeSyncer := zapcore.AddSync(lumberJackLogger)
+
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoder := zapcore.NewJSONEncoder(encoderConfig)
+
+	fileLogger = zap.New(zapcore.NewCore(encoder, writeSyncer, logLevel))
+	fileLogger = fileLogger.Named(name)
 }
 
-func Error(v ...interface{}) {
-	log.Error(getLogMsg(v...))
+func createConsoleLogger(fileName string, logLevel zapcore.Level) {
+	writeSyncer := os.Stderr
+
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+
+	consoleLogger = zap.New(zapcore.NewCore(encoder, writeSyncer, logLevel))
+	consoleLogger = consoleLogger.Named(fileName)
 }
 
-func Warn(v ...interface{}) {
-	log.Warn(getLogMsg(v...))
+// WithDebug 是否开启Debug参数
+func WithDebug(debug bool) Option {
+	return func(o *option) {
+		o.debug = debug
+	}
 }
 
-func Info(v ...interface{}) {
-	log.Info(getLogMsg(v...))
+// WithBoth 是否开启Both参数
+func WithBoth(both bool) Option {
+	return func(o *option) {
+		o.both = both
+	}
 }
 
-func Notice(v ...interface{}) {
-	log.Notice(getLogMsg(v...))
+// WithFile 是否开启File参数
+func WithFile(file bool) Option {
+	return func(o *option) {
+		o.file = file
+	}
 }
 
-func Debug(v ...interface{}) {
-	log.Debug(getLogMsg(v...))
+// WithName 设置name参数
+func WithName(name string) Option {
+	return func(o *option) {
+		o.name = name
+	}
+}
+
+// Error Error
+func Error(msg string, fields ...zap.Field) {
+	if consoleLogger != nil {
+		defer consoleLogger.Sync()
+		consoleLogger.Error(msg, fields...)
+	}
+
+	if fileLogger != nil {
+		defer fileLogger.Sync()
+		fileLogger.Error(msg, fields...)
+	}
+}
+
+// Warn Warn
+func Warn(msg string, fields ...zap.Field) {
+	if consoleLogger != nil {
+		defer consoleLogger.Sync()
+		consoleLogger.Warn(msg, fields...)
+	}
+
+	if fileLogger != nil {
+		defer fileLogger.Sync()
+		fileLogger.Warn(msg, fields...)
+	}
+}
+
+// Info Info
+func Info(msg string, fields ...zap.Field) {
+	if consoleLogger != nil {
+		defer consoleLogger.Sync()
+		consoleLogger.Info(msg, fields...)
+	}
+
+	if fileLogger != nil {
+		defer fileLogger.Sync()
+		fileLogger.Info(msg, fields...)
+	}
+}
+
+// Debug Debug
+func Debug(msg string, fields ...zap.Field) {
+	if consoleLogger != nil {
+		defer consoleLogger.Sync()
+		consoleLogger.Debug(msg, fields...)
+	}
+
+	if fileLogger != nil {
+		defer fileLogger.Sync()
+		fileLogger.Debug(msg, fields...)
+	}
 }

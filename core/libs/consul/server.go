@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"go.uber.org/zap"
 
 	"github.com/hashicorp/consul/api"
 	"github.com/spf13/cast"
@@ -64,6 +65,6 @@ func WaitToUnRegistService(client *api.Client, serviceId string) {
 	//从服务中移除
 	err := client.Agent().ServiceDeregister(serviceId)
 	if err != nil {
-		logger.Error(err)
+		logger.Error("ConsulError", zap.Error(err))
 	}
 }

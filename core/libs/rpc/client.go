@@ -13,6 +13,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/hash"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
+	"go.uber.org/zap"
 
 	"github.com/spf13/cast"
 )
@@ -70,7 +71,7 @@ func (this *Client) traceServices() {
 	this.servicesMutex.Lock()
 	logger.Debug("----------rpc start " + this.serviceName + "----------")
 	for _, value := range this.services {
-		logger.Debug(this.serviceName, "Service", value)
+		logger.Debug("Service", zap.String("ServiceName", this.serviceName), zap.String("ServiceAddress", value))
 	}
 	logger.Debug("-----------rpc end " + this.serviceName + "-----------")
 	this.servicesMutex.Unlock()
@@ -115,10 +116,10 @@ func (this *Client) getLink(service string) *rpc.Client {
 	//连接Rpc服务器
 	conn, err := net.DialTimeout("tcp", service, time.Second*3)
 	if err != nil {
-		logger.Error("rpcServer connect fail", service)
+		logger.Error("RpcServer Connect Fail", zap.String("Service", service))
 		return nil
 	} else {
-		logger.Info("rpcServer connect success", service)
+		logger.Info("RpcServer Connect Success", zap.String("Service", service))
 	}
 	link = jsonrpc.NewClient(conn)
 
@@ -143,7 +144,7 @@ func (this *Client) removeLink(service string) {
 	}
 	this.linkMutex.Unlock()
 
-	logger.Error("rpcServer disconnected", service)
+	logger.Error("RpcServer Disconnected", zap.String("Service", service))
 }
 
 func (this *Client) Call(serviceMethod string, args interface{}, reply interface{}, flag string) error {
@@ -152,7 +153,7 @@ func (this *Client) Call(serviceMethod string, args interface{}, reply interface
 	}
 	service := this.getServiceByFlag(flag)
 	if service == "" {
-		return errors.New("rpcServer no exists")
+		return errors.New("RpcServer No Exists")
 	}
 
 	link := this.getLink(service)

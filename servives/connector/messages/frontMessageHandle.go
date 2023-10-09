@@ -10,6 +10,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
+	"go.uber.org/zap"
 )
 
 func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {
@@ -28,7 +29,7 @@ func dealConnectorMsg(session *sessions.FrontSession, msgBody []byte) {
 func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
 	err := sendMsgToIpcService(consts.Service_Game, session, msgBody)
 	if err != nil {
-		ERR("dealGameMsg", err)
+		ERR("DealGameMsg", zap.Error(err))
 		sendErrorMsgToClient(session)
 	}
 }
@@ -36,7 +37,7 @@ func dealGameMsg(session *sessions.FrontSession, msgBody []byte) {
 func dealChatMsg(session *sessions.FrontSession, msgBody []byte) {
 	err := sendMsgToIpcService(consts.Service_Chat, session, msgBody)
 	if err != nil {
-		ERR("dealChatMsg", err)
+		ERR("DealChatMsg", zap.Error(err))
 		sendErrorMsgToClient(session)
 	}
 }
@@ -44,7 +45,7 @@ func dealChatMsg(session *sessions.FrontSession, msgBody []byte) {
 func dealLoginMsg(session *sessions.FrontSession, msgBody []byte) {
 	err := sendMsgToIpcService(consts.Service_Login, session, msgBody)
 	if err != nil {
-		ERR("dealLoginMsg", err)
+		ERR("DealLoginMsg", zap.Error(err))
 		sendErrorMsgToClient(session)
 	}
 }

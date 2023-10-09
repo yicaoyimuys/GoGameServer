@@ -10,6 +10,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/hash"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
+	"go.uber.org/zap"
 
 	"github.com/spf13/cast"
 	"golang.org/x/net/context"
@@ -72,7 +73,7 @@ func (this *Client) traceServices() {
 	this.servicesMutex.Lock()
 	logger.Debug("----------grpc start " + this.serviceName + "----------")
 	for _, value := range this.services {
-		logger.Debug(this.serviceName, "Service", value)
+		logger.Debug("Service", zap.String("ServiceName", this.serviceName), zap.String("ServiceAddress", value))
 	}
 	logger.Debug("-----------grpc end " + this.serviceName + "-----------")
 	this.servicesMutex.Unlock()
@@ -121,10 +122,10 @@ func (this *Client) getLink(service string) *grpc.ClientConn {
 	//连接Rpc服务器
 	link, err := grpc.Dial(service, grpc.WithInsecure())
 	if err != nil {
-		logger.Error("grpcServer connect fail", service)
+		logger.Error("GrpcServer Connect Fail", zap.String("Service", service))
 		return nil
 	} else {
-		logger.Info("grpcServer connect success", service)
+		logger.Info("GrpcServer Connect Success", zap.String("Service", service))
 	}
 
 	//防止重复链接
@@ -148,7 +149,7 @@ func (this *Client) removeLink(service string) {
 	}
 	this.linkMutex.Unlock()
 
-	logger.Error("grpcServer disconnected", service)
+	logger.Error("grpcServer disconnected", zap.String("Service", service))
 }
 
 func (this *Client) Call(service string, serviceMethod string, arg interface{}) interface{} {
@@ -156,7 +157,7 @@ func (this *Client) Call(service string, serviceMethod string, arg interface{}) 
 	link := this.getLink(service)
 	if link == nil {
 		this.removeService(service)
-		logger.Error("service not exists", service)
+		logger.Error("service not exists", zap.String("Service", service))
 		return nil
 	}
 
@@ -180,7 +181,7 @@ func (this *Client) Call(service string, serviceMethod string, arg interface{}) 
 	err := serviceResult[1].Interface()
 	if err != nil && err.(error) == io.ErrUnexpectedEOF {
 		this.removeLink(service)
-		logger.Error("service is error", service)
+		logger.Error("service is error", zap.String("Service", service))
 		return nil
 	}
 

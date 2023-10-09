@@ -1,8 +1,9 @@
 package config
 
 type LogConfig struct {
-	Debug  bool   `json:"debug"`
-	Output string `json:"output"`
+	Debug bool `json:"debug"`
+	Both  bool `json:"both"`
+	File  bool `json:"file"`
 }
 
 type MongoConfig struct {

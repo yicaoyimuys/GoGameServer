@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cast"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
+	"go.uber.org/zap"
 )
 
 func (this *Service) StartPProf(port int) {
@@ -15,5 +16,5 @@ func (this *Service) StartPProf(port int) {
 		defer stack.TryError()
 		http.ListenAndServe(":"+cast.ToString(port), nil)
 	}()
-	INFO("debug start...", port)
+	INFO("PProf Start", zap.Int("Port", port))
 }

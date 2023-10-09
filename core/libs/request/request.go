@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -24,10 +25,10 @@ func HttpGet(url string, retryNum int) (string, uint32) {
 	resp, err := http.Get(url)
 	if err != nil {
 		if retryNum > 0 {
-			logger.Error("HttpGet 重试", url, err)
+			logger.Error("HttpGet 重试", zap.String("Url", url), zap.Error(err))
 			return HttpGet(url, retryNum-1)
 		} else {
-			logger.Error("HttpGet", url, err)
+			logger.Error("HttpGet", zap.String("Url", url), zap.Error(err))
 			return "error", 1001
 		}
 	}
@@ -35,7 +36,7 @@ func HttpGet(url string, retryNum int) (string, uint32) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.Error("HttpGet", url, err)
+		logger.Error("HttpGet", zap.String("Url", url), zap.Error(err))
 		return "error", 1002
 	}
 
@@ -48,10 +49,10 @@ func HttpPost(url string, retryNum int) (string, uint32) {
 	resp, err := http.Post(arr[0], "application/x-www-form-urlencoded", strings.NewReader(arr[1]))
 	if err != nil {
 		if retryNum > 0 {
-			logger.Error("HttpPost 重试", url, err)
+			logger.Error("HttpPost 重试", zap.String("Url", url), zap.Error(err))
 			return HttpPost(url, retryNum-1)
 		} else {
-			logger.Error("HttpPost", url, err)
+			logger.Error("HttpPost", zap.String("Url", url), zap.Error(err))
 			return "error", 1001
 		}
 	}
@@ -59,7 +60,7 @@ func HttpPost(url string, retryNum int) (string, uint32) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.Error("HttpPost", url, err)
+		logger.Error("HttpPost", zap.String("Url", url), zap.Error(err))
 		return "error", 1002
 	}
 

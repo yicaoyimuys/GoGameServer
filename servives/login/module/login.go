@@ -12,6 +12,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/mysqlModels"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/redisCaches"
+	"go.uber.org/zap"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -63,9 +64,9 @@ func loginSuccess(clientSession *sessions.BackSession, account string, userID ui
 	cache.AddOnlineUser(userID, account, clientSession)
 	clientSession.AddCloseCallback(nil, "user.loginSuccess", func() {
 		cache.RemoveOnlineUser(clientSession.ID())
-		DEBUG("用户下线：", cache.GetOnlineUsersNum())
+		DEBUG("用户下线", zap.Int32("OnlineUsersNum", cache.GetOnlineUsersNum()))
 	})
-	DEBUG("用户上线：", cache.GetOnlineUsersNum())
+	DEBUG("用户上线", zap.Int32("OnlineUsersNum", cache.GetOnlineUsersNum()))
 
 	//返回客户端数据
 	token := public.CreateToken(userID)

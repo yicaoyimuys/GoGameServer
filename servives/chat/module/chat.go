@@ -9,6 +9,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/servives/public/errCodes"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/redisCaches"
+	"go.uber.org/zap"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -37,9 +38,9 @@ func JoinChat(clientSession *sessions.BackSession, msgData proto.Message) {
 	//用户下线处理
 	clientSession.AddCloseCallback(nil, "user.joinChatSuccess", func() {
 		cache.RemoveUser(dbUser.Id)
-		DEBUG("用户下线：", cache.GetOnlineUsersNum())
+		DEBUG("用户下线", zap.Int32("OnlineUsersNum", cache.GetOnlineUsersNum()))
 	})
-	DEBUG("用户上线：", cache.GetOnlineUsersNum())
+	DEBUG("用户上线", zap.Int32("OnlineUsersNum", cache.GetOnlineUsersNum()))
 
 	//返回客户端
 	sendMsg := &gameProto.UserJoinChatS2C{}

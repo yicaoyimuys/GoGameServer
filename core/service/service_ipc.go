@@ -8,6 +8,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
 	"github.com/yicaoyimuys/GoGameServer/core/messages"
+	"go.uber.org/zap"
 )
 
 func (this *Service) StartIpcClient(serviceNames []string) {
@@ -21,7 +22,7 @@ func (this *Service) StartIpcClient(serviceNames []string) {
 	for _, serviceName := range serviceNames {
 		serviceName = packageServiceName(consts.ServiceType_Ipc, serviceName)
 		this.ipcClients[serviceName] = ipc.NewClient(consulClient, serviceName, messages.IpcClientReceive)
-		INFO("ipc client start...", serviceName)
+		INFO("Ipc Client Start", zap.String("ServiceName", serviceName))
 	}
 }
 
@@ -29,7 +30,7 @@ func (this *Service) StartIpcServer() {
 	//开启ipcServer
 	ipcServer, port, err := ipc.InitServer(messages.IpcServerReceive)
 	CheckError(err)
-	INFO("ipc server start...", port)
+	INFO("Ipc Server Start", zap.String("Port", port))
 
 	//service中记录ipcServer
 	this.ipcServer = ipcServer
@@ -39,7 +40,7 @@ func (this *Service) StartIpcServer() {
 
 	//Log
 	timer.DoTimer(20*1000, func() {
-		INFO("当前BackSession数量:", sessions.BackSessionLen())
+		INFO("当前BackSession数量", zap.Int("BackSessionLen", sessions.BackSessionLen()))
 	})
 }
 

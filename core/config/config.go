@@ -7,6 +7,7 @@ import (
 
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/system"
+	"go.uber.org/zap"
 )
 
 var (
@@ -42,7 +43,7 @@ func loadConfig(data interface{}, configName string) {
 	configPath := getConfigPath(configName)
 	fileData, err := os.ReadFile(configPath)
 	if err != nil {
-		ERR("Config读取失败", configPath, err)
+		ERR("Config读取失败", zap.String("ConfigPath", configPath), zap.Error(err))
 		return
 	}
 	json.Unmarshal(fileData, data)

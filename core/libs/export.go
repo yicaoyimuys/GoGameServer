@@ -5,29 +5,26 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/system"
+	"go.uber.org/zap"
 )
 
 func init() {
 }
 
-func ERR(v ...interface{}) {
-	logger.Error(v...)
+func ERR(msg string, fields ...zap.Field) {
+	logger.Error(msg, fields...)
 }
 
-func WARN(v ...interface{}) {
-	logger.Warn(v...)
+func WARN(msg string, fields ...zap.Field) {
+	logger.Warn(msg, fields...)
 }
 
-func INFO(v ...interface{}) {
-	logger.Info(v...)
+func INFO(msg string, fields ...zap.Field) {
+	logger.Info(msg, fields...)
 }
 
-func NOTICE(v ...interface{}) {
-	logger.Notice(v...)
-}
-
-func DEBUG(v ...interface{}) {
-	logger.Debug(v...)
+func DEBUG(msg string, fields ...zap.Field) {
+	logger.Debug(msg, fields...)
 }
 
 func Run() {

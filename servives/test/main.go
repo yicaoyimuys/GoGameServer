@@ -19,6 +19,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
 	"github.com/yicaoyimuys/GoGameServer/core/service"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
+	"go.uber.org/zap"
 
 	"github.com/spf13/cast"
 	"google.golang.org/protobuf/proto"
@@ -38,13 +39,13 @@ func main() {
 	//请求服务器连接地址
 	resp, err := http.Get("http://127.0.0.1:18881/GetConnector?type=Socket")
 	if err != nil {
-		ERR(err)
+		ERR("请求服务器地址错误", zap.Error(err))
 		return
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		ERR(err)
+		ERR("请求服务器地址错误", zap.Error(err))
 		return
 	}
 	json.Unmarshal(body, &servers)
@@ -92,16 +93,16 @@ func startConnect(account string) {
 	//服务器端ip和端口
 	addr, err := net.ResolveTCPAddr("tcp4", server)
 	if err != nil {
-		ERR(account, "连接失败")
+		ERR("连接失败", zap.String("Account", account))
 		return
 	}
 	//申请连接客户端
 	conn, err := net.DialTCP("tcp4", nil, addr)
 	if err != nil {
-		ERR(account, "连接失败")
+		ERR("连接失败", zap.String("Account", account))
 		return
 	}
-	INFO(account, "连接成功")
+	INFO("连接成功", zap.String("Account", account))
 
 	client := new(clientSession)
 	client.con = conn
@@ -131,7 +132,7 @@ func (this *clientSession) close() {
 		timer.Remove(this.pingTimerId)
 		timer.Remove(this.chatTimerId)
 		this.con.Close()
-		DEBUG("连接关闭", this.account)
+		DEBUG("连接关闭", zap.String("Account", this.account))
 	}
 }
 
@@ -193,7 +194,7 @@ func (this *clientSession) receiveMsg() {
 		//消息头
 		msgHead := make([]byte, 2)
 		if _, err := io.ReadFull(this.con, msgHead); err != nil {
-			ERR("read1:", err)
+			ERR("read1", zap.Error(err))
 			break
 		}
 		msgLen := binary.BigEndian.Uint16(msgHead)
@@ -201,17 +202,17 @@ func (this *clientSession) receiveMsg() {
 		//消息内容
 		msgBody := make([]byte, msgLen)
 		if _, err := io.ReadFull(this.con, msgBody); err != nil {
-			ERR("read2:", err)
+			ERR("read2", zap.Error(err))
 			break
 		}
 
 		//消息解析
 		protoMsg := protos.UnmarshalProtoMsg(msgBody)
 		if protoMsg == protos.NullProtoMsg {
-			ERR("收到错误消息ID: ", protos.UnmarshalProtoId(msgBody))
+			ERR("收到错误消息ID", zap.Uint16("MsgId", protos.UnmarshalProtoId(msgBody)))
 			break
 		}
-		DEBUG(this.account, "收到消息ID", protoMsg.ID)
+		DEBUG("收到消息ID", zap.String("Account", this.account), zap.Uint16("MsgId", protoMsg.ID))
 
 		//消息处理
 		this.handleMsg(protoMsg.ID, protoMsg.Body)
@@ -226,13 +227,13 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 		//登录成功
 		data := msgData.(*gameProto.UserLoginS2C)
 		this.token = data.GetToken()
-		DEBUG("登录成功", this.token)
+		DEBUG("登录成功", zap.String("Token", this.token))
 		//获取用户数据
 		this.getInfo()
 	} else if msgId == gameProto.ID_user_getInfo_s2c {
 		//获取用户信息成功
 		data := msgData.(*gameProto.UserGetInfoS2C)
-		DEBUG("用户信息", data.GetData())
+		DEBUG("用户信息", zap.Any("Data", data.GetData()))
 		//加入聊天
 		this.joinChat()
 	} else if msgId == gameProto.ID_user_joinChat_s2c {
@@ -243,7 +244,7 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 	} else if msgId == gameProto.ID_user_chat_notice_s2c {
 		//收到聊天消息
 		data := msgData.(*gameProto.UserChatNoticeS2C)
-		DEBUG(this.account, "收到聊天消息", data.GetUserName()+"说："+data.GetMsg())
+		DEBUG("收到聊天消息", zap.String("Account", this.account), zap.String("Message", data.GetUserName()+"说："+data.GetMsg()))
 	} else if msgId == gameProto.ID_error_notice_s2c {
 		data := msgData.(*gameProto.ErrorNoticeS2C)
 		errCode := data.GetErrorCode()
@@ -255,7 +256,7 @@ func (this *clientSession) handleMsg(msgId uint16, msgData proto.Message) {
 				go startConnect(this.account)
 			})
 		}
-		DEBUG("收到错误消息", data)
+		DEBUG("收到错误消息", zap.Any("Data", data))
 	}
 }
 

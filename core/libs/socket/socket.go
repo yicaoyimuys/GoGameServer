@@ -7,6 +7,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
+	"go.uber.org/zap"
 )
 
 const (
@@ -38,7 +39,7 @@ func (this *Server) SetSessionReceiveMsgHandle(handle sessions.FrontSessionRecei
 }
 
 func (this *Server) Start() {
-	logger.Info("front start socket...", this.port)
+	logger.Info("Front Start Socket", zap.String("Port", this.port))
 
 	go func() {
 		defer stack.TryError()
@@ -51,7 +52,7 @@ func (this *Server) Start() {
 		stack.CheckError(err)
 
 		defer listener.Close()
-		logger.Info("socket waiting client connect...")
+		logger.Info("Socket Waiting Client Connect...")
 		for {
 			conn, err := listener.Accept()
 			stack.CheckError(err)
@@ -64,7 +65,7 @@ func (this *Server) Start() {
 func (this *Server) StartPing() {
 	overTime := 15
 	sessions.FrontSessionOpenPing(int64(overTime))
-	logger.Info("session超时时间设置", overTime)
+	logger.Info("Session超时时间设置", zap.Int("OverTime", overTime))
 }
 
 func (this *Server) handleConnect(conn net.Conn) {

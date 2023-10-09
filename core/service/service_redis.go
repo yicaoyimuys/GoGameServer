@@ -4,6 +4,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/config"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/redis"
+	"go.uber.org/zap"
 )
 
 func (this *Service) StartRedis() {
@@ -16,7 +17,7 @@ func (this *Service) StartRedis() {
 
 		if client != nil {
 			this.redisClients[aliasName] = client
-			INFO("redis_" + aliasName + "连接成功...")
+			INFO("Redis连接成功", zap.String("AliasName", aliasName))
 		}
 	}
 }

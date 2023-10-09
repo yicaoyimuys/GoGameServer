@@ -5,6 +5,7 @@ import (
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/consul"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/rpc"
+	"go.uber.org/zap"
 )
 
 func (this *Service) StartRpcClient(serviceNames []string) {
@@ -18,7 +19,7 @@ func (this *Service) StartRpcClient(serviceNames []string) {
 	for _, serviceName := range serviceNames {
 		serviceName = packageServiceName(consts.ServiceType_Rpc, serviceName)
 		this.rpcClients[serviceName] = rpc.NewClient(consulClient, serviceName)
-		INFO("rpc client start...", serviceName)
+		INFO("Rpc Client Start", zap.String("ServiceName", serviceName))
 	}
 }
 
@@ -26,7 +27,7 @@ func (this *Service) StartRpcServer() {
 	//开启rpcServer
 	port, err := rpc.InitServer()
 	CheckError(err)
-	INFO("rpc server start...." + port)
+	INFO("Rpc Server Start", zap.String("Port", port))
 
 	//注册客户端下线回调
 	err = rpc.RegisterModule("ClientOffline", &ClientOffline{})

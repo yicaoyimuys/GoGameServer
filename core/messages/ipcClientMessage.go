@@ -5,6 +5,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/grpc/ipc"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"go.uber.org/zap"
 )
 
 func IpcClientReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
@@ -21,7 +22,7 @@ func IpcClientReceive(stream ipc.Ipc_TransferClient, msg *ipc.Res) {
 				clientSession.Send(msg.Data)
 			} else {
 				msgId := protos.UnmarshalProtoId(msg.Data)
-				WARN("frontSession no exists", msgId)
+				WARN("FrontSession No Exists", zap.Uint16("MsgId", msgId))
 			}
 		}
 	}

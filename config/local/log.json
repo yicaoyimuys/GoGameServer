@@ -1,4 +1,5 @@
 {
   "debug": true,
-  "output": "both&file"
+  "both": true,
+  "file": true
 }

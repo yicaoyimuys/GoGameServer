@@ -4,6 +4,7 @@ import (
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"go.uber.org/zap"
 )
 
 func FontReceive(session *sessions.FrontSession, msgBody []byte) {
@@ -14,7 +15,7 @@ func FontReceive(session *sessions.FrontSession, msgBody []byte) {
 	//消息处理
 	if isSystemMsg(msgId) {
 		//系统消息
-		ERR("ERR???", msgId)
+		ERR("ERR???", zap.Uint16("MsgId", msgId))
 	} else if isConnectorMsg(msgId) {
 		//连接服务器消息
 		dealConnectorMsg(session, msgBody)
@@ -28,7 +29,7 @@ func FontReceive(session *sessions.FrontSession, msgBody []byte) {
 		//聊天服务器消息
 		dealChatMsg(session, msgBody)
 	} else {
-		ERR("WHAT???", msgId)
+		ERR("WHAT???", zap.Uint16("MsgId", msgId))
 	}
 }
 

@@ -20,6 +20,7 @@ package main
 // 	"github.com/yicaoyimuys/GoGameServer/core/libs/timer"
 // 	"github.com/yicaoyimuys/GoGameServer/core/service"
 // 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
+// 	"go.uber.org/zap"
 
 // 	"github.com/gorilla/websocket"
 // 	"github.com/spf13/cast"
@@ -40,13 +41,13 @@ package main
 // 	//请求服务器连接地址
 // 	resp, err := http.Get("http://127.0.0.1:18881/GetConnector?type=WebSocket")
 // 	if err != nil {
-// 		ERR(err)
+// 		ERR("请求服务器连接地址错误", zap.Error(err))
 // 		return
 // 	}
 // 	defer resp.Body.Close()
 // 	body, err := io.ReadAll(resp.Body)
 // 	if err != nil {
-// 		ERR(err)
+// 		ERR("请求服务器连接地址错误", zap.Error(err))
 // 		return
 // 	}
 // 	json.Unmarshal(body, &servers)
@@ -97,11 +98,11 @@ package main
 // 	d.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 // 	c, _, err := d.Dial(u.String(), nil)
 // 	if err != nil {
-// 		ERR(account, "连接失败")
+// 		ERR("连接失败", zap.String("Account", account))
 // 		return
 // 	}
 
-// 	INFO(account, "连接成功")
+// 	INFO("连接成功", zap.String("Account", account))
 
 // 	client := new(clientSession)
 // 	client.con = c
@@ -131,7 +132,7 @@ package main
 // 		timer.Remove(this.pingTimerId)
 // 		timer.Remove(this.chatTimerId)
 // 		this.con.Close()
-// 		DEBUG("连接关闭", this.account)
+// 		DEBUG("连接关闭", zap.String("Account", this.account))
 // 	}
 // }
 
@@ -192,7 +193,7 @@ package main
 
 // 		_, message, err := this.con.ReadMessage()
 // 		if err != nil {
-// 			ERR("read:", err)
+// 			ERR("read", zap.Error(err))
 // 			break
 // 		}
 
@@ -201,10 +202,10 @@ package main
 // 		//消息解析
 // 		protoMsg := protos.UnmarshalProtoMsg(msgBody)
 // 		if protoMsg == protos.NullProtoMsg {
-// 			ERR("收到错误消息ID: ", protos.UnmarshalProtoId(msgBody))
+// 			ERR("收到错误消息ID", zap.Uint16("MsgId", protos.UnmarshalProtoId(msgBody)))
 // 			break
 // 		}
-// 		DEBUG(this.account, "收到消息ID", protoMsg.ID)
+// 		DEBUG("收到消息ID", zap.String("Account", this.account), zap.Uint16("MsgId", protoMsg.ID))
 // 		//消息处理
 // 		this.handleMsg(protoMsg.ID, protoMsg.Body)
 // 	}
@@ -218,13 +219,13 @@ package main
 // 		//登录成功
 // 		data := msgData.(*gameProto.UserLoginS2C)
 // 		this.token = data.GetToken()
-// 		DEBUG("登录成功", this.token)
+// 		DEBUG("登录成功", zap.String("Token", this.token))
 // 		//获取用户数据
 // 		this.getInfo()
 // 	} else if msgId == gameProto.ID_user_getInfo_s2c {
 // 		//获取用户信息成功
 // 		data := msgData.(*gameProto.UserGetInfoS2C)
-// 		DEBUG("用户信息", data.GetData())
+// 		DEBUG("用户信息", zap.Any("Data", data.GetData()))
 // 		//加入聊天
 // 		this.joinChat()
 // 	} else if msgId == gameProto.ID_user_joinChat_s2c {
@@ -235,7 +236,7 @@ package main
 // 	} else if msgId == gameProto.ID_user_chat_notice_s2c {
 // 		//收到聊天消息
 // 		data := msgData.(*gameProto.UserChatNoticeS2C)
-// 		DEBUG(this.account, "收到聊天消息", data.GetUserName()+"说："+data.GetMsg())
+// 		DEBUG("收到聊天消息", zap.String("Account", this.account), zap.String("Message", data.GetUserName()+"说："+data.GetMsg()))
 // 	} else if msgId == gameProto.ID_error_notice_s2c {
 // 		data := msgData.(*gameProto.ErrorNoticeS2C)
 // 		errCode := data.GetErrorCode()
@@ -247,7 +248,7 @@ package main
 // 				go startConnect(this.account)
 // 			})
 // 		}
-// 		DEBUG("收到错误消息", data)
+// 		DEBUG("收到错误消息", zap.Any("Data", data))
 // 	}
 // }
 

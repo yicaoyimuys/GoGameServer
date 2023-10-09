@@ -4,6 +4,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/config"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/mongo"
+	"go.uber.org/zap"
 )
 
 func (this *Service) StartMongo() {
@@ -16,9 +17,7 @@ func (this *Service) StartMongo() {
 
 		if client != nil {
 			this.mongoClients[aliasName] = client
-			INFO("mongo_" + aliasName + "连接成功")
-		} else {
-			ERR("mongo_" + aliasName + "连接失败")
+			INFO("Mongo连接成功", zap.String("AliasName", aliasName))
 		}
 	}
 }

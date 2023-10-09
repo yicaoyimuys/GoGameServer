@@ -8,6 +8,7 @@ import (
 
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
+	"go.uber.org/zap"
 )
 
 func InitServer() (string, error) {
@@ -23,7 +24,7 @@ func InitServer() (string, error) {
 		for {
 			conn, err := listen.Accept()
 			if err != nil {
-				logger.Error("listen.Accept(): ", err)
+				logger.Error("Listen.Accept()", zap.Error(err))
 			}
 			go jsonrpc.ServeConn(conn)
 		}

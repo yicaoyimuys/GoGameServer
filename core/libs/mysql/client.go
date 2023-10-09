@@ -3,6 +3,7 @@ package mysql
 import (
 	"github.com/yicaoyimuys/GoGameServer/core/config"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"go.uber.org/zap"
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
@@ -11,11 +12,9 @@ import (
 func init() {
 	err := orm.RegisterDriver("mysql", orm.DRMySQL)
 	if err != nil {
-		logger.Error("Mysql_注册失败", err)
+		logger.Error("Mysql_注册失败", zap.Error(err))
 		return
 	}
-	//开启debug调试
-	orm.Debug = true
 }
 
 type Client struct {

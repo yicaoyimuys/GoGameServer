@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
+	"go.uber.org/zap"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -22,7 +23,7 @@ func (this *Jwt) Sign(claims jwt.MapClaims) string {
 
 	tokenString, err := token.SignedString(this.secretKey)
 	if err != nil {
-		logger.Error("jwt.Sign", err)
+		logger.Error("jwt.Sign", zap.Error(err))
 		return ""
 	}
 	return tokenString
@@ -34,12 +35,12 @@ func (this *Jwt) Parse(tokenString string) jwt.MapClaims {
 	})
 
 	if !token.Valid {
-		logger.Error("jwt.Parse", "token not valid")
+		logger.Error("jwt.Parse token not valid")
 		return nil
 	}
 
 	if err != nil {
-		logger.Error("jwt.Parse", err)
+		logger.Error("jwt.Parse", zap.Error(err))
 		return nil
 	}
 	return token.Claims.(jwt.MapClaims)

@@ -4,6 +4,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/config"
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/mysql"
+	"go.uber.org/zap"
 )
 
 func (this *Service) StartMysql() {
@@ -23,7 +24,7 @@ func (this *Service) StartMysql() {
 
 		if client != nil {
 			this.mysqlClients[key] = client
-			INFO("mysql_" + key + "连接成功...")
+			INFO("Mysql连接成功", zap.String("AliasName", key))
 		}
 	}
 }

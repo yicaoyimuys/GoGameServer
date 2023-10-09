@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
+	"go.uber.org/zap"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -21,41 +22,41 @@ var (
 )
 
 // 设置消息类型和消息ID的对应关系
-func SetMsg(msgID uint16, data interface{}) {
+func SetMsg(msgId uint16, data interface{}) {
 	msgType := reflect.TypeOf(data)
 
-	MsgObjectMap[msgID] = msgType
-	MsgIDMap[reflect.TypeOf(reflect.New(msgType).Interface())] = msgID
+	MsgObjectMap[msgId] = msgType
+	MsgIDMap[reflect.TypeOf(reflect.New(msgType).Interface())] = msgId
 }
 
 // 根据消息ID获取消息实体
-func GetMsgObject(msgID uint16) proto.Message {
-	if msgType, exists := MsgObjectMap[msgID]; exists {
+func GetMsgObject(msgId uint16) proto.Message {
+	if msgType, exists := MsgObjectMap[msgId]; exists {
 		return reflect.New(msgType).Interface().(proto.Message)
 	} else {
-		ERR("No MsgID:", msgID)
+		ERR("No MsgId", zap.Uint16("MsgId", msgId))
 	}
 	return nil
 }
 
 // 根据一条消息获取消息ID
-func GetMsgID(msg interface{}) uint16 {
+func GetMsgId(msg interface{}) uint16 {
 	msgType := reflect.TypeOf(msg)
-	if msgID, exists := MsgIDMap[msgType]; exists {
-		return msgID
+	if msgId, exists := MsgIDMap[msgType]; exists {
+		return msgId
 	} else {
-		ERR("No MsgType:", msgType)
+		ERR("No MsgType", zap.Any("MsgType", msgType))
 	}
 	return 0
 }
 
 // 序列化
 func MarshalProtoMsg(args proto.Message) []byte {
-	msgID := GetMsgID(args)
+	msgId := GetMsgId(args)
 	msgBody, _ := proto.Marshal(args)
 
 	result := make([]byte, 2+len(msgBody))
-	binary.BigEndian.PutUint16(result[:2], msgID)
+	binary.BigEndian.PutUint16(result[:2], msgId)
 	copy(result[2:], msgBody)
 
 	return result
@@ -71,8 +72,8 @@ func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 		return NullProtoMsg
 	}
 
-	msgID := UnmarshalProtoId(msg)
-	msgBody := GetMsgObject(msgID)
+	msgId := UnmarshalProtoId(msg)
+	msgBody := GetMsgObject(msgId)
 	if msgBody == nil {
 		return NullProtoMsg
 	}
@@ -83,7 +84,7 @@ func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 	}
 
 	return ProtoMsg{
-		ID:   msgID,
+		ID:   msgId,
 		Body: msgBody,
 	}
 }

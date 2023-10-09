@@ -7,6 +7,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/logger"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
+	"go.uber.org/zap"
 
 	"github.com/gorilla/websocket"
 )
@@ -55,7 +56,7 @@ func (this *Server) SetSessionReceiveMsgHandle(handle sessions.FrontSessionRecei
 }
 
 func (this *Server) Start() {
-	logger.Info("front start webSocket...", this.port)
+	logger.Info("Front Start WebSocket", zap.String("Port", this.port))
 
 	go func() {
 		http.HandleFunc("/", this.wsHandler)
@@ -72,7 +73,7 @@ func (this *Server) Start() {
 func (this *Server) StartPing() {
 	overTime := 15
 	sessions.FrontSessionOpenPing(int64(overTime))
-	logger.Info("session超时时间设置", overTime)
+	logger.Info("Session超时时间设置", zap.Int("OverTime", overTime))
 }
 
 func (this *Server) wsHandler(w http.ResponseWriter, r *http.Request) {

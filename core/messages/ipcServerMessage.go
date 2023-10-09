@@ -5,6 +5,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/grpc/ipc"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/protos"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"go.uber.org/zap"
 )
 
 func IpcServerReceive(stream *ipc.Stream, msg *ipc.Req) {
@@ -26,7 +27,7 @@ func dealMessage(session *sessions.BackSession, msgBody []byte) {
 	protoMsg := protos.UnmarshalProtoMsg(msgBody)
 	if protoMsg == protos.NullProtoMsg {
 		msgId := protos.UnmarshalProtoId(msgBody)
-		ERR("收到错误消息ID: ", msgId)
+		ERR("收到错误消息ID", zap.Uint16("MsgId", msgId))
 		session.Close()
 		return
 	}
@@ -36,7 +37,7 @@ func dealMessage(session *sessions.BackSession, msgBody []byte) {
 	msgData := protoMsg.Body
 	handle := GetIpcServerHandle(msgId)
 	if handle == nil {
-		ERR("收到未处理的消息ID: ", msgId)
+		ERR("收到未处理的消息ID", zap.Uint16("MsgId", msgId))
 		return
 	}
 	handle(session, msgData)
