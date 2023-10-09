@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"sync"
@@ -21,8 +20,8 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/service"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/spf13/cast"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -43,7 +42,7 @@ func main() {
 		return
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		ERR(err)
 		return

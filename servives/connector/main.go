@@ -15,7 +15,7 @@ func main() {
 	// newService.StartWebSocket(messages.FontReceive)
 	newService.StartSocket(messages.FontReceive)
 	newService.StartIpcClient([]string{consts.Service_Game, consts.Service_Login, consts.Service_Chat})
-	newService.StartRpcClient([]string{consts.Service_Game, consts.Service_Login, consts.Service_Chat})
+	newService.StartRpcClient([]string{consts.Service_Game, consts.Service_Login, consts.Service_Chat, consts.Service_Log})
 	newService.StartPProf(6000)
 
 	//模块初始化

@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"sync"
 
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
@@ -40,7 +40,7 @@ func getConfigPath(configFile string) string {
 
 func loadConfig(data interface{}, configName string) {
 	configPath := getConfigPath(configName)
-	fileData, err := ioutil.ReadFile(configPath)
+	fileData, err := os.ReadFile(configPath)
 	if err != nil {
 		ERR("Config读取失败", configPath, err)
 		return

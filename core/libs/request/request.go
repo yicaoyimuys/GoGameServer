@@ -2,7 +2,7 @@ package request
 
 import (
 	"crypto/tls"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -33,7 +33,7 @@ func HttpGet(url string, retryNum int) (string, uint32) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.Error("HttpGet", url, err)
 		return "error", 1002
@@ -57,7 +57,7 @@ func HttpPost(url string, retryNum int) (string, uint32) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.Error("HttpPost", url, err)
 		return "error", 1002

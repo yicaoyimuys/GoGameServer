@@ -6,7 +6,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 func SendErrorMsgToClient(session *sessions.BackSession, errorCode int32) {

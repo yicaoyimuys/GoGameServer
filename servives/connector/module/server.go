@@ -18,7 +18,7 @@ func initServerLogTimer() {
 	timer.DoTimer(20*1000, func() {
 		onlineUsersNum := sessions.FrontSessionLen()
 		ip := core.Service.Ip()
-		port := core.Service.Port(consts.ServiceType_WebSocket)
+		port := core.Service.Port(consts.ServiceType_Socket)
 		cache.SetServerInfo(ip, port, onlineUsersNum)
 		INFO("当前在线用户数量:", onlineUsersNum)
 	})

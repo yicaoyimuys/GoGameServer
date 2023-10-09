@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/yicaoyimuys/GoGameServer/core"
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
+	"github.com/yicaoyimuys/GoGameServer/core/libs/stack"
 )
 
 type ClientOffline struct {
@@ -43,6 +44,8 @@ func (this *Service) frontSessionOfflineHandle(session *sessions.FrontSession) {
 	for _, v := range this.rpcClients {
 		var client = v
 		go func() {
+			defer stack.TryError()
+
 			client.CallAll(method, args, reply)
 		}()
 	}

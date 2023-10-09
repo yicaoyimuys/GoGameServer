@@ -13,7 +13,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/servives/public/mysqlModels"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/redisCaches"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 // 登录

@@ -6,7 +6,7 @@ import (
 
 	. "github.com/yicaoyimuys/GoGameServer/core/libs"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type ProtoMsg struct {
@@ -90,10 +90,6 @@ func UnmarshalProtoMsg(msg []byte) ProtoMsg {
 
 func String(param string) *string {
 	return proto.String(param)
-}
-
-func Int(param int) *int32 {
-	return proto.Int(param)
 }
 
 func Bool(param bool) *bool {

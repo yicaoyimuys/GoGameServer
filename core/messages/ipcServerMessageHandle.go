@@ -3,7 +3,7 @@ package messages
 import (
 	"github.com/yicaoyimuys/GoGameServer/core/libs/sessions"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type ipcServerMsgHandle func(clientSession *sessions.BackSession, msgData proto.Message)

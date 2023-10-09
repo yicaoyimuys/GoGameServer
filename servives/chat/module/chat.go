@@ -10,7 +10,7 @@ import (
 	"github.com/yicaoyimuys/GoGameServer/servives/public/gameProto"
 	"github.com/yicaoyimuys/GoGameServer/servives/public/redisCaches"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 // 获取用户信息
